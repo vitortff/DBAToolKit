@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="SQL Server Scripts">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items />
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="AddNewDBFile.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>AddNewDBFile.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Diagnostics.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Diagnostics.sql</FullPath>
+        </FileNode>
+        <FileNode Name="DiskUsage.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>DiskUsage.sql</FullPath>
+        </FileNode>
+        <FileNode Name="ExecSessions.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>ExecSessions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="FileShrink.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>FileShrink.sql</FullPath>
+        </FileNode>
+        <FileNode Name="IndexAnalyse.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>IndexAnalyse.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Kill_Users.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Kill_Users.sql</FullPath>
+        </FileNode>
+        <FileNode Name="LockMonitor.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>LockMonitor.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Mirror.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Mirror.sql</FullPath>
+        </FileNode>
+        <FileNode Name="MirrorSuspend.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>MirrorSuspend.sql</FullPath>
+        </FileNode>
+        <FileNode Name="MoveResourceDB.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>MoveResourceDB.sql</FullPath>
+        </FileNode>
+        <FileNode Name="MoveUserDBFiles.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>MoveUserDBFiles.sql</FullPath>
+        </FileNode>
+        <FileNode Name="PartitionDetails.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>PartitionDetails.sql</FullPath>
+        </FileNode>
+        <FileNode Name="ResourceUse.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>ResourceUse.sql</FullPath>
+        </FileNode>
+        <FileNode Name="ViewPermissions.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>ViewPermissions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="WhoandWhat.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>WhoandWhat.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>
