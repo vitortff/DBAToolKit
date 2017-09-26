@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
-<Properties><Property Name="Solution" Value="ADM SQL Server">
-</Property><Property Name="Solution File" Value="C:\PYTHIAN\ADM SQL Server\ADM SQL Server\ADM SQL Server.ssmssln">
-</Property><Property Name="Date" Value="Tuesday, January 05, 2016">
-</Property><Property Name="Time" Value="11:48 AM">
-</Property></Properties><Event ErrorLevel="0" Project="" Source="ADM SQL Server.ssmssln" Description="Solution converted successfully">
-</Event><Event ErrorLevel="3" Project="" Source="ADM SQL Server.ssmssln" Description="Converted">
-</Event></UpgradeLog>
