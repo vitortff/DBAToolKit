@@ -1,4 +1,5 @@
- SELECT bs.database_name,
+--Lista os backups
+SELECT bs.database_name,
        bs.type,
        Max(bs.backup_start_date) AS backup_start_date
 FROM   master..sysdatabases sd
