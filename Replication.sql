@@ -61,3 +61,43 @@ EXEC sp_changepublication
 @property = N’allow_anonymous’,
 @value = ‘true’
 GO
+
+
+
+--Check unsubscriber commands
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED 
+GO 
+
+SELECT
+    a.publisher_db,
+    a.article,
+    ds.article_id,
+    ds.UndelivCmdsInDistDB,
+    ds.DelivCmdsInDistDB,
+    CASE WHEN md.[status] = 1 THEN 'Started'
+         WHEN md.[status] = 2 THEN 'Succeeded'
+         WHEN md.[status] = 3 THEN 'In Progress'
+         WHEN md.[status] = 4 THEN 'Idle'
+         WHEN md.[status] = 5 THEN 'Retrying'
+         WHEN md.[status] = 6 THEN 'Failed'
+         ELSE 'Other'
+    END [Status],
+    CASE WHEN md.warning = 0 THEN 'OK'
+         WHEN md.warning = 1 THEN 'Expired'
+         WHEN md.warning = 2 THEN 'Latency'
+         ELSE 'OTHER'
+    END [Warnings],
+    md.cur_latency / 60.0 / 60.0 [Latency (min.)] FROM
+    Distribution.dbo.MSdistribution_status ds JOIN 
+    Distribution.dbo.MSarticles a
+    ON a.article_id = ds.article_id
+JOIN 
+    Distribution.dbo.MSreplication_monitordata md
+    ON md.agent_id = ds.agent_id
+WHERE
+    UndelivCmdsInDistDB > 0
+    AND a.publisher_db = 'YOUR PUBLISHED DATABASE'
+
+ORDER BY
+    a.publisher_db,
+    UndelivCmdsInDistDB DESC
