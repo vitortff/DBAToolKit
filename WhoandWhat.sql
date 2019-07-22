@@ -38,10 +38,6 @@ ON
 	EC.session_id = ER.session_id
 WHERE
 EC.session_id <> @@SPID --and  
---UPPER(ES.[Status])not in ('SLEEPING','DORMANT')
---login_name = 'W3$GWMAP'
---UPPER(ES.[Status]) = 'RUNNING'
---ES.session_id = 572
 ORDER BY
 	ES.logical_reads DESC,
 	ES.Status ASC, wait_time desc

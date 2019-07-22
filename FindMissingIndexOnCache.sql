@@ -51,5 +51,7 @@ SET equality_columns = LEFT(equality_columns,LEN(equality_columns)-1),
    include_columns = LEFT(include_columns,LEN(include_columns)-1);
  
 SELECT *
-FROM #MissingIndexInfo;
+FROM #MissingIndexInfo ORDER BY impact DESC;
+
+DROP TABLE #MissingIndexInfo
  
