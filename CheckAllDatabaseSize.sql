@@ -10,9 +10,9 @@ SELECT [Database Name] = DB_NAME(database_id),
 
 FROM   sys.master_files
 
-— Uncomment if you need to query for a particular database
+-- Uncomment if you need to query for a particular database
 
-— WHERE      database_id = DB_ID(‘Database Name’)
+-- WHERE      database_id = DB_ID(‘Database Name’)
 
 GROUP BY      GROUPING SETS
 

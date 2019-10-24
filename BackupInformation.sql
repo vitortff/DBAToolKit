@@ -42,3 +42,27 @@ SELECT
 							)
 					) [sqltxt]
 FROM sys.dm_exec_requests dmr WHERE command IN ('RESTORE DATABASE','BACKUP DATABASE')
+
+
+--Informação de inicio e fim dos backups
+SELECT 
+  bup.user_name AS [User],
+  bup.database_name AS [Database],
+  bup.server_name AS [Server],
+  bup.backup_start_date AS [Backup Started],
+  bup.backup_finish_date AS [Backup Finished]
+  ,CAST((CAST(DATEDIFF(s, bup.backup_start_date, bup.backup_finish_date) AS int))/3600 AS varchar) + ' hours, ' 
+  + CAST((CAST(DATEDIFF(s, bup.backup_start_date, bup.backup_finish_date) AS int))/60 AS varchar)+ ' minutes, '
+  + CAST((CAST(DATEDIFF(s, bup.backup_start_date, bup.backup_finish_date) AS int))%60 AS varchar)+ ' seconds'
+  AS [Total Time]
+FROM msdb.dbo.backupset bup
+WHERE bup.backup_set_id IN
+  (SELECT MAX(backup_set_id) 
+   FROM msdb.dbo.backupset
+   --WHERE database_name = ISNULL(@dbname, database_name) --if no dbname, then return all
+   --AND 
+   WHERE type = 'D' --only interested in the time of last full backup
+   GROUP BY database_name) 
+/* COMMENT THE NEXT LINE IF YOU WANT ALL BACKUP HISTORY */
+AND bup.database_name IN (SELECT name FROM master.dbo.sysdatabases)
+ORDER BY bup.database_name
