@@ -87,3 +87,36 @@ JOIN sys.indexes AS i
 JOIN sys.objects AS o
     ON p.object_id = o.object_id
 WHERE o.is_ms_shipped = 0;'
+
+
+
+
+
+
+--Track Page splits without the XEvents Session
+CREATE TABLE TrackPageSplit (ServerName NVARCHAR(50), database_name NVARCHAR(300), table_name NVARCHAR(1000), index_name NVARCHAR(2000),
+PAGE_SPLIT_FOR_INDEX INT, PAGE_ALLOCATION_CAUSED_BYPAGESPLIT int)
+GO
+
+exec sp_msforeachdb @command1 = 'set quoted_identifier on
+USE [?] 
+INSERT INTO master..TrackPageSplit
+SELECT
+@@servername AS ServerName,
+DB_NAME() as DatabaseName,
+O.NAME AS OBJECT_NAME,
+I.NAME AS INDEX_NAME,
+IOS.LEAF_ALLOCATION_COUNT AS PAGE_SPLIT_FOR_INDEX,
+IOS.NONLEAF_ALLOCATION_COUNT PAGE_ALLOCATION_CAUSED_BY_PAGESPLIT
+FROM SYS.DM_DB_INDEX_OPERATIONAL_STATS(DB_ID(N''DB_NAME''),NULL,NULL,NULL) IOS JOIN
+SYS.INDEXES I
+ON
+IOS.INDEX_ID=I.INDEX_ID
+AND IOS.OBJECT_ID = I.OBJECT_ID JOIN
+SYS.OBJECTS O
+ON
+IOS.OBJECT_ID=O.OBJECT_ID
+WHERE O.TYPE_DESC=''USER_TABLE'''
+GO
+SELECT * FROM master..TrackPageSplit WHERE database_name NOT IN('tempdb', 'master','msdb')
+ORDER BY PAGE_SPLIT_FOR_INDEX DESC
