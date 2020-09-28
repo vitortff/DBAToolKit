@@ -50,8 +50,28 @@ SET equality_columns = LEFT(equality_columns,LEN(equality_columns)-1),
    inequality_columns = LEFT(inequality_columns,LEN(inequality_columns)-1),
    include_columns = LEFT(include_columns,LEN(include_columns)-1);
  
-SELECT *
+--SELECT *
+--FROM #MissingIndexInfo ORDER BY impact DESC;
+
+SELECT DB_NAME(database_id) AS DatabaseName, impact, 
+'CREATE INDEX [IX_' + OBJECT_NAME(OBJECT_ID,database_id) + '_'
++ REPLACE(REPLACE(REPLACE(ISNULL(equality_columns,''),', ','_'),'[',''),']','') 
++ CASE
+WHEN equality_columns IS NOT NULL
+AND inequality_columns IS NOT NULL THEN '_'
+ELSE ''
+END
++ REPLACE(REPLACE(REPLACE(ISNULL(inequality_columns,''),', ','_'),'[',''),']','')
++ ']'
++ ' ON ' + statement
++ ' (' + ISNULL (equality_columns,'')
++ CASE WHEN equality_columns IS NOT NULL AND inequality_columns 
+IS NOT NULL THEN ',' ELSE
+'' END
++ ISNULL (inequality_columns, '')
++ ')' AS Create_Statement
 FROM #MissingIndexInfo ORDER BY impact DESC;
+
 
 DROP TABLE #MissingIndexInfo
  
