@@ -53,7 +53,7 @@ SET equality_columns = LEFT(equality_columns,LEN(equality_columns)-1),
 --SELECT *
 --FROM #MissingIndexInfo ORDER BY impact DESC;
 
-SELECT DB_NAME(database_id) AS DatabaseName, impact, 
+SELECT DISTINCT DB_NAME(database_id) AS DatabaseName, ROUND(impact,2) AS IMPACT, 
 'CREATE INDEX [IX_' + OBJECT_NAME(OBJECT_ID,database_id) + '_'
 + REPLACE(REPLACE(REPLACE(ISNULL(equality_columns,''),', ','_'),'[',''),']','') 
 + CASE
