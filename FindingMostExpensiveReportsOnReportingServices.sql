@@ -1,4 +1,6 @@
 --https://blogs.msdn.microsoft.com/robertbruckner/2009/01/06/executionlog2-view-analyzing-and-optimizing-reports/
 
-use ReportServer
-select * from ExecutionLog2 order by TimeStart DESC
+USE ReportServer;
+SELECT *
+FROM ExecutionLog2
+ORDER BY TimeStart DESC;

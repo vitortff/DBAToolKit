@@ -291,46 +291,37 @@ GO
 
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;  
  
-WITH XMLNAMESPACES 
-   (DEFAULT 'http://schemas.microsoft.com/sqlserver/2004/07/showplan')   
-SELECT query_plan AS CompleteQueryPlan , 
-        n.value('(@StatementText)[1]', 'VARCHAR(4000)') AS StatementText , 
-        n.value('(@StatementOptmLevel)[1]', 'VARCHAR(25)') 
-                  AS StatementOptimizationLevel , 
-        n.value('(@StatementSubTreeCost)[1]', 'VARCHAR(128)') 
-                  AS StatementSubTreeCost , 
-        n.query('.') AS ParallelSubTreeXML , 
-        ecp.usecounts , 
-        ecp.size_in_bytes 
-FROM    sys.dm_exec_cached_plans AS ecp 
-        CROSS APPLY sys.dm_exec_query_plan(plan_handle) AS eqp 
-        CROSS APPLY query_plan.nodes 
-               ('/ShowPlanXML/BatchSequence/Batch/Statements/StmtSimple') 
-        AS qn ( n ) 
-WHERE   n.query('.').exist('//RelOp[@PhysicalOp="Parallelism"]') = 1
-ORDER BY StatementSubTreeCost DESC
+WITH XMLNAMESPACES(DEFAULT 'http://schemas.microsoft.com/sqlserver/2004/07/showplan')
+     SELECT query_plan AS CompleteQueryPlan, 
+            n.value('(@StatementText)[1]', 'VARCHAR(4000)') AS StatementText, 
+            n.value('(@StatementOptmLevel)[1]', 'VARCHAR(25)') AS StatementOptimizationLevel, 
+            n.value('(@StatementSubTreeCost)[1]', 'VARCHAR(128)') AS StatementSubTreeCost, 
+            n.query('.') AS ParallelSubTreeXML, 
+            ecp.usecounts, 
+            ecp.size_in_bytes
+     FROM sys.dm_exec_cached_plans AS ecp
+          CROSS APPLY sys.dm_exec_query_plan(plan_handle) AS eqp
+          CROSS APPLY query_plan.nodes('/ShowPlanXML/BatchSequence/Batch/Statements/StmtSimple') AS qn(n)
+     WHERE n.query('.').exist('//RelOp[@PhysicalOp="Parallelism"]') = 1
+     ORDER BY StatementSubTreeCost DESC;
 
-SELECT TOP ( 10 ) 
-        SUBSTRING(ST.text, ( QS.statement_start_offset / 2 ) + 1, 
-                  ( ( CASE statement_end_offset 
-                        WHEN -1 THEN DATALENGTH(st.text) 
-                        ELSE QS.statement_end_offset 
-                      END - QS.statement_start_offset ) / 2 ) + 1) 
-                 AS statement_text , 
-        execution_count , 
-        total_worker_time / 1000 AS total_worker_time_ms , 
-        ( total_worker_time / 1000 ) / execution_count 
-                 AS avg_worker_time_ms , 
-        total_logical_reads , 
-        total_logical_reads / execution_count AS avg_logical_reads , 
-        total_elapsed_time / 1000 AS total_elapsed_time_ms , 
-        ( total_elapsed_time / 1000 ) / execution_count 
-                 AS avg_elapsed_time_ms , 
-        qp.query_plan 
-FROM    sys.dm_exec_query_stats qs 
-        CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st 
-        CROSS APPLY sys.dm_exec_query_plan(qs.plan_handle) qp 
-ORDER BY total_worker_time DESC
+SELECT TOP (10) SUBSTRING(ST.text, (QS.statement_start_offset / 2) + 1, ((CASE statement_end_offset
+                                                                              WHEN -1
+                                                                              THEN DATALENGTH(st.text)
+                                                                              ELSE QS.statement_end_offset
+                                                                          END - QS.statement_start_offset) / 2) + 1) AS statement_text, 
+                execution_count, 
+                total_worker_time / 1000 AS total_worker_time_ms, 
+                (total_worker_time / 1000) / execution_count AS avg_worker_time_ms, 
+                total_logical_reads, 
+                total_logical_reads / execution_count AS avg_logical_reads, 
+                total_elapsed_time / 1000 AS total_elapsed_time_ms, 
+                (total_elapsed_time / 1000) / execution_count AS avg_elapsed_time_ms, 
+                qp.query_plan
+FROM sys.dm_exec_query_stats qs
+     CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
+     CROSS APPLY sys.dm_exec_query_plan(qs.plan_handle) qp
+ORDER BY total_worker_time DESC;
 
 select top 20
 OBJECT_NAME(st.objectid) AS Objeto, st.dbid, total_worker_time/execution_count AS AverageCPUTime,
