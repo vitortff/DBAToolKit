@@ -28,14 +28,14 @@ SELECT o.name AS [Table_Name], x.name AS [Index_Name],
 FROM sys.dm_db_index_operational_stats (db_id(), NULL, NULL, NULL) i
 JOIN sys.objects o ON o.object_id = i.object_id
 JOIN sys.indexes x ON x.object_id = i.object_id AND x.index_id = i.index_id
-JOIN sys.partitions AS p ON p.OBJECT_ID = x.OBJECT_ID AND p.index_id = x.index_id
+JOIN sys.partitions AS p ON p.object_id = x.object_id AND p.index_id = x.index_id
 JOIN sys.allocation_units AS a ON a.container_id = p.partition_id
 WHERE (i.range_scan_count + i.leaf_insert_count
        + i.leaf_delete_count + leaf_update_count
        + i.leaf_page_merge_count + i.singleton_lookup_count) != 0
 AND objectproperty(i.object_id,'IsUserTable') = 1
-AND O.name IN (SELECT st.name FROM sys.partitions SP
-     INNER JOIN sys.tables ST ON st.object_id = sp.object_id
+AND o.name IN (SELECT st.name FROM sys.partitions SP
+     INNER JOIN sys.tables st ON st.object_id = sp.object_id
 WHERE data_compression = 0)
 ORDER BY [Percent_Update] ASC
 
@@ -59,13 +59,13 @@ SELECT o.name AS [Table_Name], x.name AS [Index_Name],
 FROM sys.dm_db_index_operational_stats (db_id(), NULL, NULL, NULL) i
 JOIN sys.objects o ON o.object_id = i.object_id
 JOIN sys.indexes x ON x.object_id = i.object_id AND x.index_id = i.index_id
-JOIN sys.partitions AS p ON p.OBJECT_ID = x.OBJECT_ID AND p.index_id = x.index_id
+JOIN sys.partitions AS p ON p.object_id = x.object_id AND p.index_id = x.index_id
 JOIN sys.allocation_units AS a ON a.container_id = p.partition_id
 WHERE (i.range_scan_count + i.leaf_insert_count
        + i.leaf_delete_count + leaf_update_count
        + i.leaf_page_merge_count + i.singleton_lookup_count) != 0
 AND objectproperty(i.object_id,'IsUserTable') = 1
-AND O.name IN (SELECT st.name FROM sys.partitions SP
-     INNER JOIN sys.tables ST ON st.object_id = sp.object_id
+AND o.name IN (SELECT st.name FROM sys.partitions SP
+     INNER JOIN sys.tables st ON st.object_id = sp.object_id
 WHERE data_compression = 0)
 ORDER BY [Percent_Scan] DESC

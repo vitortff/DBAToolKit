@@ -89,7 +89,7 @@ go
 -- para desfazer o mirror pelo principal ou espelho quando ambos estão SINCRONIZADOS, ou simplesmente remover mirror.
 -- ou no espelho, quando principal falhar 
 
-ALTER DATABASE DTCORP SET PARTNER OFF
+ALTER DATABASE AdventureWorks2019 SET PARTNER OFF
 go
 ALTER DATABASE SIOPMCRP SET PARTNER OFF
 go

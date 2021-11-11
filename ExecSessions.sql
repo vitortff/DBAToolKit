@@ -36,9 +36,6 @@ ON
 	EC.session_id = ER.session_id
 WHERE 
 UPPER(ES.[Status])not in ('SLEEPING','DORMANT')
---login_name = 'W3$GWMAP'
---UPPER(ES.[Status]) = 'RUNNING'
---ES.session_id = 572
 ORDER BY
 	Status ASC, last_request_start_time desc
 	
