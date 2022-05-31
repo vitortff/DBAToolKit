@@ -207,3 +207,107 @@ FROM
 ) a
 CROSS JOIN sys.dm_os_sys_info sys
 ORDER BY DATEADD(MS, a.[Record Time] - sys.ms_ticks, GETDATE());
+
+--Listando os objetos que mais consomem memória
+;WITH src AS
+(
+   SELECT
+       [Object] = o.name,
+       [Type] = o.type_desc,
+       [Index] = COALESCE(i.name, ''),
+       [Index_Type] = i.type_desc,
+       p.[object_id],
+       p.index_id,
+       au.allocation_unit_id
+   FROM
+       sys.partitions AS p
+   INNER JOIN
+       sys.allocation_units AS au
+       ON p.hobt_id = au.container_id
+   INNER JOIN
+       sys.objects AS o
+       ON p.[object_id] = o.[object_id]
+   INNER JOIN
+       sys.indexes AS i
+       ON o.[object_id] = i.[object_id]
+       AND p.index_id = i.index_id
+   WHERE
+       au.[type] IN (1,2,3)
+       AND o.is_ms_shipped = 0
+)
+SELECT
+   src.[Object],
+   src.[Type],
+   src.[Index],
+   src.Index_Type,
+   buffer_pages = COUNT_BIG(b.page_id),
+   buffer_mb = COUNT_BIG(b.page_id) / 128
+FROM
+   src
+INNER JOIN
+   sys.dm_os_buffer_descriptors AS b
+   ON src.allocation_unit_id = b.allocation_unit_id
+WHERE
+   b.database_id = DB_ID()
+GROUP BY
+   src.[Object],
+   src.[Type],
+   src.[Index],
+   src.Index_Type
+ORDER BY
+   buffer_pages DESC;
+
+
+--Analisar o plano de execução utilizando o indice listado na query anterior
+    SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+    DECLARE @IndexName AS NVARCHAR(128) = 'PK__Product__E1A99A1987FFF6EC';
+    IF (LEFT(@IndexName, 1) <> '[' AND RIGHT(@IndexName, 1) <> ']') SET @IndexName = QUOTENAME(@IndexName);
+    --Handle the case where the left or right was quoted manually but not the opposite side
+    IF LEFT(@IndexName, 1) <> '[' SET @IndexName = '['+@IndexName;
+    IF RIGHT(@IndexName, 1) <> ']' SET @IndexName = @IndexName + ']';
+    ;WITH XMLNAMESPACES
+       (DEFAULT 'http://schemas.microsoft.com/sqlserver/2004/07/showplan')
+    SELECT
+    stmt.value('(@StatementText)[1]', 'varchar(max)') AS SQL_Text,
+    obj.value('(@Database)[1]', 'varchar(128)') AS DatabaseName,
+    obj.value('(@Schema)[1]', 'varchar(128)') AS SchemaName,
+    obj.value('(@Table)[1]', 'varchar(128)') AS TableName,
+    obj.value('(@Index)[1]', 'varchar(128)') AS IndexName,
+    obj.value('(@IndexKind)[1]', 'varchar(128)') AS IndexKind,
+    cp.plan_handle,
+    query_plan
+    FROM sys.dm_exec_cached_plans AS cp
+    CROSS APPLY sys.dm_exec_query_plan(plan_handle) AS qp
+    CROSS APPLY query_plan.nodes('/ShowPlanXML/BatchSequence/Batch/Statements/StmtSimple') AS batch(stmt)
+    CROSS APPLY stmt.nodes('.//IndexScan/Object[@Index=sql:variable("@IndexName")]') AS idx(obj)
+    OPTION(MAXDOP 1, RECOMPILE);
+
+
+
+
+
+    SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+    DECLARE @IndexName AS NVARCHAR(128) = 'IN1_SIAP_GlobalProductID';
+    IF (LEFT(@IndexName, 1) <> '[' AND RIGHT(@IndexName, 1) <> ']') SET @IndexName = QUOTENAME(@IndexName);
+    --Handle the case where the left or right was quoted manually but not the opposite side
+    IF LEFT(@IndexName, 1) <> '[' SET @IndexName = '['+@IndexName;
+    IF RIGHT(@IndexName, 1) <> ']' SET @IndexName = @IndexName + ']';
+    ;WITH XMLNAMESPACES
+       (DEFAULT 'http://schemas.microsoft.com/sqlserver/2004/07/showplan')
+SELECT * FROM (
+    SELECT
+    stmt.value('(@StatementText)[1]', 'varchar(max)') AS SQL_Text,
+    obj.value('(@Database)[1]', 'varchar(128)') AS DatabaseName,
+    obj.value('(@Schema)[1]', 'varchar(128)') AS SchemaName,
+    obj.value('(@Table)[1]', 'varchar(128)') AS TableName,
+    obj.value('(@Index)[1]', 'varchar(128)') AS IndexName,
+    obj.value('(@IndexKind)[1]', 'varchar(128)') AS IndexKind,
+    cp.plan_handle,
+    query_plan
+    FROM sys.dm_exec_cached_plans AS cp
+    CROSS APPLY sys.dm_exec_query_plan(plan_handle) AS qp
+    CROSS APPLY query_plan.nodes('/ShowPlanXML/BatchSequence/Batch/Statements/StmtSimple') AS batch(stmt)
+    CROSS APPLY stmt.nodes('.//IndexScan/Object[@Index=sql:variable("@IndexName")]') AS idx(obj)
+	) A INNER JOIN sys.dm_exec_query_stats B ON A.plan_handle=B.plan_handle
+	where A.databaseName='[SpringCommunications]' and max_logical_reads>200000
+	    OPTION(MAXDOP 1, RECOMPILE);
