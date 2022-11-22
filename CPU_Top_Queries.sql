@@ -17,9 +17,6 @@ OUTER APPLY sys.dm_exec_sql_text(eqs.sql_handle) AS est
 ORDER BY [TotalCPUTime_ms] DESC
 
 
---Utilizando as DMVs e DMFs da categoria sys.dm_exec, podemos listar informações
---detalhadas sobre as conexões existentes em uma instância de SQL Server, inclusive
---quais as queries que cada Login está executando no momento
 SELECT
 	ES.session_id,
 	ES.cpu_time,
