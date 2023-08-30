@@ -43,7 +43,8 @@ SELECT
 	COUNT (*) * 8 / 1024 AS [MBUsed],
 	SUM ([free_space_in_bytes]) / (1024 * 1024) AS [MBEmpty]
 FROM sys.dm_os_buffer_descriptors
-GROUP BY [database_id];
+GROUP BY [database_id]
+ORDER BY MBUsed DESC
 GO
 
 --Check what is the table using most memory with empty pages
