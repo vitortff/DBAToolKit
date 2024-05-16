@@ -5,9 +5,35 @@ from sys.dm_db_index_usage_stats dmi join
 sys.indexes i on 
 dmi.index_id = i.index_id and 
 dmi.object_id = i.object_id
-where database_id = DB_ID() and object_name(dmi.object_id) IN('estoque')
-order by user_updates desc
-go
+where database_id = DB_ID() 
+--AND object_name(dmi.object_id) IN('estoque')
+order by user_updates DESC
+GO
+
+--Verifica uso de indices criados pelo DTA
+SELECT 
+	DB_NAME() AS DatabaseName,
+	OBJECT_NAME(i.object_id) AS TableName,
+	name AS IndexName,
+	dmi.user_seeks,
+	dmi.last_user_seek,
+	dmi.user_scans,
+	dmi.last_user_scan,
+	dmi.user_lookups,
+	dmi.last_user_lookup,
+	dmi.user_updates,
+	dmi.last_user_update
+from 
+	sys.dm_db_index_usage_stats dmi 
+JOIN 
+	sys.indexes i 
+ON 
+	dmi.index_id = i.index_id 
+AND 
+	dmi.object_id = i.object_id
+--WHERE 
+--	name LIKE '_dta%'
+ORDER by dmi.last_user_seek ASC
 
 
 sp_helpindex tellog
@@ -94,7 +120,6 @@ go
 sp_helpindex iu
 
 -- Returns information about all the data pages that are currently in the SQL Server buffer pool
-
 SELECT count(*)AS cached_pages_count 
     ,name ,index_id 
 FROM sys.dm_os_buffer_descriptors AS bd 
@@ -118,20 +143,3 @@ FROM sys.dm_os_buffer_descriptors AS bd
 WHERE database_id = db_id()
 GROUP BY name, index_id 
 ORDER BY cached_pages_count DESC, name
-
-
-USE [<bcodados>]
-GO
-
-CREATE NONCLUSTERED INDEX [I<nometbl>_<tipo><nseq>] ON [<owner>].[nometbl]
-(
-<coluna01, coluna02...>
-)	
-INCLUDE 
-(
-coluna11, coluna12...
-)
-WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = ON, 
-IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = ON, ALLOW_ROW_LOCKS  = ON, 
-ALLOW_PAGE_LOCKS  = ON, FILLFACTOR = 80)
-ON <nomeFG>	

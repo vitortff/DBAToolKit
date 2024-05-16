@@ -1,8 +1,3 @@
-alter PROC usp_GetFailedLoginsListFromLastWeek
-AS
-BEGIN
-   SET NOCOUNT ON
-
    DECLARE @ErrorLogCount INT 
    DECLARE @LastLogDate DATETIME
 
@@ -45,6 +40,3 @@ BEGIN
       --AND LogDate > getdate() - 7
    GROUP BY Text
    ORDER BY NumberOfAttempts DESC
-
-   SET NOCOUNT OFF
-END    
