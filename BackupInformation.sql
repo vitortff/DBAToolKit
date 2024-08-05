@@ -104,3 +104,25 @@ WHERE bup.backup_set_id IN
 /* COMMENT THE NEXT LINE IF YOU WANT ALL BACKUP HISTORY */
 AND bup.database_name IN (SELECT name FROM master.dbo.sysdatabases)
 ORDER BY bup.database_name
+
+
+--Lista se os ultimos backups estão comprimidos ou não
+WITH LatestBackups AS (
+    SELECT 
+        database_name,
+        backup_size,
+        compressed_backup_size,
+        backup_finish_date,
+        ROW_NUMBER() OVER (PARTITION BY database_name ORDER BY backup_finish_date DESC) AS rn
+    FROM msdb.dbo.backupset
+)
+SELECT 
+    database_name, 
+    CASE 
+        WHEN backup_size = compressed_backup_size THEN 'Compressed'
+        ELSE 'Not compressed'
+    END AS Compression, 
+    backup_finish_date
+FROM LatestBackups
+WHERE rn = 1
+ORDER BY database_name;
