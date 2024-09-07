@@ -1,0 +1,67 @@
+Select A.destination_database_name,
+max(B.backup_finish_date)
+From msdb..restorehistory A
+INNER JOIN msdb..backupset B ON A.backup_set_id = B.backup_set_id
+INNER JOIN msdb..backupmediafamily C ON B.media_set_id = C.media_set_id
+where A.destination_database_name in ('Amd_Prev_ForSef','AmadeusPrev')
+group by A.destination_database_name
+
+
+
+Select A.destination_database_name,
+A.restore_date,
+B.backup_start_date,
+B.backup_finish_date,
+B.database_name as source_database_name,
+C.physical_device_name as backup_file_used_for_restore
+From msdb..restorehistory A
+INNER JOIN msdb..backupset B ON A.backup_set_id = B.backup_set_id
+INNER JOIN msdb..backupmediafamily C ON B.media_set_id = C.media_set_id
+Order by A.restore_date DESC
+
+
+
+SELECT A.destination_database_name,
+A.restore_date,
+B.backup_start_date,
+B.backup_finish_date,
+B.database_name as source_database_name,
+C.physical_device_name as backup_file_used_for_restore
+FROM msdb..restorehistory A
+INNER JOIN msdb..backupset B ON A.backup_set_id = B.backup_set_id
+INNER JOIN msdb..backupmediafamily C ON B.media_set_id = C.media_set_id
+WHERE A.destination_database_name LIKE '%NewCXPREV%'
+AND A.restore_date = (SELECT MAX(X.restore_date)
+                      FROM  msdb..restorehistory X
+                      WHERE X.destination_database_name = A.destination_database_name)
+ORDER BY 2 DESC;
+
+
+
+Select A.destination_database_name,
+A.restore_date,
+B.backup_start_date,
+B.backup_finish_date,
+B.database_name as source_database_name,
+C.physical_device_name as backup_file_used_for_restore
+From msdb..restorehistory A
+INNER JOIN msdb..backupset B ON A.backup_set_id = B.backup_set_id
+INNER JOIN msdb..backupmediafamily C ON B.media_set_id = C.media_set_id
+WHERE A.destination_database_name IN
+
+('AmadeusPrev',
+'AmadeusPrevEFinanceira',
+'AmadeusPrevRgr3',
+'Amd_Prev_CTBExtraordinaria',
+'Amd_Prev_DIRF2015',
+'Amd_Prev_DIRF2015_V2',
+'Amd_Prev_ForScp',
+'Amd_Prev_NEWVER',
+'Amd_Prev_NEWVER_REV',
+'Amd_Prev_NEWVER_SPB',
+'Amd_Prev_NEWVER_SPB2',
+'Amd_Prev_Reaj_Difer',
+'Amd_Prev_RevINSS',
+'Amd_Prev_SANPREV')
+
+Order by A.restore_date DESC

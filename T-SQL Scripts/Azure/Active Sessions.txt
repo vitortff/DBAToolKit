@@ -1,0 +1,10 @@
+SELECT 'kill ' + cast(session_id as varchar(100)) as killSession, session_id, start_time, [status], command, wait_type, wait_time, 
+last_wait_type, wait_resource, cpu_time, r.total_elapsed_time, scheduler_id, [reads],logical_reads, writes,
+[text], query_plan
+FROM sys.dm_exec_requests r
+OUTER APPLY sys.dm_exec_sql_text(r.sql_handle) AS t
+OUTER APPLY sys.dm_exec_query_plan(r.plan_handle) p
+WHERE r.session_id > 50
+ AND r.session_id <> @@SPID and [status] <> 'background'
+ and last_wait_type='SOS_SCHEDULER_YIELD'
+ order by cpu_time desc

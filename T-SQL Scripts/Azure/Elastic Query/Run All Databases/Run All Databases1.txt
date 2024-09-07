@@ -1,0 +1,122 @@
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+--Variáveis do relatório
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+DECLARE @SQLString2 NVARCHAR(4000)
+DECLARE @SQLString3 NVARCHAR(4000)
+DECLARE @SQLString4 NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1 and appnome in ('dbritto2','advocaciaruypedroschneider','filizolagoncalvesadvogados') 
+--UNION ALL
+--SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+--UNION ALL
+--SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '_] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+-----------------------INICIO DA PARTE A SER EDITADA------------------------------------------
+
+SET @SQLString2 = 'CREATE EXTERNAL TABLE [dbo].[PRO_Pedido](
+	[Id] [int] ,
+	[Id_PRO_Pedido_Nome] [int],
+	[Id_PRO_Pedido_Situacao] [int] ,
+	[Id_PRO_Processo] [int] ,
+	[ValorPedido] [numeric](18, 4) ,
+	[ValorProvisionado] [numeric](18, 4) ,
+	[ValorDeferido] [numeric](18, 4) ,
+	[Observacoes] [varchar](max) ,
+	[DtJulgamento] [datetime2](7) ,
+	[TipoProbabilidade] [smallint] ,
+	[Id_PRO_Probabilidade] [int] ,
+	[DtPedido] [datetime2](7) ,
+	[Id_GLB_Moeda_Conv_vlPedido] [int] ,
+	[Id_GLB_Moeda_Conv_vlProvis] [int] ,
+	[Id_GLB_Moeda_Conv_vlDeferido] [int] ,
+	[DtHrCadastro] [datetimeoffset](7) ,
+	[Id_CA_Usuario_Cadastrou] [int] ,
+	[TipoContingencia] [smallint])
+
+WITH (DATA_SOURCE =[' + @servername + '_], SCHEMA_NAME = ''DBO'', OBJECT_NAME = ''PRO_Pedido'')'
+
+EXECUTE sp_executesql @SQLString2
+
+
+--Criando a nova 
+
+SET @SQLString4= 'SELECT * INTO PRO_Pedido_' + @appnome + ' FROM PRO_Pedido'
+
+EXECUTE sp_executesql @SQLString4
+
+DROP EXTERNAL TABLE PRO_Pedido
+
+
+----------------------------FIM DA PARTE A SER EDITADA------------------------------------
+
+
+SET @SQLString3 = 'DROP EXTERNAL DATA SOURCE [' + @servername + '_]'
+EXECUTE sp_executesql @SQLString3
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--SELECT
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+
+
+--drop external data source [legalone-prod-eastus2_]
+
+
+--select * from PRO_Pedido_dbritto2
+
+
+
+
+

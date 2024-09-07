@@ -1,0 +1,47 @@
+SELECT 'DROP FULLTEXT INDEX ON  ' + 
+    t.name AS ObjectName, 
+    c.name AS FTCatalogName ,
+    i.name AS UniqueIdxName,
+    cl.name AS ColumnName
+FROM 
+    sys.objects t 
+INNER JOIN 
+    sys.fulltext_indexes fi 
+ON 
+    t.[object_id] = fi.[object_id] 
+INNER JOIN 
+    sys.fulltext_index_columns ic
+ON 
+    ic.[object_id] = t.[object_id]
+INNER JOIN
+    sys.columns cl
+ON 
+        ic.column_id = cl.column_id
+    AND ic.[object_id] = cl.[object_id]
+INNER JOIN 
+    sys.fulltext_catalogs c 
+ON 
+    fi.fulltext_catalog_id = c.fulltext_catalog_id
+INNER JOIN 
+    sys.indexes i
+ON 
+        fi.unique_index_id = i.index_id
+    AND fi.[object_id] = i.[object_id];
+
+
+DROP FULLTEXT INDEX ON meu_arquivo
+DROP FULLTEXT INDEX ON decisoes
+DROP FULLTEXT INDEX ON especie_decisoes
+DROP FULLTEXT INDEX ON orgaos
+DROP FULLTEXT INDEX ON conteudo
+
+
+SELECT *FROM SYS.OBJECTS 
+WHERE NAME IN (SELECT o.[name] FROM sys.indexes i
+INNER JOIN sys.filegroups f
+ON i.data_space_id = f.data_space_id
+INNER JOIN sys.all_objects o
+ON i.[object_id] = o.[object_id] WHERE i.data_space_id = f.data_space_id
+--AND o.type = 'U' -- User Created Tables
+and f.[name] <> 'PRIMARY'
+)

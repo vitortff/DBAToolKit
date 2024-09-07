@@ -1,0 +1,60 @@
+/*
+--1
+WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+select max(end_time),elastic_pool_name from sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+select b.end_time,b.elastic_pool_name,a.avg_storage_percent from  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+order by 3 desc
+
+
+--2
+
+
+;WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+select max(end_time),elastic_pool_name from sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+select b.end_time,b.elastic_pool_name,a.avg_storage_percent from  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+order by 3 desc
+
+*/
+
+--3
+
+;WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+select max(end_time),elastic_pool_name from sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+select b.end_time,b.elastic_pool_name,a.avg_storage_percent,a.avg_allocated_storage_percent, a.avg_allocated_storage_percent - a.avg_storage_percent as PercNaoAlocado into #temp01 from  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+order by 4 desc
+
+
+
+--Quantidade de Bancos por Elastic Pool
+SELECT  slo.elastic_pool_name, count(*) Freq_Databases into #temp02 
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE slo.elastic_pool_name IS NOT NULL
+group by  slo.elastic_pool_name
+ORDER BY 2 DESC
+
+select a.elastic_pool_name,b.Freq_Databases, a.avg_storage_percent,a.avg_allocated_storage_percent, a.PercNaoAlocado  from #temp01 a join #temp02 b
+on a.elastic_pool_name=b.elastic_pool_name
+order by 3 desc

@@ -1,0 +1,46 @@
+CREATE TABLE EY_DatabaseRoles (
+ dbname sysname,
+ principle sysname,
+ roles varchar(max)
+)
+
+/*
+select
+ db_name() dbname,
+ dp.name principle,
+ rp.name role
+from [sys].[database_role_members] drm
+inner join [sys].[database_principals] rp on rp.principal_id = drm.role_principal_id
+inner join [sys].[database_principals] dp on dp.principal_id = drm.member_principal_id
+*/
+
+EXEC sp_MSForEachDB '
+ Use [?];
+ INSERT INTO master..EY_DatabaseRoles
+  select
+   db_name() dbname,
+   dp.name principle,
+   rp.name role
+  from [sys].[database_role_members] drm
+  inner join [sys].[database_principals] rp on rp.principal_id = drm.role_principal_id
+  inner join [sys].[database_principals] dp on dp.principal_id = drm.member_principal_id;'
+
+
+  SELECT distinct
+ e.dbname,
+ e.principle,
+ STUFF(
+ (
+  SELECT
+   ',' + ISNULL(c.roles,'')
+  FROM EY_DatabaseRoles c
+  WHERE c.dbname = e.dbname and c.principle = e.principle
+  FOR XML PATH('')
+  ,TYPE
+  ).value('.','VARCHAR(MAX)'
+ ), 1, 1, ''
+ ) As database_roles
+FROM EY_DatabaseRoles e
+
+
+drop table EY_DatabaseRoles

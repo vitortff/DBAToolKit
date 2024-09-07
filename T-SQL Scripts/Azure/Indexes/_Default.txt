@@ -1,0 +1,42 @@
+--SELECT @@SERVERNAME
+--SELECT DB_NAME()
+
+
+-- Check Table Size
+
+select schema_name(tab.schema_id) + '.' + tab.name as [table],
+    cast(sum(spc.used_pages * 8)/1024.00 as numeric(36, 2)) as used_mb,
+    cast(sum(spc.total_pages * 8)/1024.00 as numeric(36, 2)) as allocated_mb
+from sys.tables tab
+    inner join sys.indexes ind 
+        on tab.object_id = ind.object_id
+    inner join sys.partitions part 
+        on ind.object_id = part.object_id and ind.index_id = part.index_id
+    inner join sys.allocation_units spc
+        on part.partition_id = spc.container_id
+group by schema_name(tab.schema_id) + '.' + tab.name
+order by sum(spc.used_pages) desc
+
+
+/*
+
+--Running the following T-SQL on a SQL Database, you can get the index fragmentation on a specific table in percent:
+
+SELECT name, avg_fragmentation_in_percent
+
+FROM sys.dm_db_index_physical_stats (
+
+       DB_ID(N'l1_firm_ar_8119108_2212')
+
+     , OBJECT_ID('dbo.GEN_Revisao')
+
+     , NULL
+
+     , NULL
+
+     , NULL) AS a
+
+JOIN sys.indexes AS b
+
+ON a.object_id = b.object_id AND a.index_id = b.index_id
+*/

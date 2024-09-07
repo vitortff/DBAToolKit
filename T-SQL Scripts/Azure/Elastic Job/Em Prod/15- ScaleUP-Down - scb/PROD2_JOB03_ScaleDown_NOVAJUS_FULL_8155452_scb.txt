@@ -1,0 +1,59 @@
+--1 Creating a Job
+EXEC jobs.sp_add_job @job_name='EASTUS2_JOB03_ScaleDown_NOVAJUS_FULL_8155452_scb', 
+@description='Scalling down the Database: NOVAJUS_FULL_8155452_scb'; 
+
+--2 Creating the Target Group
+--EXEC jobs.sp_add_target_group 'TG_EASTUS2_JOB03_ScaleDown_NOVAJUS_FULL_8155452_scb';
+--EXEC jobs.sp_delete_target_group 'shrinkdb-eastus2';
+--select * from jobs_internal.targets where target_group_name='TG_EASTUS2_JOB03_ScaleUP_NOVAJUS_FULL_8155452_scb'
+
+--2.1 Adding a member to a group
+
+--EXEC [jobs].sp_add_target_group_member @target_group_name = N'TG_EASTUS2_JOB03_ScaleUP_NOVAJUS_FULL_8155452_scb', @target_type = N'SqlDatabase', @server_name = N'legalone-prod-eastus2.database.windows.net', @database_name = N'NOVAJUS_FULL_8155452';
+
+
+--3 Adding a Job Step
+-- EASTUS2
+EXEC jobs.sp_add_jobstep @job_name='EASTUS2_JOB03_ScaleDown_NOVAJUS_FULL_8155452_scb', 
+@command=N'ALTER DATABASE NOVAJUS_FULL_8155452 MODIFY (SERVICE_OBJECTIVE = ''GP_Gen5_4'')', 
+@credential_name='legalone-prod-eastus2', 
+@target_group_name='TG_EASTUS2_JOB03_ScaleUP_NOVAJUS_FULL_8155452_scb',
+@step_name = 'Scaling Down task',
+@step_id = 1 
+GO
+
+/*
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='EASTUS2_JOB03_ScaleDown_NOVAJUS_FULL_8155452_scb',
+@enabled=1,
+@schedule_interval_type='Weeks',
+--@schedule_interval_count=10,
+@schedule_start_time='2024-08-16 23:00:00'
+*/
+
+
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+
+
+-- Starting a job manually
+--EXEC jobs.sp_start_job 'EASTUS2_JOB03_ScaleDown_NOVAJUS_FULL_8155452_scb';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='EASTUS2_JOB03_ScaleDown_NOVAJUS_FULL_8155452_scb', @force=1
+
+-- Canceling job execution with the specified job execution id
+--EXEC jobs.sp_stop_job 'CF1AFCD5-6D59-4E7F-9A05-DA1E7794A893';
+
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='EASTUS2_JOB03_ScaleDown_NOVAJUS_FULL_8155452_scb' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc

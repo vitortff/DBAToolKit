@@ -1,0 +1,60 @@
+--Tempo Real: Monitoramento dos Elastic Pools
+
+select max(end_time) as end_time, elastic_pool_name into #elastic_pool_resource_stats from sys.elastic_pool_resource_stats 
+group by elastic_pool_name
+
+select a.elastic_pool_name, 
+a.avg_cpu_percent, 
+a.avg_data_io_percent, 
+a.avg_log_write_percent, 
+a.elastic_pool_cpu_limit,
+a.elastic_pool_storage_limit_mb/1024  elastic_pool_storage_limit_GB,
+a.avg_storage_percent,  
+a.avg_allocated_storage_percent
+from sys.elastic_pool_resource_stats a join
+#elastic_pool_resource_stats b on a.end_time=b.end_time and a.elastic_pool_name = b.elastic_pool_name
+order by 2 desc
+drop table #elastic_pool_resource_stats
+
+--2 Tempo Real - Bancos
+
+--Banco x Elastic Pool
+SELECT   a.name,b.elastic_pool_name into #DB_El
+FROM sys.databases a   
+JOIN sys.database_service_objectives b    
+ON a.database_id = b.database_id
+
+--Database
+select max(end_time) as end_time, database_name  into #resource_stats_b from sys.resource_stats 
+group by database_name
+
+select a.database_name, a.avg_cpu_percent, a.avg_data_io_percent, a.avg_log_write_percent into #TB_Stats1 from sys.resource_stats a join #resource_stats_b b
+on a.end_time=b.end_time and a.database_name=b.database_name
+
+select b.elastic_pool_name, a.* from #TB_Stats1 a join #DB_El b
+on a.database_name=b.name
+order by 3 desc
+
+drop table #resource_stats_b
+drop table #TB_Stats1
+drop table #DB_El
+
+
+
+
+/*
+--2 Média dos últimos dias
+
+DECLARE @s datetime;  
+DECLARE @e datetime;  
+SET @s= DateAdd(d,-1,GetUTCDate());  -- X dias
+SET @e= GETUTCDATE();  
+
+select elastic_pool_name, avg(avg_cpu_percent) as avg_cpu_percent, avg(avg_data_io_percent) as avg_data_io_percent, avg(avg_log_write_percent) as avg_log_write_percent
+from sys.elastic_pool_resource_stats 
+WHERE start_time BETWEEN @s AND @e  
+group by elastic_pool_name
+order by 2 desc
+
+
+*/

@@ -1,0 +1,92 @@
+--0
+
+ALTER TABLE dbo.Tarifario ADD
+	DriverId int NULL,
+	QueryTypeId int NULL,
+	OtherParametersWithValue varchar(900) NULL
+GO
+ALTER TABLE Tarifario SET (LOCK_ESCALATION = TABLE)
+
+
+ALTER TABLE dbo.Tarifario_CreateQueryStrings_QueryStrings ADD
+	DriverId int NULL,
+	QueryTypeId int NULL,
+	OtherParametersWithValue varchar(900) NULL
+GO
+ALTER TABLE Tarifario_CreateQueryStrings_QueryStrings SET (LOCK_ESCALATION = TABLE)
+
+
+
+--Tarifario
+-- Tarifario_CreateQueryStrings_QueryStrings
+
+select *, substring(QueryString,1,charindex('~',QueryString)-1) as Driverid2 into Teste from Tarifario
+
+
+--1
+update Tarifario set Driverid = substring(QueryString,1,charindex('~',QueryString)-1)
+where QueryString is not null and QueryString <> ''
+
+
+--2 QueryTypeId
+alter table Tarifario add  valor2 varchar(900)
+
+update Tarifario set valor2 = substring(QueryString,len(substring(QueryString,1,charindex('#',QueryString)+2)),1000)
+where QueryString is not null and QueryString <> ''
+
+update Tarifario set QueryTypeId = substring(valor2,1,charindex('~',valor2)-1)
+where QueryString is not null and QueryString <> ''
+
+
+--3
+
+update Tarifario
+set OtherParametersWithValue = substring(QueryString,len(cast(driverid as varchar(50)) + '~#~' + cast(querytypeId as varchar(50)) + '~#~')+1,1000)
+where QueryString is not null and QueryString <> ''
+
+update Tarifario
+set OtherParametersWithValue = replace (OtherParametersWithValue,'~#~','')
+where QueryString is not null and QueryString <> ''
+
+select *from Tarifario
+where Datahora > = '2024-04-01 00:00:00.000'
+
+alter table Tarifario drop column valor2
+
+
+select *from Tarifario_CreateQueryStrings_QueryStrings
+
+
+
+
+--1
+update Tarifario_CreateQueryStrings_QueryStrings set Driverid = substring(QueryString,1,charindex('~',QueryString)-1)
+where QueryString is not null and QueryString <> ''
+
+
+--2 QueryTypeId
+alter table Tarifario_CreateQueryStrings_QueryStrings add  valor2 varchar(900)
+
+update Tarifario_CreateQueryStrings_QueryStrings set valor2 = substring(QueryString,len(substring(QueryString,1,charindex('#',QueryString)+2)),1000)
+where QueryString is not null and QueryString <> ''
+
+update Tarifario_CreateQueryStrings_QueryStrings set QueryTypeId = substring(valor2,1,charindex('~',valor2)-1)
+where QueryString is not null and QueryString <> ''
+
+
+--3
+
+update Tarifario_CreateQueryStrings_QueryStrings
+set OtherParametersWithValue = substring(QueryString,len(cast(driverid as varchar(50)) + '~#~' + cast(querytypeId as varchar(50)) + '~#~')+1,1000)
+where QueryString is not null and QueryString <> ''
+
+update Tarifario_CreateQueryStrings_QueryStrings
+set OtherParametersWithValue = replace (OtherParametersWithValue,'~#~','')
+where QueryString is not null and QueryString <> ''
+
+alter table Tarifario_CreateQueryStrings_QueryStrings drop column valor2
+
+select *from Tarifario_CreateQueryStrings_QueryStrings
+where Datahora > = '2024-04-01 00:00:00.000'
+
+~#~ 

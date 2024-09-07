@@ -1,0 +1,11 @@
+https://learn.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-memory-errors-issues?view=azuresql
+
+--Buffer Node NUMA
+https://learn.microsoft.com/en-us/sql/relational-databases/performance-monitor/sql-server-buffer-node?view=sql-server-ver16
+
+
+https://stackoverflow.com/questions/57552498/find-out-which-database-consumes-how-much-memory
+
+https://www.brentozar.com/archive/2020/06/page-life-expectancy-doesnt-mean-jack-and-you-should-stop-looking-at-it/
+
+https://learn.microsoft.com/en-us/troubleshoot/sql/database-engine/performance/troubleshoot-memory-grant-issues

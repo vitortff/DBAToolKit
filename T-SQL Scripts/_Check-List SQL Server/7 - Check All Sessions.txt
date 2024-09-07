@@ -1,0 +1,26 @@
+CREATE TABLE #sp_who2 (SPID INT, Status VARCHAR(255),
+      Login  VARCHAR(255), HostName  VARCHAR(255),
+      BlkBy  VARCHAR(255), DBName  VARCHAR(255),
+      Command VARCHAR(255), CPUTime INT,
+      DiskIO INT, LastBatch VARCHAR(255),
+      ProgramName VARCHAR(255), SPID1 INT,
+      REQUESTID INT);
+INSERT INTO #sp_who2 
+EXEC sp_who2
+
+--Check All Session
+SELECT      COUNT(*) AS [All_Sessions]
+FROM        #sp_who2
+where spid > 50
+
+--Sessoions per database
+
+SELECT      DBNAME, COUNT(*) AS [Sessions]
+FROM        #sp_who2
+where spid > 50
+GROUP BY DBNAME
+order by 2 desc
+
+DROP TABLE #sp_who2;
+
+

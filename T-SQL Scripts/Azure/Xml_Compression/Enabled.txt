@@ -1,0 +1,1 @@
+select DB_Name () as DatabaseName, count(*) as Is_Enabled from sys.partitions where xml_compression = 1

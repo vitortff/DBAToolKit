@@ -1,0 +1,6 @@
+-- Enable all check contraints on a table
+ALTER TABLE Production.Product CHECK CONSTRAINT ALL
+
+
+-- DISABLE all check contraints on a table
+ALTER TABLE Production.Product NOCHECK CONSTRAINT ALL

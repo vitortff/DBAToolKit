@@ -1,0 +1,11 @@
+-- Checking the execution
+SELECT job_id, job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name in ('PROD2_Job01-Gen_RevisaoCompression','PROD2_Job02-Gen_RevisaoCompression','PROD2_Job03-Gen_RevisaoCompression',
+'eastus2_Job01-Gen_RevisaoCompression','eastus2_Job02-Gen_RevisaoCompression',
+'eastus2_Job03-Gen_RevisaoCompression','eastus2_Job04-Gen_RevisaoCompression',
+'eastus2_Job05-Gen_RevisaoCompression')
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc

@@ -1,0 +1,173 @@
+USE [decisoesdes]
+GO
+/****** Object:  StoredProcedure [dbo].[auditoriaRoboDecisoes]    Script Date: 4/12/2023 11:30:27 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER procedure [dbo].[auditoriaRoboDecisoes]
+
+AS
+
+select top 200 'CARF' orgao, dt_divulgacao_email as dtcadastro, dt_publicacao as dtpublicacao, dt_edicao as dtjulgamento into #carf from decisoesdes..decisoes (nolock) where id_orgao in (4, 135, 137, 138, 139) order by dt_divulgacao_email desc
+select top 20 'TIT' orgao, dt_divulgacao_email as dtcadastro, dt_publicacao as dtpublicacao, dt_edicao as dtjulgamento into #tit from decisoesdes..decisoes (nolock) where id_orgao in (82) order by dt_divulgacao_email desc
+select top 5 'CVM' orgao, dtcadastro, dtpublicacao, dtjulgamento into #cvm from robos..inf_cvm (nolock) order by dtcadastro desc
+select top 5 'CCEMG' orgao, dtcadastro, dtpublicacao, dtjulgamento into #ccemg from robos..inf_ccemg (nolock) order by dtcadastro desc 
+select top 5 'CMTSP' orgao, dtcadastro, dtpublicacao, dtjulgamento into #cmtsp from robos..inf_cmtsp (nolock) order by dtcadastro desc --tem recaptcha
+select top 5 'CONSP' orgao, dtcadastro, dtpublicacao, dtjulgamento into #consp from robos..inf_consp (nolock) order by dtcadastro desc
+select top 5 'FAZAM' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazam from robos..inf_fazam (nolock) order by dtcadastro desc 
+select top 5 'FAZBA' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazba from robos..inf_fazba (nolock) order by dtcadastro desc 
+select top 5 'FAZES' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazes from robos..inf_fazes (nolock) order by dtcadastro desc 
+select top 5 'FAZMT' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazmt from robos..inf_fazmt (nolock) order by dtcadastro desc 
+select top 5 'FAZPA' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazpa from robos..inf_fazpa (nolock) order by dtcadastro desc 
+select top 5 'FAZPB' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazpb from robos..inf_fazpb (nolock) order by dtcadastro desc 
+select top 5 'FAZRS' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazrs from robos..inf_fazrs (nolock) order by dtcadastro desc 
+select top 5 'FAZRO' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazro from robos..inf_fazro (nolock) order by dtcadastro desc 
+select top 5 'FAZSC' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazsc from robos..inf_fazsc (nolock) order by dtcadastro desc 
+select top 5 'FAZSE' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazse from robos..inf_fazse (nolock) order by dtcadastro desc 
+select top 5 'FAZTO' orgao, dtcadastro, dtpublicacao, dtjulgamento into #fazto from robos..inf_fazto (nolock) order by dtcadastro desc 
+select top 5 'STJ' orgao, dtcadastro, dtpublicacao, dtjulgamento into #stj from robos..inf_stj (nolock) order by dtcadastro desc 
+select top 5 'STF' orgao, dtcadastro, dtpublicacao, dtjulgamento into #stf from robos..inf_stf (nolock) order by dtcadastro desc
+select top 5 'TJBA' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjba from robos..inf_tjba (nolock) order by dtcadastro desc
+select top 5 'TJMT' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjmt from robos..inf_tjmt (nolock) order by dtcadastro desc 
+select top 5 'TJMS' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjms from robos..inf_tjms (nolock) order by dtcadastro desc
+select top 5 'TJPA' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjpa from robos..inf_tjpa (nolock) order by dtcadastro desc 
+select top 5 'TJPE' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjpe from robos..inf_tjpe (nolock) order by dtcadastro desc 
+select top 5 'TJSC' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjsc from robos..inf_tjsc (nolock) order by dtcadastro desc
+select top 5 'TJSP' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjsp from robos..inf_tjsp (nolock) order by dtcadastro desc -- Não captura desde 16/03/2020
+select top 5 'TJAM' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjam from robos..inf_tjam (nolock) order by dtcadastro desc
+select top 5 'TJCE' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjce from robos..inf_TJCE (nolock) order by dtcadastro desc
+select top 5 'TJDFT' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjdf from robos..inf_TJDF (nolock) order by dtcadastro desc
+select top 5 'TJES' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjes from robos..inf_tjes (nolock) order by dtcadastro desc
+select top 5 'TJPR' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjpr from robos..inf_tjpr (nolock) order by dtcadastro desc
+select top 5 'TJRN' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjrn from robos..inf_TJRN (nolock) order by dtcadastro desc
+select top 5 'TJRS' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjrs from robos..inf_tjrs (nolock) order by dtcadastro desc -- Não captura desde 16/03/2020
+select top 5 'TJMG' orgao, dtcadastro, dtpublicacao, dtjulgamento into #tjmg from robos..inf_tjmg (nolock) order by dtcadastro desc
+select top 5 'TRF1' orgao, dtcadastro, dtpublicacao, dtjulgamento into #trf1 from robos..inf_trf (nolock) where regiaonum = 1 order by dtcadastro desc --Está com problema. Usa Recaptcha
+select top 5 'TRF2' orgao, dtcadastro, dtpublicacao, dtjulgamento into #trf2 from robos..inf_trf (nolock) where regiaonum = 2 order by dtcadastro desc
+select top 5 'TRF3' orgao, dtcadastro, dtpublicacao, dtjulgamento into #trf3 from robos..inf_trf (nolock) where regiaonum = 3 order by dtcadastro desc
+select top 5 'TRF4' orgao, dtcadastro, dtpublicacao, dtjulgamento into #trf4 from robos..inf_trf (nolock) where regiaonum = 4 order by dtcadastro desc
+select top 5 'TRF5' orgao, dtcadastro, dtpublicacao, dtjulgamento into #trf5 from robos..inf_trf (nolock) where regiaonum = 5 order by dtcadastro desc
+select top 5 'DRF BELEM' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegbelem from robos..inf_delegacias (nolock) where regiaonum = 8 order by dtcadastro desc 
+select top 5 'DRF BH' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegbh from robos..inf_delegacias (nolock) where regiaonum = 9 order by dtcadastro desc
+select top 5 'DRF BRASILIA' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegbrasilia from robos..inf_delegacias (nolock) where regiaonum = 10 order by dtPublicacao desc, dtcadastro 
+select top 5 'DRF CAMPO GRANDE' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegcg from robos..inf_delegacias (nolock) where regiaonum = 12 order by dtPublicacao desc, dtcadastro desc
+select top 5 'DRF CURITIBA' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegcuritiba from robos..inf_delegacias (nolock) where regiaonum = 13 order by dtcadastro desc
+select top 5 'DRF FLORIANOPOLIS' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegfloripa from robos..inf_delegacias (nolock) where regiaonum = 14 order by dtpublicacao desc -- Não captura desde 10/03/2020
+select top 5 'DRF FORTALEZA' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegfort from robos..inf_delegacias (nolock) where regiaonum = 15 order by dtcadastro desc
+select top 5 'DRF JDF' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegjdf from robos..inf_delegacias (nolock) where regiaonum = 17 order by dtPublicacao desc, dtcadastro desc
+select top 5 'DRF PORTO ALEGRE' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegpa from robos..inf_delegacias (nolock) where regiaonum = 19 order by dtPublicacao desc, dtcadastro desc 
+select top 5 'DRF RECIFE' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegrecife from robos..inf_delegacias (nolock) where regiaonum = 20 order by dtPublicacao desc, dtcadastro desc
+select top 5 'DRF RIBEIRAO PRETO' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegrp from robos..inf_delegacias (nolock) where regiaonum = 21 order by dtcadastro desc
+select top 5 'DRF SALVADOR' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegsalvador from robos..inf_delegacias (nolock) where regiaonum = 22 order by dtPublicacao desc, dtcadastro desc 
+select top 5 'DRF SAO PAULO' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegsp from robos..inf_delegacias (nolock) where regiaonum = 24 order by dtcadastro desc
+select top 5 'DRF RIO DE JANEIRO' orgao, dtcadastro, dtpublicacao, dtjulgamento into #delegrj from robos..inf_delegacias (nolock) where regiaonum = 27 order by dtcadastro desc
+
+select * from (
+	select * from #carf (nolock)
+	union all
+	select * from #tit (nolock)
+	union all
+	select * from #cvm (nolock)
+	union all
+	select * from #ccemg (nolock)
+	union all
+	select * from #cmtsp (nolock) 
+	union all
+	select * from #consp (nolock) 
+	union all
+	select * from #fazam (nolock) 
+	union all
+	select * from #fazba (nolock) 
+	union all
+	select * from #fazes (nolock) 
+	union all
+	select * from #fazmt (nolock) 
+	union all
+	select * from #fazpa (nolock) 
+	union all
+	select * from #fazpb (nolock) 
+	union all
+	select * from #fazrs (nolock) 
+	union all
+	select * from #fazro (nolock) 
+	union all
+	select * from #fazsc (nolock) 
+	union all
+	select * from #fazse (nolock) 
+	union all
+	select * from #fazto (nolock) 
+	union all
+	select * from #stj	 (nolock)
+	union all
+	select * from #stf	 (nolock)
+	union all
+	select * from #tjba  (nolock)
+	union all
+	select * from #tjmt  (nolock)
+	union all
+	select * from #tjms  (nolock)
+	union all
+	select * from #tjpa  (nolock)
+	union all
+	select * from #tjpe  (nolock)
+	union all
+	select * from #tjsc  (nolock)
+	union all
+	select * from #tjsp  (nolock)
+	union all
+	select * from #tjam  (nolock)
+	union all
+	select * from #tjce  (nolock)
+	union all
+	select * from #tjdf	 (nolock)
+	union all
+	select * from #tjes  (nolock)
+	union all
+	select * from #tjpr  (nolock)
+	union all
+	select * from #tjrn  (nolock)
+	union all
+	select * from #tjrs  (nolock)
+	union all
+	select * from #tjmg  (nolock)
+	union all
+	select * from #trf1  (nolock)
+	union all
+	select * from #trf2  (nolock)
+	union all
+	select * from #trf3  (nolock)
+	union all
+	select * from #trf4  (nolock)
+	union all
+	select * from #trf5  (nolock)
+	union all
+	select * from #delegbelem (nolock)
+	union all
+	select * from #delegbh (nolock)
+	union all
+	select * from #delegbrasilia (nolock)
+	union all
+	select * from #delegcg (nolock)
+	union all
+	select * from #delegcuritiba (nolock)
+	union all
+	select * from #delegfloripa (nolock)
+	union all
+	select * from #delegfort (nolock)
+	union all
+	select * from #delegjdf (nolock)
+	union all
+	select * from #delegpa (nolock)
+	union all
+	select * from #delegrecife (nolock)
+	union all
+	select * from #delegrp (nolock)
+	union all
+	select * from #delegsalvador (nolock)
+	union all
+	select * from #delegsp (nolock)
+	union all
+	select * from #delegrj (nolock))tmp
+order by orgao

@@ -1,0 +1,24 @@
+SELECT name, auto_created, stats_date(object_id, stats_id) AS update_date FROM sys.stats 
+WHERE object_id = object_id('Sales.SalesOrderDetail')
+
+DBCC DBREINDEX ('Sales.SalesOrderDetail','',100); -- updates all the table's statistics
+
+UPDATE STATISTICS Sales.SalesOrderDetail WITH FULLSCAN -- updates all the table's statistics
+UPDATE STATISTICS Sales.SalesOrderDetail WITH FULLSCAN, COLUMNS 
+UPDATE STATISTICS Sales.SalesOrderDetail WITH FULLSCAN, INDEX
+
+
+ALTER INDEX PK_SalesOrderDetail_SalesOrderID_SalesOrderDetailID ON Sales.SalesOrderDetail REBUILD
+
+ALTER INDEX PK_SalesOrderDetail_SalesOrderID_SalesOrderDetailID on Sales.SalesOrderDetail  REORGANIZE
+
+
+
+
+--
+
+UPDATE STATISTICS dbo.SalesOrderDetail WITH FULLSCAN, ALL -- Both Indexes and non indexes columns
+UPDATE STATISTICS dbo.SalesOrderDetail WITH FULLSCAN, INDEX -- It just for index columns
+UPDATE STATISTICS dbo.SalesOrderDetail WITH FULLSCAN, COLUMNS -- It just for non indexed columns
+
+SELECT name, auto_created, stats_date(object_id, stats_id) AS update_date FROM sys.stats WHERE object_id = object_id('mov_cont_partic_fss')

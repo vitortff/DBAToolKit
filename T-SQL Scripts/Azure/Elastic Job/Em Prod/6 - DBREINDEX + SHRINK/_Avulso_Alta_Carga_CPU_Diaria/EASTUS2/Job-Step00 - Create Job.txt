@@ -1,0 +1,3 @@
+-- Creating a Job
+EXEC jobs.sp_add_job @job_name='EASTUS2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria', 
+@description='DBREINDEX Tasks'; 

@@ -1,0 +1,54 @@
+USE [decisoesdes]
+GO
+
+/****** Object:  FullTextCatalog [orgaos]    Script Date: 4/10/2023 10:21:34 AM ******/
+GO
+
+DROP FULLTEXT CATALOG [orgaos]
+GO
+
+/****** Object:  FullTextCatalog [meu_arquivo]    Script Date: 4/10/2023 10:21:34 AM ******/
+GO
+
+DROP FULLTEXT CATALOG [meu_arquivo]
+GO
+
+/****** Object:  FullTextCatalog [especie_decisoes]    Script Date: 4/10/2023 10:21:34 AM ******/
+GO
+
+DROP FULLTEXT CATALOG [especie_decisoes]
+GO
+
+/****** Object:  FullTextCatalog [decisoes]    Script Date: 4/10/2023 10:21:34 AM ******/
+GO
+
+DROP FULLTEXT CATALOG [decisoes]
+GO
+
+/****** Object:  FullTextCatalog [conteudo]    Script Date: 4/10/2023 10:21:34 AM ******/
+GO
+
+DROP FULLTEXT CATALOG [conteudo]
+GO
+
+/****** Object:  FullTextCatalog [conteudo]    Script Date: 4/10/2023 10:21:35 AM ******/
+CREATE FULLTEXT CATALOG [conteudo] WITH ACCENT_SENSITIVITY = OFF
+GO
+
+/****** Object:  FullTextCatalog [decisoes]    Script Date: 4/10/2023 10:21:35 AM ******/
+CREATE FULLTEXT CATALOG [decisoes] WITH ACCENT_SENSITIVITY = OFF
+GO
+
+/****** Object:  FullTextCatalog [especie_decisoes]    Script Date: 4/10/2023 10:21:35 AM ******/
+CREATE FULLTEXT CATALOG [especie_decisoes] WITH ACCENT_SENSITIVITY = OFF
+GO
+
+/****** Object:  FullTextCatalog [meu_arquivo]    Script Date: 4/10/2023 10:21:35 AM ******/
+CREATE FULLTEXT CATALOG [meu_arquivo] WITH ACCENT_SENSITIVITY = OFF
+GO
+
+/****** Object:  FullTextCatalog [orgaos]    Script Date: 4/10/2023 10:21:35 AM ******/
+CREATE FULLTEXT CATALOG [orgaos] WITH ACCENT_SENSITIVITY = OFF
+GO
+
+

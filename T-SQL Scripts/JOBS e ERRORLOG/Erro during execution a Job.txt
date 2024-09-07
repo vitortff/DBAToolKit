@@ -1,0 +1,5 @@
+sp_configure 'allow updates',0
+go
+
+reconfigure with override
+go

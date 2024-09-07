@@ -1,0 +1,19 @@
+
+select max(start_time) as start_time ,database_name into #teste from sys.resource_stats
+group by database_name
+
+select a.start_time,a.database_name, a.storage_in_megabytes,a.allocated_storage_in_megabytes  from sys.resource_stats a join #teste b
+on a.start_time=b.start_time and a.database_name=b.database_name
+
+drop table #teste
+
+
+
+
+select max(start_time) as start_time ,database_name into #teste from sys.resource_stats
+group by database_name
+
+select a.start_time,a.database_name, a.storage_in_megabytes,a.allocated_storage_in_megabytes, (a.allocated_storage_in_megabytes-a.storage_in_megabytes) AS diff from sys.resource_stats a join #teste b
+on a.start_time=b.start_time and a.database_name=b.database_name
+order by 5 desc
+drop table #teste

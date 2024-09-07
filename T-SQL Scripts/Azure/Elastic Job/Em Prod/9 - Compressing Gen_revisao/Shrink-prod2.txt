@@ -1,0 +1,86 @@
+/*
+--1 Scoped Credential
+
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL datacloudprod -- credential name
+WITH IDENTITY = 'datacloud', -- login or contained user name
+SECRET = 'Z2GYR3157ddUebU15IOh43OMVbR38OW'; -- login or contained user password
+GO
+*/
+SELECT * FROM sys.database_scoped_credentials
+
+/*
+--2 Creating Target Group
+EXEC jobs.sp_add_target_group 'TG_legalone-prod2_job_03' 
+--select *from [jobs].[target_groups]
+--EXEC jobs.sp_delete_target_group 'datacloudnonprod'
+*/
+--3 ADDING GROUP MEMBER TO A TARGET GROUP
+
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'l1_firm_br_8107282'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'l1_firm_br_8108205'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'l1_firm_br_8099663'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8190900'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8165030'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'l1_firm_br_8114168'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'l1_firm_br_8124768_new'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8188248'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8173084'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8182777'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8191169'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8162681'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8201192'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'l1_firm_br_8066729_2020-04-15T17-00Z'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'NOVAJUS_FULL_8162668_NEW'
+EXEC jobs.sp_add_target_group_member 'TG_legalone-prod2_job_03',@membership_type = 'include',@target_type = 'SqlDatabase',@server_name='legalone-prod2.database.windows.net',@database_name = 'l1_firm_br_8106289'
+
+/*
+-- Creating a Job
+EXEC jobs.sp_add_job @job_name='Job03-Shrink_Databases', 
+@description='Compressao da Gen_revisao'; 
+
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='Job03-Shrink_Databases', 
+@command=N'
+DECLARE @DATABASE_NAME VARCHAR(50) = (SELECT DB_NAME())
+SELECT @DATABASE_NAME
+DBCC SHRINKDATABASE(@DATABASE_NAME)
+', 
+@credential_name='legalone-prod2', 
+@target_group_name='TG_legalone-prod2_job_03',
+@step_name = 'step01' 
+GO
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='Job03-Shrink_Databases',
+@enabled=1,
+@schedule_interval_type='Weeks',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-07-23 05:00:00'
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+*/
+
+-- Starting a job manually
+EXEC jobs.sp_start_job 'Job03-Shrink_Databases';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='Job03-Shrink_Databases', @force=1
+
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='Job03-Shrink_Databases' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc
+
+
+-- Canceling job execution with the specified job execution id
+EXEC jobs.sp_stop_job 'CF1AFCD5-6D59-4E7F-9A05-DA1E7794A893';

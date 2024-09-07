@@ -1,0 +1,1 @@
+https://www.brentozar.com/archive/2014/11/many-cpus-parallel-query-using-sql-server/

@@ -1,0 +1,20 @@
+--https://docs.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-database-service-objectives-azure-sql-database?view=azure-sqldw-latest
+
+--DBs x Elastic pool
+SELECT  d.name,   
+     slo.*    
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id;  
+  
+
+--Quantidade de Bancos por Elastic Pool
+SELECT  slo.elastic_pool_name, count(*) DATABASES 
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE slo.elastic_pool_name IS NOT NULL
+group by  slo.elastic_pool_name
+ORDER BY 2 DESC
+  
+

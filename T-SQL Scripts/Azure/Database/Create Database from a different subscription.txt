@@ -1,0 +1,15 @@
+--https://learn.microsoft.com/en-us/answers/questions/610126/how-to-copy-azure-sql-database-to-another-subscrip.html
+--https://stackoverflow.com/questions/17746072/cross-subscription-copying-of-databases-on-windows-azure-sql-database
+--https://www.how2code.info/en/blog/how-to-copy-azure-sql-database-to-another-subscription/
+--https://www.c-sharpcorner.com/article/copy-database-from-one-azure-subscription-to-another/
+
+
+CREATE DATABASE NOVAJUS_FULL_8196038_Teste AS COPY OF [legalone-prod2].NOVAJUS_FULL_8196038 (SERVICE_OBJECTIVE = ELASTIC_POOL(name=[legalone-shared]))
+
+-- Outro exemplo:
+--legalone-preprod-maintenance-eastus2/l1-firm-br-pool
+
+CREATE DATABASE  [DCPremium] AS COPY OF [datacloudprod].[DCPremium] (SERVICE_OBJECTIVE = ELASTIC_POOL(name=[WsDatacloud_Ativos]))
+
+select top 1 name,create_date,state_desc from sys.databases
+order by 2 desc

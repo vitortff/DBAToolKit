@@ -1,0 +1,71 @@
+--1
+WITH DB_Storage_CTE (end_time, database_name)  
+AS  
+-- Define the CTE query.  
+(  
+SELECT max(end_time) as end_time, database_name  FROM sys.resource_stats
+GROUP BY database_name 
+)  
+
+
+SELECT a.database_name,a.storage_in_megabytes into #TempTB01 FROM sys.resource_stats a, DB_Storage_CTE b
+WHERE a.database_name=b.database_name and
+b.end_time=a.end_time and
+a.database_name in (
+SELECT  d.name
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE slo.elastic_pool_name= 'l1-firm-br-pool-17')		--insira o elastic pool
+
+
+--2
+
+DECLARE @s datetime;  
+DECLARE @e datetime;  
+SET @s= DateAdd(d,-14,GetUTCDate());  -- 14 dias
+SET @e= GETUTCDATE();  
+SELECT a.database_name  
+into #TempTB002 FROM sys.resource_stats a join #TempTB01 b
+on a.database_name=b.database_name
+WHERE a.start_time BETWEEN @s AND @e  and
+a.database_name in
+(select database_name from #TempTB01)
+
+GROUP BY a.database_name 
+
+
+SELECT
+
+       S.database_name,
+
+       S.storage_in_megabytes,
+
+       S.allocated_storage_in_megabytes,
+
+       (S.allocated_storage_in_megabytes - S.storage_in_megabytes) AS Diff
+
+FROM sys.resource_stats S
+
+WHERE
+
+       (S.allocated_storage_in_megabytes - S.storage_in_megabytes) > 5000
+
+       AND S.end_time = (
+
+             SELECT MAX(end_time) FROM sys.resource_stats WHERE database_name = S.database_name
+
+       )
+
+       AND S.database_name = (SELECT name FROM sys.databases WHERE name = S.database_name)
+	   and S.database_name in (SELECT database_name FROM #TempTB002) 
+
+ORDER BY Diff DESC;
+
+DROP TABLE #TempTB01
+
+DROP TABLE #TempTB002
+
+
+
+

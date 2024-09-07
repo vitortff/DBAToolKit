@@ -1,0 +1,14 @@
+--Como remover um Plano de execução do CachePlan
+--Publicado em 5 05America/Sao_Paulo janeiro 05America/Sao_Paulo 2010 por mcflyamorim 
+--Pessoal depois de alguns bons dias de férias, volto com uma dica bem legal que li.
+--Para limpar o PlanCache de uma instância SQL utilizamos o DBCC FREEPROCCACHE, para limpar o cache de apenas um banco específico utilizamos o DBCC FLUSHPROCINDB (<DBID_DO_BANCO>). Mas fica uma pergunta, tem alguma forma de limpar o cache de apenas um determinado comando?
+--Sim. Podemos utilizar o DBCC FREEPROCCACHE passando o [sys.dm_exec_cached_plans].PlanHandle, por ex:
+
+SELECT cp.plan_handle, st.[text] FROM sys.dm_exec_cached_plans AS cp
+CROSS APPLY sys.dm_exec_sql_text(plan_handle) AS st 
+
+--O comando acima retorna o PlanHandle dos planos, depois e só passar ele como parâmetro para o FREEPROCCACHE 
+
+DBCC FREEPROCCACHE
+DBCC DROPCLEANBUFFERS
+

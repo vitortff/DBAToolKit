@@ -1,0 +1,53 @@
+--Script got from quest webcast
+
+SELECT objectname=object_name(s.object_id)
+, indexname=i.name
+, i.index_id
+, READS=user_seeks + user_scans + user_lookups
+, writes= user_updates
+, p.rows
+FROM 
+Sys.dm_db_index_usage_stats s join sys.indexes i
+On i.index_id = s.index_id and s.object_id = i.object_id 
+Join sys.partitions p on p.index_id = s.index_id and s.object_id = p.object_id
+WHERE objectproperty(s.object_id,'IsUserTable')=1
+And s.database_id = DB_ID ()
+And i.type_desc = 'nonclustered'
+And i.is_primary_key = 0
+And i.is_unique_constraint = 0
+And p.rows > 10000
+ORDER BY reads,rows desc
+
+
+-- For unused index
+
+--Index Report
+
+DECLARE
+@DATABASE_NAME SYSNAME,
+@TYPE_DESC NVARCHAR(120)
+SET @DATABASE_NAME='Amd_Prev_Prod'
+SET @TYPE_DESC='NONCLUSTERED'
+
+SELECT OBJECT_NAME(a.object_id) as [object_name],b.name,
+e.total_pages*8/1024 "total_pages(mb)", 
+a.user_seeks,a.user_scans,a.user_lookups,
+Total_Reads=user_seeks + user_scans + user_lookups,
+a.user_updates,
+Total_Writes= user_updates,
+a.last_user_seek,a.last_user_scan,a.last_user_lookup,a.last_user_update 
+FROM 
+sys.dm_db_index_usage_stats a inner join sys.indexes b
+on a.object_id=b.object_id and a.index_id=b.index_id
+inner join sys.partitions d 
+on d.object_id=b.object_id and b.index_id = d.index_id
+inner join sys.allocation_units e
+on d.hobt_id = e.container_id
+WHERE 
+b.is_hypothetical=0 and
+OBJECT_NAME(a.object_id) not in ('sysallocunits','sysowners','null') and
+--OBJECT_NAME(a.object_id)='empregado' and
+DB_NAME(a.database_id)=@DATABASE_NAME and
+b.type_desc=@TYPE_DESC
+ORDER BY 7,3 DESC
+GO

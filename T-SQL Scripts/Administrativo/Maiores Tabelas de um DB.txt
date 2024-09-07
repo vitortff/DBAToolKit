@@ -1,0 +1,51 @@
+---Listando as maiores tabelas de um DB
+
+
+BEGIN try  
+DECLARE @table_name VARCHAR(500) ;  
+DECLARE @schema_name VARCHAR(500) ;  
+DECLARE @tab1 TABLE( 
+        tablename VARCHAR (500) collate database_default 
+,       schemaname VARCHAR(500) collate database_default 
+);  
+DECLARE  @temp_table TABLE (     
+        tablename sysname 
+,       row_count INT 
+,       reserved VARCHAR(50) collate database_default 
+,       data VARCHAR(50) collate database_default 
+,       index_size VARCHAR(50) collate database_default 
+,       unused VARCHAR(50) collate database_default  
+);  
+INSERT INTO @tab1 SELECT t1.name, t2.name FROM sys.tables t1  
+INNER JOIN sys.schemas t2 ON ( t1.schema_id = t2.schema_id );    
+DECLARE c1 CURSOR FOR  
+SELECT t2.name + '.' + t1.name FROM sys.tables t1  
+INNER JOIN sys.schemas t2 ON ( t1.schema_id = t2.schema_id );    
+OPEN c1;  
+FETCH NEXT FROM c1 INTO @table_name; 
+WHILE @@FETCH_STATUS = 0  
+BEGIN   
+        SET @table_name = REPLACE(@table_name, '[','');  
+        SET @table_name = REPLACE(@table_name, ']','');  
+        -- make sure the object exists before calling sp_spacedused 
+        IF EXISTS(SELECT OBJECT_ID FROM sys.objects WHERE OBJECT_ID = OBJECT_ID(@table_name)) 
+        BEGIN 
+                INSERT INTO @temp_table EXEC sp_spaceused @table_name, false ; 
+        END 
+         
+        FETCH NEXT FROM c1 INTO @table_name;  
+END;  
+CLOSE c1;  
+DEALLOCATE c1;  
+SELECT t1.*, t2.schemaname FROM @temp_table t1  
+INNER JOIN @tab1 t2 ON (t1.tablename = t2.tablename ) 
+ORDER BY  row_count desc;
+END try  
+BEGIN catch  
+SELECT -100 AS l1 
+,       ERROR_NUMBER() AS tablename 
+,       ERROR_SEVERITY() AS row_count 
+,       ERROR_STATE() AS reserved 
+,       ERROR_MESSAGE() AS data 
+,       1 AS index_size, 1 AS unused, 1 AS schemaname  
+END catch

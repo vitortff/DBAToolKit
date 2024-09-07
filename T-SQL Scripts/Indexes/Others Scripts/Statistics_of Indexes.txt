@@ -1,0 +1,34 @@
+--Estatística dos indices são fundamentais para que o otimizador de queries (Query Optimizer) escolha o melhor índice a 
+--ser utilizado em uma consulta (query). Manter as estatísticas desatualizadas pode causar em geração de plano de execução 
+--(Execution Plan) ineficiente.
+--É importante manter as estatísticas atualizadas, mas para isso precisamos identificar quando foram atualizadas pela última 
+--vez.
+--O código abaixo fazer esse serviço (só pode ser executado em SQL Server 2005 ou superior)
+
+
+SELECT t.name "Table",
+i.name "Index",
+i.Type_desc "Type Index",
+STATS_date(i.object_id,i.index_id) as "Atualização"
+from sys.indexes as i
+inner join sys.tables t
+on t.object_id=i.object_id
+where i.[type] >0
+order by t.name asc,
+i.type_desc asc,
+i.name asc
+
+
+-----
+-----
+
+SELECT t.name "Table",i.name "Index",i.Type_desc "Type Index",
+STATS_date(i.object_id,i.index_id) as "Atualização"
+from sys.indexes as i
+inner join sys.tables t
+on t.object_id=i.object_id
+where i.[type] >0
+order by  4 desc
+
+
+select 'UPDATE STATISTICS '+ upper(name) +';' from sysobjects where xtype='u';

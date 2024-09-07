@@ -1,0 +1,79 @@
+--1 EASTUS2 - Geral
+SELECT DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+target_database_name  FROM jobs.job_executions
+where job_name='eastus2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria' 
+and lifecycle = 'Succeeded' and target_database_name is not null and target_database_name <> 'MSDB_Elastic_Jobs'
+order by 1 desc 
+
+
+--1 EASTUS2 - Por data
+SELECT cast(start_time as date) as [Data], count(*) as Freq  FROM jobs.job_executions
+where job_name='eastus2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria' 
+and lifecycle = 'Succeeded' and target_database_name is not null and target_database_name <> 'MSDB_Elastic_Jobs'
+group by cast(start_time as date)
+order by 1 desc 
+
+--1 EASTUS2 - Frequência maior que 2
+SELECT target_database_name, count(*) as Freq  FROM jobs.job_executions
+where job_name='eastus2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria' 
+and lifecycle = 'Succeeded' and target_database_name is not null and target_database_name <> 'MSDB_Elastic_Jobs'
+group by target_database_name
+having count(*) > 1
+order by 2 desc 
+
+
+SELECT DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+target_database_name  FROM jobs.job_executions
+where target_database_name in (
+select target_database_name from (
+SELECT target_database_name, count(*) as Freq  FROM jobs.job_executions
+where job_name='eastus2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria' 
+and lifecycle = 'Succeeded' and target_database_name is not null and target_database_name <> 'MSDB_Elastic_Jobs'
+group by target_database_name
+having count(*) > 1) as teste)
+order by 5,1
+
+
+--
+--2 PROD2 - Geral
+SELECT DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+target_database_name  FROM jobs.job_executions
+where job_name='PROD2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria' 
+and lifecycle = 'Succeeded' and target_database_name is not null and target_database_name <> 'MSDB_Elastic_Jobs'
+order by 1 desc 
+
+
+--2 PROD2 - Por data
+SELECT cast(start_time as date) as [Data], count(*) as Freq  FROM jobs.job_executions
+where job_name='PROD2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria' 
+and lifecycle = 'Succeeded' and target_database_name is not null and target_database_name <> 'MSDB_Elastic_Jobs'
+group by cast(start_time as date)
+order by 1 desc 
+
+--2 PROD2 - Frequência maior que 2
+SELECT target_database_name, count(*) as Freq  FROM jobs.job_executions
+where job_name='PROD2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria' 
+and lifecycle = 'Succeeded' and target_database_name is not null and target_database_name <> 'MSDB_Elastic_Jobs'
+group by target_database_name
+having count(*) > 1
+order by 2 desc 
+
+
+SELECT DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+target_database_name  FROM jobs.job_executions
+where target_database_name in (
+select target_database_name from (
+SELECT target_database_name, count(*) as Freq  FROM jobs.job_executions
+where job_name='PROD2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria' 
+and lifecycle = 'Succeeded' and target_database_name is not null and target_database_name <> 'MSDB_Elastic_Jobs'
+group by target_database_name
+having count(*) > 1) as teste)
+order by 5,1

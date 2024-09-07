@@ -1,0 +1,51 @@
+-- SQL Server 2000/2005 Version
+set nocount on
+go
+DECLARE @counter SMALLINT
+DECLARE @dbname VARCHAR(100)
+DECLARE @db_bkpdate varchar(100)
+DECLARE @status varchar(20)
+DECLARE @svr_name varchar(100)
+DECLARE @media_set_id varchar(20)
+DECLARE @filepath VARCHAR(1000)
+Declare @filestatus int
+DECLARE @fileavailable varchar(20)
+DECLARE @BACKUPSIZE float
+
+SELECT @counter=MAX(dbid) FROM master..sysdatabases
+CREATE TABLE #backup_details (ServerName varchar(100),DatabaseName varchar(100),BkpDate varchar(20) NULL,BackupSize_in_MB varchar(20),Status varchar(20),FilePath varchar(1000),FileAvailable varchar(20))
+select @svr_name = CAST(SERVERPROPERTY('ServerName')AS sysname)
+WHILE @counter > 0
+BEGIN
+/* Need to re-initialize all variables*/
+Select @dbName = null , @db_bkpdate = null ,
+@media_set_id = Null , @backupsize = Null ,
+@filepath = Null , @filestatus = Null , 
+@fileavailable = Null , @status = Null , @backupsize = Null
+select @dbname = name from master..sysdatabases where dbid = @counter
+select @db_bkpdate = max(backup_start_date) from msdb..backupset where database_name = @dbname and type='D'
+select @media_set_id = media_set_id from msdb..backupset where backup_start_date = ( select max(backup_start_date) from msdb..backupset where database_name = @dbname and type='D') and database_name = @dbname and type='D'
+select @backupsize = backup_size from msdb..backupset where backup_start_date = ( select max(backup_start_date) from msdb..backupset where database_name = @dbname and type='D') and database_name = @dbname and type='D'
+select @filepath = physical_device_name from msdb..backupmediafamily where media_set_id = @media_set_id
+EXEC master..xp_fileexist @filepath , @filestatus out
+if @filestatus = 1
+set @fileavailable = 'Available'
+else
+set @fileavailable = 'NOT Available'
+if (datediff(day,@db_bkpdate,getdate()) > 7)
+set @status = 'Warning'
+else
+set @status = 'Healthy'
+set @backupsize = (@backupsize/1024)/1024
+insert into #backup_details select @svr_name,@dbname,@db_bkpdate,@backupsize,@status,@filepath,@fileavailable
+update #backup_details
+set status = 'Warning' where bkpdate IS NULL
+set @counter = @counter - 1
+END
+select * from #backup_details where databasename not in ('tempdb','northwind','pubs')
+drop table #backup_details
+set nocount off
+go
+
+
+

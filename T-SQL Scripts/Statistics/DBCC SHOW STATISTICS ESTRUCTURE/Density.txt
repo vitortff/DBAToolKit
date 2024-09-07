@@ -1,0 +1,47 @@
+--Density information can be used to improve the Query Optimizer's estimates 
+--for "GROUP BY" operations, and on "EQUALITY PREDICATES" where a value is unknown.
+
+--"GROUP BY" OPERATOR
+
+SELECT ProductID FROM SALES.SalesOrderDetail
+GROUP BY ProductID
+GO
+--Estimated number of rows = 266 = select 1/0.003759399
+
+-- Other Example
+
+SP_HELP 'SALES.SalesOrderDetail'
+GO
+SP_HELPINDEX 'SALES.SalesOrderDetail'
+GO
+
+DBCC SHOW_STATISTICS ('SALES.SalesOrderDetail',IX_SalesOrderDetail_ProductID)
+GO
+
+DECLARE @ProductID INT
+SET @ProductID=917
+SELECT *FROM SALES.SalesOrderDetail
+WHERE ProductID=@ProductID
+GO
+
+SELECT COUNT(*)FROM SALES.SalesOrderDetail
+GO
+--121317 ALL TABLE ROWS 
+
+SELECT 0.003759399*121317
+GO
+--456.079008483
+
+-- Cardinality estimation example using a 30% guess.
+
+DECLARE @ProductID INT
+SET @ProductID=917
+SELECT *FROM SALES.SalesOrderDetail
+WHERE ProductID > @ProductID
+
+SELECT 121317/100*30 = 36395
+
+
+
+
+

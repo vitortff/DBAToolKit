@@ -1,0 +1,57 @@
+--ROW LEVEL LOCK
+
+IF(SELECT OBJECT_ID('t1')) IS NOT NULL
+  DROP TABLE t1
+GO
+
+CREATE TABLE t1 (c1 INT)
+INSERT INTO t1 VALUES(1)
+GO
+
+
+BEGIN TRAN
+  DELETE t1 WHERE c1 = 1
+  
+  SELECT tl.request_session_id
+	,db_name(tl.resource_database_id)
+	,object_id(tl.resource_associated_entity_id)
+	,tl.resource_type
+	,resource_description --DatabaseID:FileID:PageID:Slot(row)
+	,request_mode
+	,request_status
+  FROM sys.dm_tran_locks tl
+  WHERE resource_type='RID'
+ 
+ROLLBACK
+
+
+
+--KEY-LEVEL LOCK 
+--(THIS IS A ROW LOCK WITHIN AN INDEX, AND IT IS IDENTIFIED AS A "KEY LOCK" "CLUSTERED INDEX")
+
+
+IF(SELECT OBJECT_ID('dbo.t1')) IS NOT NULL
+  DROP TABLE dbo.t1
+GO
+
+CREATE TABLE dbo.t1 (c1 INT)
+INSERT INTO dbo.t1 VALUES(1)
+GO
+
+CREATE CLUSTERED INDEX i1 ON dbo.t1(c1);
+
+BEGIN TRAN
+  DELETE dbo.t1 WHERE c1 = 1
+  SELECT tl.request_session_id
+	,tl.resource_database_id
+	,tl.resource_associated_entity_id
+	,tl.resource_type
+	,tl.resource_description
+	,tl.request_mode
+	,tl.request_status
+  FROM sys.dm_tran_locks tl
+ROLLBACK
+
+
+
+

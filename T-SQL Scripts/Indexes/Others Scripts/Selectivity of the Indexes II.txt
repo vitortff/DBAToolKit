@@ -1,0 +1,13 @@
+--Selectivity of the indexes
+
+SELECT	COUNT (DISTINCT cod_emprs) AS DistinctColValues,
+	COUNT(cod_emprs) as NumberOfRows,
+	(CAST(COUNT(DISTINCT cod_emprs) AS DECIMAL)
+	/CAST(COUNT(cod_emprs) AS DECIMAL)) AS Selectivity
+	From dbo.empregado
+
+
+
+--Composite index (two or more columns)
+select 1.0/count(*) from (select distinct cod_emprs, num_rgtro_emprg from empregado) teste
+go

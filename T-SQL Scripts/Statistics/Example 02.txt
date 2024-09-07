@@ -1,0 +1,49 @@
+create table teste1 (coll int )
+create clustered index teste_pk on teste1(coll)
+
+insert into teste1 values (1)
+insert into teste1 values (2)
+go 2
+insert into teste1 values (3)
+go 3
+
+insert into teste1 values (4)
+go 1000
+
+dbcc show_statistics ('teste1',teste_pk)
+UPDATE STATISTICS [dbo].[teste1] [teste_pk]
+
+dbcc show_statistics ('teste1',teste_pk)
+
+insert into teste1 values (80)
+go 300
+
+dbcc show_statistics ('teste1',teste_pk)
+
+UPDATE STATISTICS [dbo].[teste1] [teste_pk]
+
+dbcc show_statistics ('teste1',teste_pk)
+
+insert into teste1 values (81)
+
+
+--compositing column
+
+create table teste2 (coll int, coll2 int)
+create clustered index teste_pk on teste2(coll,coll2)
+
+insert into teste2 values (1,2)
+insert into teste2 values (2,3)
+go 2
+insert into teste2 values (3,5)
+go 3
+
+insert into teste2 values (4,8)
+go 1000
+
+dbcc show_statistics ('teste2',teste_pk)
+UPDATE STATISTICS [dbo].[teste2] [teste_pk]
+
+dbcc show_statistics ('teste2',teste_pk)
+
+select 1.0/count(*) from (select distinct cod_emprs, num_rgtro_emprg from empregado) teste

@@ -1,0 +1,19 @@
+--2 Estrutura de Controle - Nova Execução
+
+DECLARE @COUNT_EXTERNAL_TABLE VARCHAR(100) = (SELECT COUNT(*) FROM sys.objects where name = 'sys_dm_os_buffer_descriptors')
+
+IF @COUNT_EXTERNAL_TABLE = 1
+
+BEGIN
+    DROP EXTERNAL TABLE sys_dm_os_buffer_descriptors
+END
+
+-- It used as a part of external data source
+DECLARE @GETDATE AS varchar(50) = (cast(DATEPART(hour, GETDATE())as varchar(10)) + 'h' + cast(DATEPART(minute, GETDATE()) as varchar(10)) + 'm' +  cast(DATEPART(second, GETDATE()) as varchar(10)) + 's')
+
+
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @database_name + '_DB_Performance_Counters_' + @GETDATE + '] WITH (TYPE=RDBMS, LOCATION = ''' + @servername + '.database.windows.net'', DATABASE_NAME = ''' + @database_name + ''' ,CREDENTIAL = [' + @servername +'])'
+
+WITH (DATA_SOURCE =[' + @database_name + '_DB_Performance_Counters_' + @GETDATE +  '], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''dm_os_buffer_descriptors'')'
+
+SET @SQLString3 = 'DROP EXTERNAL DATA SOURCE [' + @database_name + '_DB_Performance_Counters_' + @GETDATE + ']'

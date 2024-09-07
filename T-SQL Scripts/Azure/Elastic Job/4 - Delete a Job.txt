@@ -1,0 +1,3 @@
+
+select *from jobs.jobs
+EXEC jobs.sp_delete_job @job_name='Hist_Pool_CPU_Consumption', @force=1

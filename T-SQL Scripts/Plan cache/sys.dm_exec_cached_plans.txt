@@ -1,0 +1,47 @@
+--Some explanation about the DMV "sys.dm_exec_cached_plans" 
+
+/*
+Columns:
+
+refcounts: 	Represents the number of other objects in the cache referencing this plan.
+usecounts: 	The number of times this object has been used since it was added to the cache.
+size_in_bytes: 	The size of the plan store in the cache.
+
+cacheobjtype: 	What type of plan is,the mains are: 
+
+*	COMPLETED PLAN (MEANS A COMPLETED EXECUTION PLAN)
+*	COMPLETED PLAN STUB (MEANS A MAKER FOR A AD HOC QUERIES)
+*	PARSE TREE (MEANS A PLAN STORED FOR ACCESSING A VIEW)
+
+plan_handle:	The identifier for this plan in memory. It is used to retrieve QUERY TEXT and execution plans.
+objtype: he type of object that generated the plan. The mains are: Proc;Prepared;AdHoc and View
+*/ 
+
+SELECT  refcounts,usecounts,size_in_bytes,cacheobjtype,OBJTYPE,plan_handle FROM sys.dm_exec_cached_plans;
+
+
+ 
+/*
+The queries or workload can be classified under two categories that determine whether 
+the execution plan (will be reusable) as the value of the variable parts of the query changes:
+
+* Ad Hoc
+* Prepared	
+*/
+
+--REMOVE THE PLANS FROM THE CACHE
+DBCC FREEPROCCACHE
+
+
+--Ad Hoc Workload: A query without variables
+
+
+Prepared workloads (or queries): 
+
+(explicitly parameterize the variable parts) of the query so that
+the query plan isn' tied to the value of the variable parts: In SQL Server, queries can be submitted 
+as (prepared workloads) using the following three methods:
+
+
+
+

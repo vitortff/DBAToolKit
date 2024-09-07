@@ -1,0 +1,438 @@
+-----------------------------------------------------------------------------------------------------------------
+--BEFORE
+/*
+
+SELECT def_verba_emprg.mrc_calcul_dfvbem , def_verba_emprg.mes_prical_dfvbem , def_verba_emprg.ano_prical_dfvbem 
+FROM participante_fss , def_verba_emprg WHERE ( def_verba_emprg.cod_emprs =10 ) AND 
+( def_verba_emprg.num_rgtro_emprg =47600 ) AND ( def_verba_emprg.cod_verba =91001 ) 
+*/
+
+-----------------------------------------------------------------------------------------------------------------
+--AFTER
+
+DECLARE @query	nvarchar(max)
+DECLARE @param  nvarchar(max)
+
+
+SET @query= N'SELECT def_verba_emprg.mrc_calcul_dfvbem , def_verba_emprg.mes_prical_dfvbem , 
+def_verba_emprg.ano_prical_dfvbem FROM def_verba_emprg WHERE 
+( def_verba_emprg.cod_emprs =@cod_emprs ) AND 
+( def_verba_emprg.num_rgtro_emprg =@num_rgtro_emprg) AND 
+( def_verba_emprg.cod_verba =@cod_verba )'
+
+SET @param =N'@cod_emprs numeric, @num_rgtro_emprg numeric, @cod_verba numeric'
+
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47600,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47619,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47627,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47635,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47643,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47661,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47678,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47686,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47694,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47708,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47716,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47724,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47740,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47767,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47775,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47783,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47805,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47813,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47821,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47831,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47856,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47864,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47880,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47902,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47910,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47929,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47937,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47945,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47953,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47961,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47988,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =47996,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48003,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48011,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48038,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48046,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48062,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48070,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48089,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48097,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48100,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48119,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48127,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48135,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48161,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48178,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48194,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48208,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48216,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48224,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48232,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48240,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48259,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48267,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48275,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48283,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48291,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48305,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48313,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48321,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48331,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48348,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48356,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48364,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48372,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48380,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48399,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48402,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48410,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48429,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48437,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48445,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48453,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48461,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48488,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48496,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48501,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48518,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48526,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48534,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48542,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48550,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48569,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48577,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48585,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48593,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48607,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48615,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48623,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48631,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48641,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48658,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48666,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48682,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48690,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48704,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48712,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48720,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48739,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48747,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48763,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48798,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48801,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48811,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48828,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48844,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48852,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48860,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48879,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48887,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48895,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48909,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48917,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48925,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48941,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48951,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48968,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48976,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48984,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =48992,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49001,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49018,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49034,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49050,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49069,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49077,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49085,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49093,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49107,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49123,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49131,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49141,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49158,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49166,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49174,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49182,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49190,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49220,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49239,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49263,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49271,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49281,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49298,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49301,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49311,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49328,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49344,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49352,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49387,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49395,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49409,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49417,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49425,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49441,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49451,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49468,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49476,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49484,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49492,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49506,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49522,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49530,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49549,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49557,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49573,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49581,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49591,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49611,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49621,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49638,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49646,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49654,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49662,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49670,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49689,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49697,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49700,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49727,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49743,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49751,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49761,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49778,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49786,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49794,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49808,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49816,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49824,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49832,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49840,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49859,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49867,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49891,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49905,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49913,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49921,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49931,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49948,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49956,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49972,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =49999,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50008,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50016,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50032,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50040,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50059,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50075,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50083,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50105,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50113,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50131,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50156,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50164,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50172,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50180,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50199,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50202,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50210,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50229,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50237,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50253,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50261,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50271,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50288,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50296,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50326,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50342,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50350,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50369,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50385,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50393,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50407,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50423,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50441,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50458,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50466,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50474,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50482,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50490,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50504,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50520,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50539,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50547,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50555,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50563,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50571,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50581,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50598,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50601,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50611,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50636,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50644,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50652,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50660,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50679,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50687,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50695,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50717,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50733,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50741,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50751,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50768,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50776,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50792,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50806,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50814,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50822,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50830,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50849,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50857,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50865,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50873,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50881,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50891,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50903,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50921,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50938,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50946,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50954,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50962,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50970,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =50997,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51004,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51012,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51020,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51039,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51047,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51063,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51071,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51098,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51101,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51111,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51128,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51136,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51144,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51152,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51179,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51187,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51195,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51209,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51217,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51225,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51233,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51241,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51268,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51276,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51284,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51292,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51322,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51330,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51349,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51373,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51381,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51391,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51411,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51446,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51454,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51462,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51470,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51489,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51497,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51500,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51519,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51527,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51543,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51561,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51578,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51586,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51594,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51594,@cod_verba =90902
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51608,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51616,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51624,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51632,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51640,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51659,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51667,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51675,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51683,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51691,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51705,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51713,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51721,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51731,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51764,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51772,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51780,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51799,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51802,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51810,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51829,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51837,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51845,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51853,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51861,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51871,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51888,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51896,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51901,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51918,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51926,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51934,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51942,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51950,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51969,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51985,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =51993,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52027,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52043,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52051,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52061,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52078,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52094,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52108,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52116,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52124,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52132,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52159,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52167,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52175,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52183,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52205,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52213,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52248,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52264,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52272,@cod_verba =90901
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52280,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52299,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52310,@cod_verba =91001
+exec sp_executesql @query,@param,@cod_emprs =10,@num_rgtro_emprg =52329,@cod_verba =91001
+
+
+
+--Verifying the results of this new optimization
+
+SELECT  
+	b.creation_time,b.last_execution_time,
+/*	Minutos_em_Cache= Convert(VarChar(20), 
+	DATEDIFF(MI, b.creation_time, getdate())) + ' Minutos',
+	Resultado_em_Horas = Convert(VarChar(10), DATEDIFF(MI, 
+	b.creation_time, getdate()) / 60) + ':' + Right(Replicate('0', 2) + Convert(VarChar(10), 
+	DATEDIFF(MI, b.creation_time, getdate()) % 60), 2),
+*/
+a.usecounts,a.size_in_bytes,a.cacheobjtype,
+	a.objtype,t.text FROM sys.dm_exec_cached_plans a,sys.dm_exec_query_stats b  cross apply sys.dm_exec_sql_text(b.sql_handle) t 
+WHERE 	a.plan_handle=b.plan_handle 
+AND t.text like '(@cod_emprs numeric,%'
+
+ORDER BY 1 desc
+
+
+
+
+
+

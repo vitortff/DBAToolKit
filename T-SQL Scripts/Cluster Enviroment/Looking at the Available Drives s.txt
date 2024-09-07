@@ -1,0 +1,2 @@
+--Drives availables to use of SQL Server in a Cluster
+select *from sys.dm_io_cluster_shared_drives

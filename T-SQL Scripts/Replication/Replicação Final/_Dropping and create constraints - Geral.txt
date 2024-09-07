@@ -1,0 +1,61 @@
+SET NOCOUNT ON
+DECLARE @table TABLE(
+RowId INT PRIMARY KEY IDENTITY(1, 1),
+ForeignKeyConstraintName NVARCHAR(200),
+ForeignKeyConstraintTableSchema NVARCHAR(200),
+ForeignKeyConstraintTableName NVARCHAR(200),
+ForeignKeyConstraintColumnName NVARCHAR(200),
+PrimaryKeyConstraintName NVARCHAR(200),
+PrimaryKeyConstraintTableSchema NVARCHAR(200),
+PrimaryKeyConstraintTableName NVARCHAR(200),
+PrimaryKeyConstraintColumnName NVARCHAR(200)
+)
+INSERT INTO @table(ForeignKeyConstraintName, ForeignKeyConstraintTableSchema, ForeignKeyConstraintTableName, ForeignKeyConstraintColumnName)
+SELECT
+U.CONSTRAINT_NAME,
+U.TABLE_SCHEMA,
+U.TABLE_NAME,
+U.COLUMN_NAME
+FROM
+INFORMATION_SCHEMA.KEY_COLUMN_USAGE U
+INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
+ON U.CONSTRAINT_NAME = C.CONSTRAINT_NAME
+WHERE
+C.CONSTRAINT_TYPE = 'FOREIGN KEY'
+UPDATE @table SET
+PrimaryKeyConstraintName = UNIQUE_CONSTRAINT_NAME
+FROM
+@table T
+INNER JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS R
+ON T.ForeignKeyConstraintName = R.CONSTRAINT_NAME
+UPDATE @table SET
+PrimaryKeyConstraintTableSchema = TABLE_SCHEMA,
+PrimaryKeyConstraintTableName = TABLE_NAME
+FROM @table T
+INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
+ON T.PrimaryKeyConstraintName = C.CONSTRAINT_NAME
+UPDATE @table SET
+PrimaryKeyConstraintColumnName = COLUMN_NAME
+FROM @table T
+INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE U
+ON T.PrimaryKeyConstraintName = U.CONSTRAINT_NAME
+--SELECT * FROM @table
+--DROP CONSTRAINT:
+SELECT
+'
+ALTER TABLE [' + ForeignKeyConstraintTableSchema + '].[' + ForeignKeyConstraintTableName + ']
+DROP CONSTRAINT ' + ForeignKeyConstraintName + '
+ 
+GO'
+FROM
+@table
+--ADD CONSTRAINT:
+SELECT
+'
+ALTER TABLE [' + ForeignKeyConstraintTableSchema + '].[' + ForeignKeyConstraintTableName + ']
+ADD CONSTRAINT ' + ForeignKeyConstraintName + ' FOREIGN KEY(' + ForeignKeyConstraintColumnName + ') REFERENCES [' + PrimaryKeyConstraintTableSchema + '].[' + PrimaryKeyConstraintTableName + '](' + PrimaryKeyConstraintColumnName + ')
+ 
+GO'
+FROM
+@table
+GO

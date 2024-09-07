@@ -1,0 +1,17 @@
+--Elapsed Time in the Plan Cache with its correspondent statements
+
+SELECT  
+	b.creation_time,b.last_execution_time,
+	Minutos_em_Cache= Convert(VarChar(20), 
+	DATEDIFF(MI, b.creation_time, getdate())) + ' Minutos',
+	Resultado_em_Horas = Convert(VarChar(10), DATEDIFF(MI, 
+	b.creation_time, getdate()) / 60) + ':' + Right(Replicate('0', 2) + Convert(VarChar(10), 
+	DATEDIFF(MI, b.creation_time, getdate()) % 60), 2),a.usecounts,a.size_in_bytes,a.cacheobjtype,
+	a.objtype,t.text FROM sys.dm_exec_cached_plans a,sys.dm_exec_query_stats b  cross apply sys.dm_exec_sql_text(b.sql_handle) t 
+WHERE 	a.plan_handle=b.plan_handle 
+	AND a.objtype ='Prepared' --There are other options in this filter, such as 'ad hoc' adn so forth...
+ORDER BY 1 
+
+
+DBCC FREEPROCCACHE
+

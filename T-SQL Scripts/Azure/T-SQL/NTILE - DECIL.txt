@@ -1,0 +1,2 @@
+SELECT ID, NTILE(5) OVER (ORDER BY ID) Tile
+        FROM T2

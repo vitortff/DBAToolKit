@@ -1,0 +1,3 @@
+select b.name,a.step_id,a.step_name,b.schedule_start_time,b.schedule_end_time,b.schedule_interval_type,b.schedule_interval_count,b.[enabled] from jobs_internal.jobsteps a join jobs_internal.jobs b
+on a.job_id=b.job_id
+where b.name='Prod02_Reindex_and_Shrink'

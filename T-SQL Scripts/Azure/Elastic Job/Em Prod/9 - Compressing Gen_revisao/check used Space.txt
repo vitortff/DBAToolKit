@@ -1,0 +1,3 @@
+SELECT database_name, replace(storage_in_megabytes/1024,'.',',') ,datetime FROM Tbl_Hist_Databases_Metrics
+WHERE datetime> '2023-08-06 00:00:00.000'
+and DATABASE_NAME='l1_firm_br_8072034'

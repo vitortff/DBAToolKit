@@ -1,0 +1,16 @@
+--Verificando as sessões no
+select session_id,login_time,last_request_start_time,last_request_end_time from SYS.DM_EXEC_SESSIONS
+where session_id > 50
+order by 2
+
+
+--https://blog.sqlauthority.com/2018/06/15/sql-server-optimal-value-max-worker-threads/
+--Quantidade de wrokers_threadn
+SELECT max_workers_count
+FROM sys.dm_os_sys_info
+
+--1216
+
+select *from sys.dm_os_performance_counters
+where counter_name='logins/sec'
+order by 4 desc

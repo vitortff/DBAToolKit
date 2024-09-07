@@ -1,0 +1,44 @@
+/*
+CREATE TABLE #sp_who2 (SPID INT, Status VARCHAR(255),
+      Login  VARCHAR(255), HostName  VARCHAR(255),
+      BlkBy  VARCHAR(255), DBName  VARCHAR(255),
+      Command VARCHAR(255), CPUTime INT,
+      DiskIO INT, LastBatch VARCHAR(255),
+      ProgramName VARCHAR(255), SPID1 INT,
+      REQUESTID INT);
+INSERT INTO #sp_who2 
+EXEC sp_who2
+SELECT      *
+FROM        #sp_who2
+-- WHERE       DBName <> 'master' -- Add Filter
+ORDER BY    SPID ASC;
+DROP TABLE #sp_who2;
+*/
+
+CREATE TABLE #sp_who2 (SPID INT, Status VARCHAR(255),
+      Login  VARCHAR(255), HostName  VARCHAR(255),
+      BlkBy  VARCHAR(255), DBName  VARCHAR(255),
+      Command VARCHAR(255), CPUTime INT,
+      DiskIO INT, LastBatch VARCHAR(255),
+      ProgramName VARCHAR(255), SPID1 INT,
+      REQUESTID INT);
+INSERT INTO #sp_who2 
+EXEC sp_who2
+
+-- WHERE       DBName <> 'master' -- Add Filter
+
+SELECT      DBNAME, COUNT(*) AS [Sessions]
+FROM        #sp_who2
+where spid > 50
+GROUP BY DBNAME
+order by 2 desc
+
+SELECT      spid, HOSTNAME ,  COUNT(*) AS [Sessions]
+FROM        #sp_who2
+where spid > 50
+GROUP BY SPID,HOSTNAME
+order by 3 desc
+
+DROP TABLE #sp_who2;
+
+--https://blog.sqlauthority.com/2020/12/17/sql-server-inserting-sp_who2-into-a-table/

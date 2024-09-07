@@ -1,0 +1,23 @@
+https://github.com/rgl/azure-content/blob/master/articles/sql-database/sql-database-elastic-pool-manage-tsql.md
+
+ALTER DATABASE _auth_service MODIFY ( SERVICE_OBJECTIVE = ELASTIC_POOL (name = l1-firm-br-pool ));
+
+Move out of Elastic Pool 
+
+ALTER DATABASE _auth_service MODIFY ( SERVICE_OBJECTIVE = 'GP_Gen5_6');
+
+ALTER DATABASE NOVAJUS_FULL_8155452 MODIFY (SERVICE_OBJECTIVE = 'GP_Gen5_4')
+
+
+SELECT * FROM sys.dm_operation_status  
+WHERE major_resource_id = 'NOVAJUS_FULL_8155452'
+ORDER BY start_time DESC;  
+
+
+
+43382; 72904
+
+
+
+
+

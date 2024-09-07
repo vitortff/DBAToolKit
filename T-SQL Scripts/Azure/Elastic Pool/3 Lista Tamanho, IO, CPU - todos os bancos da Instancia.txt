@@ -1,0 +1,59 @@
+--1 Extracts the elastic pool names
+WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+select max(end_time),elastic_pool_name from sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+
+select b.end_time,b.elastic_pool_name,a.avg_storage_percent  into #elastic_pools from  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+
+
+
+
+--2
+;WITH DB_Storage_CTE (end_time, database_name)  
+AS  
+-- Define the CTE query.  
+(  
+SELECT max(end_time) as end_time, database_name  FROM sys.resource_stats
+GROUP BY database_name 
+)  
+
+
+SELECT a.database_name,a.storage_in_megabytes into #temp FROM sys.resource_stats a, DB_Storage_CTE b
+WHERE a.database_name=b.database_name and
+b.end_time=a.end_time and
+a.database_name in (
+SELECT  d.name
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE slo.elastic_pool_name in (select elastic_pool_name from #elastic_pools))		--insira o elastic pool
+
+
+--Mostrando o Consumo das bases pelo Elastic Pool informado
+
+DECLARE @s datetime;  
+DECLARE @e datetime;  
+SET @s= DateAdd(d,-14,GetUTCDate());  -- 14 dias
+SET @e= GETUTCDATE();  
+SELECT a.database_name, AVG(a.avg_data_io_percent) AS Average_IO_Utilization, AVG(a.avg_cpu_percent) AS Average_CPU_Utilization, b.storage_in_megabytes   
+FROM sys.resource_stats a join #temp b
+on a.database_name=b.database_name
+WHERE a.start_time BETWEEN @s AND @e  and
+a.database_name in
+(select database_name from #temp)
+
+GROUP BY a.database_name,b.storage_in_megabytes    
+order by 3 desc
+
+drop table #temp
+drop table #elastic_pools
+
+
+
+

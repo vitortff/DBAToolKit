@@ -1,0 +1,64 @@
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='EASTUS2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria', 
+@command=N'
+
+DECLARE @DATABASE_NAME NVARCHAR(200)
+DECLARE @SQLString NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+SELECT *FROM (
+select DISTINCT(database_name) from eastus2_resource_stats
+where start_time > = DATEADD(hour,-15,GETDATE())
+and avg_cpu_percent > 65
+and database_name not in (''l1_firm_br_8092642'',''NOVAJUS_FULL_8155452'')) AS TESTE
+WHERE database_name not in 
+(SELECT target_database_name FROM jobs.job_executions
+where job_name=''eastus2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria'' 
+and lifecycle = ''Succeeded'' and target_database_name is not null and target_database_name <> ''MSDB_Elastic_Jobs''
+AND start_time > = getdate()-7)
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @DATABASE_NAME
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+
+--1
+
+SET @SQLString= ''EXEC [jobs].sp_add_target_group_member @target_group_name = N''''TG_EASTUS2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria'''', @target_type = N''''SqlDatabase'''', @server_name = N''''legalone-prod-eastus2.database.windows.net'''', @database_name = N'''''' +  @DATABASE_NAME +'''''';''
+
+EXECUTE sp_executesql @SQLString
+--INSERT INTO temp Select @SQLString
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @DATABASE_NAME
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+', 
+@credential_name='TG_FirmBR_Prod', 
+@target_group_name='TG_FirmBR_Prod',
+@step_name = 'Adding Target Databases',
+@step_id = 2 
+GO

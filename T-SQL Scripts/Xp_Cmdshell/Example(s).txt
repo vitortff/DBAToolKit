@@ -1,0 +1,13 @@
+
+use master;
+
+sp_configure;
+exec sp_configure 'xp_cmdshell',1; 
+RECONFIGURE;
+sp_configure;
+
+
+
+Exec master.dbo.xp_cmdshell 'COPY f:\Amd_Tsr_Prod\*.* L:\'
+exec master.dbo.xp_cmdshell 'DEL c:\delete-me-file.txt'
+exec master..xp_cmdshell 'MOVE \\server1\folder\DTSUpload\*.xls \\server1\folder\DTSArchieveFiles'

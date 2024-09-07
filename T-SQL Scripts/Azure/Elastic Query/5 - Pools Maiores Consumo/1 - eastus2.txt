@@ -1,0 +1,49 @@
+--1
+SELECT * FROM sys.external_data_sources;
+
+--2
+CREATE EXTERNAL DATA SOURCE [legalone-prod-eastus2-master-elastic_pool_resource_stats]
+WITH
+(
+    TYPE=RDBMS, -- data source type
+    LOCATION = 'legalone-prod-eastus2.database.windows.net', -- Azure SQL Database server name
+    DATABASE_NAME = 'master', -- database name
+    CREDENTIAL= [legalone-prod-eastus2] -- credential used to connect to server / database  
+)
+
+
+--3
+CREATE EXTERNAL TABLE [dbo].[elastic_pool_resource_stats_eastus2]
+(
+	[start_time] [datetime2](7) NULL,
+	[end_time] [datetime2](7) NULL,
+	[elastic_pool_name] [nvarchar](128) NULL,
+	[avg_cpu_percent] [decimal](5, 2) NULL,
+	[avg_data_io_percent] [decimal](5, 2) NULL,
+	[avg_log_write_percent] [decimal](5, 2) NULL,
+	[avg_storage_percent] [decimal](5, 2) NULL,
+	[max_worker_percent] [decimal](5, 2) NULL,
+	[max_session_percent] [decimal](5, 2) NULL,
+	[elastic_pool_dtu_limit] [int] NULL,
+	[elastic_pool_storage_limit_mb] [bigint] NULL,
+	[max_xtp_storage_percent] [decimal](5, 2) NULL,
+	[avg_login_rate_percent] [decimal](5, 2) NULL,
+	[avg_instance_cpu_percent] [decimal](5, 2) NULL,
+	[avg_instance_memory_percent] [decimal](5, 2) NULL,
+	[elastic_pool_cpu_limit] [decimal](5, 2) NULL,
+	[avg_allocated_storage_percent] [decimal](5, 2) NULL
+)
+WITH (DATA_SOURCE = [legalone-prod-eastus2-master-elastic_pool_resource_stats],SCHEMA_NAME = N'sys',OBJECT_NAME = N'elastic_pool_resource_stats')
+GO
+
+
+--4
+--Pools com maiores comsumo
+select @@servername as servername,elastic_pool_name,avg(avg_cpu_percent) as avg_cpu_percent,avg(avg_data_io_percent) as avg_data_io_percent, getdate() time from elastic_pool_resource_stats_eastus2
+where start_time >= DateAdd(hour,-1,GetUTCDate())
+group by elastic_pool_name
+order by 3 desc
+
+
+
+

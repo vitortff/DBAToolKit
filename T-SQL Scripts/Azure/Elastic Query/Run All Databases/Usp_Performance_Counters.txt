@@ -1,0 +1,116 @@
+/****** Object:  StoredProcedure [dbo].[Usp_Hist_Performance_Counters]    Script Date: 4/17/2024 8:06:30 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Usp_Hist_Performance_Counters]
+AS
+BEGIN
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+--Variáveis do relatório
+DECLARE @servername NVARCHAR(4000)
+DECLARE @elastic_pool_name NVARCHAR(4000)
+DECLARE @database_name NVARCHAR(4000)
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+DECLARE @SQLString2 NVARCHAR(4000)
+DECLARE @SQLString3 NVARCHAR(4000)
+DECLARE @SQLString4 NVARCHAR(4000)
+DECLARE @SQLString5 NVARCHAR(4000)
+DECLARE @SQLString6 NVARCHAR(4000)
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+WITH TOPTEN AS (
+    SELECT *, ROW_NUMBER() 
+    over (
+        PARTITION BY servername, elastic_pool_name
+        order by servername, elastic_pool_name 
+    ) AS RowNo 
+    FROM Tbl_Hist_Databases_Metrics
+	where avg_cpu > '0,5'
+)
+SELECT servername, elastic_pool_name, [database_name] FROM TOPTEN WHERE RowNo <= 3 AND [database_name] LIKE 'NOVAJUS%' OR [database_name] LIKE 'NextLegalOne%'
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @servername, @elastic_pool_name, @database_name
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @database_name + '] WITH (TYPE=RDBMS, LOCATION = ''' + @servername + '.database.windows.net'', DATABASE_NAME = ''' + @database_name + ''' ,CREDENTIAL = [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+
+-----------------------INICIO DA PARTE A SER EDITADA------------------------------------------
+
+SET @SQLString4 = '
+CREATE EXTERNAL TABLE [dbo].[sys_dm_os_performance_counters](
+	[object_name] [nchar](128) NOT NULL,
+	[counter_name] [nchar](128) NOT NULL,
+	[instance_name] [nchar](128) NULL,
+	[cntr_value] [bigint] NOT NULL,
+	[cntr_type] [int] NOT NULL
+) 
+WITH (DATA_SOURCE =[' + @database_name + '], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''dm_os_performance_counters'')'
+
+EXECUTE sp_executesql @SQLString4
+
+--Criando a nova 
+
+SET @SQLString5= 'INSERT INTO Tbl_Hist_Performance_Counters SELECT ''' + @servername + ''',''' + @elastic_pool_name + ''',''' + @database_name + ''',*, getdate () as datetime FROM sys_dm_os_performance_counters
+WHERE counter_name in
+(''Buffer cache hit ratio'',
+''Page life expectancy'',
+''Checkpoint pages/sec'',
+''Lazy writes/sec'',
+''Memory Grants Pending'',
+''Target Server Memory (KB)'',
+''Total Server Memory (KB)'')'
+
+EXECUTE sp_executesql @SQLString5
+
+SET @SQLString6= 'DROP EXTERNAL TABLE sys_dm_os_performance_counters'
+
+EXECUTE sp_executesql @SQLString6
+
+----------------------------FIM DA PARTE A SER EDITADA------------------------------------
+
+SET @SQLString3 = 'DROP EXTERNAL DATA SOURCE [' + @database_name + ']'
+EXECUTE sp_executesql @SQLString3
+
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @servername, @elastic_pool_name, @database_name
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--drop external data source [legalone-prod-eastus2_]
+END
+
+
+
+

@@ -1,0 +1,73 @@
+
+
+--STATISTICS
+
+SET STATISTICS IO ON
+SELECT SUM(VLR_GEN05_BSMENS),MAX(VLR_GEN04_BSMENS) FROM BASE_MENSAL_FSS WHERE BASE_MENSAL_FSS.ANO_REFER_BSMENS = YEAR( CONVERT (DateTime, '20/01/2014', 103) ) AND BASE_MENSAL_FSS.NUM_CPF_BSMENS = CASE WHEN ISNULL( 0 ,0) = 0 THEN ( SELECT str ( empregado.num_cpf_emprg , 11 ) FROM EMPREGADO WHERE empregado.cod_emprs =  10  AND empregado.num_rgtro_emprg =  111597   ) ELSE ( SELECT str ( repres_uniao_fss.num_cpf_repres , 11 ) FROM REPRES_UNIAO_FSS WHERE repres_uniao_fss.num_idntf_rptant =  0   ) END AND BASE_MENSAL_FSS.COD_INBSMS =  100  AND  '11:52:56:161'  <> ''
+SET STATISTICS IO OFF
+
+--Table 'base_mensal_fss'. Scan count 1, logical reads 28946, physical reads 0, read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob read-ahead reads 0.
+--Table 'base_mensal_fss'. Scan count 1, logical reads 253
+
+SET STATISTICS TIME ON
+SELECT SUM(VLR_GEN05_BSMENS),MAX(VLR_GEN04_BSMENS) FROM BASE_MENSAL_FSS WHERE BASE_MENSAL_FSS.ANO_REFER_BSMENS = YEAR( CONVERT (DateTime, '20/01/2014', 103) ) AND BASE_MENSAL_FSS.NUM_CPF_BSMENS = CASE WHEN ISNULL( 0 ,0) = 0 THEN ( SELECT str ( empregado.num_cpf_emprg , 11 ) FROM EMPREGADO WHERE empregado.cod_emprs =  10  AND empregado.num_rgtro_emprg =  111597   ) ELSE ( SELECT str ( repres_uniao_fss.num_cpf_repres , 11 ) FROM REPRES_UNIAO_FSS WHERE repres_uniao_fss.num_idntf_rptant =  0   ) END AND BASE_MENSAL_FSS.COD_INBSMS =  100  AND  '11:52:56:161'  <> ''
+SET STATISTICS TIME OFF
+
+--CPU time = 109 ms,  elapsed time = 190 ms.
+--CPU time = 32 ms,  elapsed time = 28 ms.
+
+
+
+--CREATE INDEX SCRIPT
+USE [Amd_Prev_Reproc0114]
+GO
+
+/****** Object:  Index [id_base_mensal_fss_004]    Script Date: 01/22/2014 12:56:01 ******/
+CREATE NONCLUSTERED INDEX [id_base_mensal_fss_004] ON [dbo].[base_mensal_fss] 
+(
+	[ano_refer_bsmens] ASC,
+	[mes_refer_bsmens] ASC,
+	[cod_inbsms] ASC
+)
+INCLUDE ( [num_matr_partf],
+[num_sqncl_bsmens],
+[num_cpf_bsmens],
+[vlr_prtpns_bsmens],
+[VLR_GEN04_BSMENS],
+[VLR_GEN05_BSMENS]) WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+GO
+
+
+
+
+--OBSERVE THE CREATED INDEX
+
+DECLARE
+@DATABASE_NAME SYSNAME,
+@TYPE_DESC NVARCHAR(120)
+SET @DATABASE_NAME='Amd_Prev_Reproc0114'
+SET @TYPE_DESC='NONCLUSTERED'
+
+SELECT OBJECT_NAME(a.object_id) as [object_name],b.name,e.used_pages*8/1024 "used_pages(mb)",
+e.total_pages*8/1024 "total_pages(mb)", a.user_seeks,a.user_scans,a.user_lookups,a.user_updates,
+a.last_user_seek,a.last_user_scan,a.last_user_lookup,a.last_user_update
+FROM 
+sys.dm_db_index_usage_stats a inner join sys.indexes b
+on a.object_id=b.object_id and a.index_id=b.index_id
+inner join sys.partitions d 
+on d.object_id=b.object_id and b.index_id = d.index_id
+inner join sys.allocation_units e
+on d.hobt_id = e.container_id
+WHERE 
+b.is_hypothetical=0 and
+OBJECT_NAME(a.object_id) not in ('sysallocunits','sysowners','null') and
+--OBJECT_NAME(a.object_id)='empregado' and
+DB_NAME(a.database_id)=@DATABASE_NAME and
+b.type_desc=@TYPE_DESC and 
+b.name='id_base_mensal_fss_004'
+ORDER BY 5 DESC
+GO
+
+
+
+THE END.....................................

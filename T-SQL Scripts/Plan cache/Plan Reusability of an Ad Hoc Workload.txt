@@ -1,0 +1,224 @@
+--Plan Reusability of an Ad Hoc Workload
+
+DBCC FREEPROCCACHE
+
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a, sys.dm_exec_query_stats b
+WHERE a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+
+
+SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 676
+        AND sod.productid = 776
+                
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t,sys.dm_exec_query_stats b
+WHERE 
+t.text='SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 676
+        AND sod.productid = 776'
+        
+AND a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+
+--OR
+
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a, sys.dm_exec_query_stats b
+WHERE a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+
+
+--Another example, now changing the column soh.CustomerID to 678
+
+SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 678
+        AND sod.productid = 776
+
+
+--THE SECOND STATEMENT
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t,sys.dm_exec_query_stats b
+WHERE 
+t.text='SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 678
+        AND sod.productid = 776'
+and a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+/*
+creation_time			last_execution_time		refcounts	usecounts	size_in_bytes	cacheobjtype		objtype		plan_handle
+2012-02-08 11:41:16.867		2012-02-08 11:46:34.377		2		5		98304		Compiled Plan		Adhoc		0x060006005EEDB619B820E607000000000000000000000000
+*/
+
+
+-- GOING BACK TO THE FIRST STATEMENT
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t,sys.dm_exec_query_stats b
+WHERE 
+t.text='SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 676
+        AND sod.productid = 776'
+AND a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+
+/*
+creation_time			last_execution_time		refcounts		usecounts	size_in_bytes		cacheobjtype		objtype		plan_handle
+2012-02-08 11:39:48.520		2012-02-08 11:40:11.077		2			2			98304
+
+		Compiled Plan		Adhoc		0x060006009B07022AB8A09205000000000000000000000000
+*/
+
+
+
+
+
+
+--IMPROVING THE PERFORMANCE OF "AD HOC" QUERIES SETTING THE OPTION "optimize for ad hoc workloads" FROM sp_configure.
+
+sp_configure 'optimize for ad hoc workloads',1
+reconfigure
+
+--HAVE A LOOK ON RESULTS AFTER THE SWITHING.
+
+DBCC FREEPROCCACHE
+
+-- THE FISRT STATEMENT
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t,sys.dm_exec_query_stats b
+WHERE 
+t.text='SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 676
+        AND sod.productid = 776'
+AND a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+
+/*
+creation_time			last_execution_time		refcounts	usecounts	size_in_bytes	cacheobjtype		objtype		plan_handle
+2012-02-08 12:00:16.720		2012-02-08 12:00:16.737		1			1	320		Compiled Plan Stub	Adhoc		0x060006009B07022A8044C104000000000000000000000000
+*/
+
+--THE SECOND STATEMENT
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t,sys.dm_exec_query_stats b
+WHERE 
+t.text='SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 678
+        AND sod.productid = 776'
+and a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+
+
+/*
+creation_time			last_execution_time		refcounts	usecounts	size_in_bytes	cacheobjtype			objtype		plan_handle
+2012-02-08 12:03:20.757		2012-02-08 12:03:20.757		1		1		320		Compiled Plan Stub		Adhoc		0x060006005EEDB619E047C104000000000000000000000000
+*/
+
+
+/*
+--The main differences among the results are:
+THE FIRST STATEMENT:
+*FROM	size_in_bytes		cacheobjtype
+	398304			Compiled Plan
+
+*TO	size_in_bytes		cacheobjtype
+	320			Compiled Plan Stub
+
+THE SECOND STATEMENT:
+*FROM	size_in_bytes		cacheobjtype
+	398304			Compiled Plan
+
+*TO	size_in_bytes		cacheobjtype
+	320			Compiled Plan Stub
+*/
+
+/*
+
+--iF YOU EXECUTE THE QUERIES AGAIN, THE SQL SERVER WILL BE CREATING A NEW PLAN, NOW AS A "COMPILED PLAN STUB" INSTEAD THAN "COMPILED PLAN"
+
+TAKE A LOOK:
+
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t,sys.dm_exec_query_stats b
+WHERE 
+t.text='SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 676
+        AND sod.productid = 776'
+AND a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+/*
+creation_time			last_execution_time		refcounts	usecounts	size_in_bytes	cacheobjtype	objtype		plan_handle
+2012-02-08 12:24:37.063		2012-02-08 12:24:37.080		2		1		98304		Compiled Plan	Adhoc		0x060006009B07022AB8005A08000000000000000000000000
+*/
+
+--THE SECOND STATEMENT
+SELECT  b.creation_time,b.last_execution_time,a.refcounts,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,a.plan_handle FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t,sys.dm_exec_query_stats b
+WHERE 
+t.text='SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 678
+        AND sod.productid = 776'
+and a.plan_handle=b.plan_handle and b.creation_time > '2012-02-08 10:43:22.253'
+AND a.objtype='Adhoc' ORDER BY 1 DESC
+/*
+creation_time			last_execution_time		refcounts	usecounts	size_in_bytes	cacheobjtype	objtype		plan_handle
+2012-02-08 12:19:26.427		2012-02-08 12:25:46.490		2		1		98304		Compiled Plan	Adhoc		0x060006005EEDB619B8005E08000000000000000000000000
+*/
+
+
+
+

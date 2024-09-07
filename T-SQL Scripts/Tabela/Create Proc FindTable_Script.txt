@@ -1,0 +1,24 @@
+Create Proc FindTable 
+@TableName nVarchar(50)
+As
+/*
+Purpose : Search for a Table in all databases
+Author	: Sandesh Segu
+Date	: 17th July 2009
+Version	: 1.0
+*/
+Create Table #temp (DatabaseName varchar(50),SchemaName varchar(50),TableName varchar(50))
+
+Declare @SQL Varchar(500)
+Set @SQL='Use [?] ;
+if exists(Select name from sys.tables where name like '''+@TableName+''') 
+insert into #temp 
+Select ''?'' AS DatabaseName ,SS.Name AS SchemaName ,ST.Name AS TableName from sys.tables as ST , sys.schemas SS 
+where ST.Schema_ID=SS.Schema_ID and ST.name like '''+@TableName+''''
+
+EXEC sp_msforeachdb @SQL
+
+Select * from #temp
+
+Drop table #temp
+GO

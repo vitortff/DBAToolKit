@@ -1,0 +1,48 @@
+/*
+Script  : Linked Server Connectivity Checker
+Version : 1.0 (March 2010)
+Author  : Richard Doering
+Web     : http://sqlsolace.blogspot.com
+*/
+CREATE SCHEMA [Utils] AUTHORIZATION [dbo]
+GO
+
+CREATE PROCEDURE [Utils].[LinkedServerTest] 
+@ServerName SYSNAME
+,@emailProfile VARCHAR(255) = ''
+,@emailTo VARCHAR(255) = ''
+AS 
+BEGIN
+DECLARE @Test BIT
+
+BEGIN TRY
+EXEC @Test= sys.sp_testlinkedserver @servername 
+
+PRINT 'Sucessfully connected to ' + CAST(@servername as VARCHAR(30))
+END TRY
+
+BEGIN CATCH
+PRINT 'Failed to connect to ' + CAST(@servername as VARCHAR(30))
+
+?IF (@emailProfile <> '') AND (@emailTo <> '')
+BEGIN
+DECLARE @emailSubject VARCHAR(255)
+DECLARE @emailBody VARCHAR(8000)
+
+SET @emailSubject = 'Linked Server Connnection Failure : ' + @servername + ' cannot be accessed from ' + @@SERVERNAME
+SET @emailBody = @emailSubject
+EXEC msdb.dbo.sp_send_dbmail 
+@profile_name= @emailProfile
+, @recipients=@emailTo
+, @body=@emailBody
+, @subject=@emailSubject
+, @importance='High'
+END
+
+RAISERROR ('Linked Server Failure', 16, 1, @emailSubject) WITH LOG
+
+END CATCH
+
+END
+
+GO

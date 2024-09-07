@@ -1,0 +1,129 @@
+/*
+====================================================================
+Author: Dominic Wirth
+Date created: 2019-04-18
+Date last change: -
+Script-Version: 1.0
+Tested with: SQL 11.0.6020 and above
+Description: This script shows important information regarding
+Processor and Memory configuration of the server
+as well as some configuration recommendations
+for query parallelism. These recommendations are a
+summary of MANY recommendations found on the
+internet. The valid setting for a server ALWAYS
+depends on its usage so there is no right/wrong.
+====================================================================
+*/
+DECLARE
+@sqlMajor INT
+,@sqlMinor INT
+,@cpuLogicals INT
+,@cpuCores INT
+,@numaConfig NVARCHAR(60)
+,@allocType NVARCHAR(120)
+,@stmt NVARCHAR(MAX)
+,@paramDef NVARCHAR(500);
+DECLARE @serverMemory TABLE (SQL_MinMemory_MB BIGINT, SQL_UsedMemory_MB BIGINT, SQL_MaxMemory_MB BIGINT, Server_Physical_MB BIGINT, SQL_AllocationType NVARCHAR(60));
+DECLARE @cpuInfo TABLE (VirtualMachineType NVARCHAR(60), NUMA_Config NVARCHAR(60), NUMA_Nodes INT, Physical_CPUs INT
+,CPU_Cores INT, Logical_CPUs INT, Logical_CPUs_per_NUMA INT, CPU_AffinityType VARCHAR(60)
+,ParallelCostThreshold_Current INT, MAXDOP_Current INT, MAXDOP_Optimal_Value NVARCHAR(60), MAXDOP_Optimal_Reason NVARCHAR(1024));
+-- ========================================================================================================================================================================
+-- Load SQL information
+SELECT @sqlMajor = CAST((@@MicrosoftVersion / 0x01000000) AS INT), @sqlMinor = CAST((@@MicrosoftVersion / 0x010000 & 0xFF) AS INT);
+-- ========================================================================================================================================================================
+-- Load CPU configuration
+--
+IF @sqlMajor > 12
+BEGIN
+SELECT @stmt = 'SELECT @numaConfig = softnuma_configuration_desc, @allocType = sql_memory_model_desc FROM sys.dm_os_sys_info;'
+,@paramDef = '@numaConfig NVARCHAR(60) OUTPUT, @allocType NVARCHAR(120) OUTPUT';
+EXEC sp_executesql @stmt, @paramDef, @numaConfig = @numaConfig OUTPUT, @allocType = @allocType OUTPUT;
+END
+ELSE
+SELECT @numaConfig = 'UNKNOWN', @allocType = 'UNKNOWN';
+--
+INSERT INTO @cpuInfo (VirtualMachineType, NUMA_Config, NUMA_Nodes, Logical_CPUs, CPU_AffinityType, MAXDOP_Current, ParallelCostThreshold_Current)
+VALUES (
+(SELECT virtual_machine_type_desc AS VirtualMachineType FROM sys.dm_os_sys_info)
+,@numaConfig
+,(SELECT COUNT(memory_node_id) FROM sys.dm_os_nodes WHERE memory_node_id < 64)
+,(SELECT COUNT(scheduler_id) FROM sys.dm_os_schedulers WHERE scheduler_id < 255)
+,(SELECT affinity_type_desc AS AffinityType FROM sys.dm_os_sys_info)
+,CAST((SELECT [value] FROM sys.configurations WHERE [name] = 'max degree of parallelism') AS INT)
+,CAST((SELECT [value] FROM sys.configurations WHERE [name] = 'cost threshold for parallelism') AS INT)
+);
+--
+-- Get CPU Information
+IF OBJECT_ID('tempdb..#cpu_output') IS NOT NULL
+DROP TABLE #cpu_output;
+CREATE TABLE #cpu_output ([output] VARCHAR(255));
+INSERT INTO #cpu_output ([output]) EXEC xp_cmdshell 'wmic cpu get DeviceId,NumberOfCores,NumberOfLogicalProcessors /format:csv';
+-- Example [output]: CLVDODWI01,CPU0,4,8
+--
+-- Remove empty lines, header line and CrLf
+DELETE FROM #cpu_output WHERE REPLACE(REPLACE(RTRIM(ISNULL([output],'')), CHAR(10), ''), CHAR(13), '') = '';
+DELETE FROM #cpu_output WHERE [output] LIKE '%NumberOfCores,NumberOfLogicalProcessors%';
+UPDATE #cpu_output SET [output] = REPLACE(REPLACE([output], CHAR(10), ''), CHAR(13), '');
+--
+--SELECT * FROM #cpu_output;
+--
+-- Load information of CPU cores and logical processors
+SELECT @cpuCores = 0, @cpuLogicals = 0;
+SELECT @cpuCores += PARSENAME(REPLACE([output], ',', '.'), 2)
+,@cpuLogicals += PARSENAME(REPLACE([output], ',', '.'), 1)
+FROM #cpu_output;
+--
+UPDATE @cpuInfo SET Physical_CPUs = (SELECT COUNT(*) FROM #cpu_output), CPU_Cores = @cpuCores, Logical_CPUs = @cpuLogicals;
+--
+IF OBJECT_ID('tempdb..#cpu_output') IS NOT NULL
+DROP TABLE #cpu_output;
+--
+UPDATE @cpuInfo SET Logical_CPUs_per_NUMA = Logical_CPUs / NUMA_Nodes;
+--
+-- Calculate best MAXDOP setting according guidelines of a Microsoft Premier Filed Engineer
+-- > Hyper-threading enabled: Should not be 0 and should not be greater than half the number of logical processors
+-- > Processor Affinity set: Should not be more than the number of cores available to the SQL Server instance
+-- > NUMA: Should be no more than the number of cores per NUMA node to avoid expensive foreign memory access that occurs,
+-- when a task needs to use memory that does not belong to its NUMA node.
+-- > Generic: If you are unsure of the above values then a generic setting should not be more than 8.
+-- So if you have more than 8 logical processors you should set this value to a maximum of 8.
+UPDATE @cpuInfo
+SET
+MAXDOP_Optimal_Value = '0 - ' + CAST((CASE WHEN Logical_CPUs > 8 THEN 8 ELSE Logical_CPUs END) AS NVARCHAR)
+,MAXDOP_Optimal_Reason = 'GENERIC: Not more than the amount of logical CPUs and not more than 8';
+--
+UPDATE @cpuInfo
+SET
+MAXDOP_Optimal_Value = '0 - assigned cores to the SQL Server instance'
+,MAXDOP_Optimal_Reason = 'CPU AFFINITY: Not more than the amount of assigned CPUs to the SQL Server instance'
+WHERE CPU_AffinityType = 'MANUAL';
+--
+UPDATE @cpuInfo
+SET
+MAXDOP_Optimal_Value = '1 - ' + CAST(Logical_CPUs_per_NUMA AS NVARCHAR)
+,MAXDOP_Optimal_Reason = 'NUMA NODES: Not 0 and not more than the number of cores per NUMA node'
+WHERE NUMA_Nodes > 1;
+--
+UPDATE @cpuInfo
+SET
+MAXDOP_Optimal_Value = '1 - ' + CAST((Logical_CPUs / 2) AS NVARCHAR)
+,MAXDOP_Optimal_Reason = 'HYPER-THREADING: Not 0 and not be greater than half the number of logical processors'
+WHERE Logical_CPUs / 2 = CPU_Cores;
+--
+-- ========================================================================================================================================================================
+-- Load Memory configuration
+INSERT INTO @serverMemory (SQL_MinMemory_MB, SQL_UsedMemory_MB, SQL_MaxMemory_MB, Server_Physical_MB, SQL_AllocationType)
+VALUES (
+CAST((SELECT [value] FROM sys.configurations WHERE [name] = 'min server memory (MB)') AS BIGINT)
+,(SELECT cntr_value / 1024 FROM sys.dm_os_performance_counters WHERE counter_name = 'Total Server Memory (KB)')
+,CAST((SELECT [value] FROM sys.configurations WHERE [name] = 'max server memory (MB)') AS BIGINT)
+,(SELECT (total_physical_memory_kb / 1024) AS total_physical_memory_mb FROM sys.dm_os_sys_memory)
+,@allocType
+);
+--
+-- ========================================================================================================================================================================
+-- Show informations
+--
+SELECT VirtualMachineType, NUMA_Config, NUMA_Nodes, Physical_CPUs, CPU_Cores, Logical_CPUs, Logical_CPUs_per_NUMA, CPU_AffinityType FROM @cpuInfo;
+SELECT ParallelCostThreshold_Current, MAXDOP_Current, MAXDOP_Optimal_Value, MAXDOP_Optimal_Reason FROM @cpuInfo;
+SELECT * FROM @serverMemory;

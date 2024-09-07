@@ -1,0 +1,7 @@
+CREATE TABLE [dbo].[LO_Check_Sync_Andamentos_Indexes](
+	[appnome] [varchar](50) NULL,
+	[distribuicao] [varchar](50) NULL,
+	[dbnomebase] [varchar](400) NULL,
+	[dbnomeservidor] [varchar](400) NULL,
+	[Atualizado?] [int] NULL
+)

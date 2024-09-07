@@ -1,0 +1,11 @@
+--How can I desable a job by T-SQL?
+--You can use the following command:
+-- @enabled = 1 -enable or =0 disable
+
+
+
+EXEC msdb.dbo.sp_update_job @job_name='LSAlert_BPREVFILE',@enabled = 1 
+
+
+EXEC dbo.sp_start_job N'Weekly Sales Data Backup' ;
+GO

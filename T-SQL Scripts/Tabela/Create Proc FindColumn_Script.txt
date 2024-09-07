@@ -1,0 +1,24 @@
+Create Proc FindColumn 
+@ColumnName nVarchar(50)
+As
+/*
+Purpose : Search for a Column in all databases
+Author	: Sandesh Segu
+Date	: 17th July 2009
+Version	: 1.0
+*/
+Create Table #temp (DatabaseName varchar(50),SchemaName varchar(50),TableName varchar(50),ColumnName varchar(50))
+
+Declare @SQL Varchar(500)
+Set @SQL='Use [?] ;
+insert into #temp 
+Select ''?'' AS DatabaseName ,SS.Name as SchemaName ,ST.Name AS TableName ,SC.Name AS ColumnName 
+from sys.tables ST ,sys.columns SC ,sys.schemas SS
+where SC.object_id=ST.object_id and ST.schema_id=SS.schema_id and SC.name like '''+@ColumnName+''''
+
+EXEC sp_msforeachdb @SQL
+
+Select * from #temp
+
+Drop table #temp
+GO

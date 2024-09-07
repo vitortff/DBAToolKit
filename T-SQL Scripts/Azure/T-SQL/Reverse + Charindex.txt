@@ -1,0 +1,44 @@
+select UsageDate,ResourceType, ResourceLocation,ResourceGroupName,ServiceTier,Meter,CostUSD, substring(substring(resourceid, charindex('server',resourceid)+8,1000),1,charindex('/',substring(resourceid, charindex('server',resourceid)+8,1000))-1)  as servername, reverse(substring(reverse(resourceid),1, charindex('/',reverse(resourceid))-1)) as elastic_pool from dados
+where Meter='RA-GRS Data Stored'
+order by elastic_pool,1 
+
+
+
+
+select UsageDate, substring(substring(resourceid, charindex('server',resourceid)+8,1000),1,charindex('/',substring(resourceid, charindex('server',resourceid)+8,1000))-1) + '/' + reverse(substring(reverse(resourceid),1, charindex('/',reverse(resourceid))-1)) as server_elastic_pool, CostUSD 
+into #dados from dados
+where Meter='RA-GRS Data Stored'
+
+
+
+select * from (select *from #dados) as  teste
+pivot (sum(costUSD) for UsageDate in ([2024-01-10],[2024-01-11],[2024-01-12]
+,[2024-01-13],[2024-01-14],[2024-01-15],[2024-01-16],[2024-01-17],[2024-01-18]
+,[2024-01-19],[2024-01-20],[2024-01-21],[2024-01-22],[2024-01-23],[2024-01-24]
+,[2024-01-25],[2024-01-26],[2024-01-27],[2024-01-28],[2024-01-29],[2024-01-30],
+[2024-01-31],[2024-02-01],[2024-02-02],[2024-02-03],[2024-02-04],[2024-02-05],
+[2024-02-06],[2024-02-07],[2024-02-08],[2024-02-09]
+)) as em_coluns
+
+
+
+
+
+
+
+select UsageDate, substring(substring(resourceid, charindex('server',resourceid)+8,1000),1,charindex('/',substring(resourceid, charindex('server',resourceid)+8,1000))-1) + '/' + reverse(substring(reverse(resourceid),1, charindex('/',reverse(resourceid))-1)) as server_elastic_pool, CostUSD 
+from dados
+where Meter='RA-GRS Data Stored'
+
+select * from (select *from #dados) as  teste
+pivot (sum(costUSD) for UsageDate in ([2024-01-10],[2024-01-11],[2024-01-12]
+,[2024-01-13],[2024-01-14],[2024-01-15],[2024-01-16],[2024-01-17],[2024-01-18]
+,[2024-01-19],[2024-01-20],[2024-01-21],[2024-01-22],[2024-01-23],[2024-01-24]
+,[2024-01-25],[2024-01-26],[2024-01-27],[2024-01-28],[2024-01-29],[2024-01-30],
+[2024-01-31],[2024-02-01],[2024-02-02],[2024-02-03],[2024-02-04],[2024-02-05],
+[2024-02-06],[2024-02-07],[2024-02-08],[2024-02-09]
+)) as em_coluns
+
+
+select *from #dados where server_elastic_pool='legalone-prod-eastus2/l1-firm-br-pool-add'
+order by 1

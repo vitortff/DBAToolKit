@@ -1,0 +1,10 @@
+-- Default mode from SQL Server
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED 
+select *from ##teste
+
+--LEVEL READ UNCOMMITTED
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED -- Data Dirty Read 
+select *from ##teste 
+or
+--WITHOUT SET TRANSACTION ISOLATION LEVEL.....
+select *from ##teste with(NOLOCK)

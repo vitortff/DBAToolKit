@@ -1,0 +1,36 @@
+--Eastus2
+
+Name;; Tier;Family;Capacity;MaxSize
+-----------------------  --------------  --------  ----------  ---------
+l1-firm-br-pool-3-add;10;2TB
+l1-firm-br-pool-2-add;8;2TB
+l1-firm-br-pool-2;12;2TB
+l1-firm-br-pool-10-add;10;2TB
+l1-firm-br-pool-11;8;2TB
+l1-firm-br-pool-12;8;2TB
+l1-firm-br-pool-big-add;2TB
+l1-firm-br-pool-10;14;2TB
+l1-firm-br-pool-3;18;3TB
+l1-firm-br-pool-add;8;2TB
+l1-firm-br-pool;32;4TB
+l1-firm-ar-pool;6;500GB
+l1-firm-br-pool-5;18;3TB
+l1-firm-br-pool-14;40;4TB
+l1-firm-br-pool-6;18;3TB
+l1-corp-br-pool-2;10;2TB
+
+--Prod2
+Name;;;Tier;Family;Capacity;MaxSize
+--------------------------------------  ----------------  --------  ----------  ---------
+l1-firm-br-pool-15;8;2TB
+l1-firm-br-pool-18;BusinessCritical;14;1229GB
+l1-firm-br-pool-17;10;1TB
+l1-firm-br-pool-12;12;2TB
+l1-firm-br-pool-11-add;12;2TB
+l1-firm-br-pool-10-add;8;2TB
+l1-firm-br-pool-11;20;3TB
+l1-firm-br-pool-12-add;8;2TB
+l1-firm-br-pool_Internal_accounts_ONLY;2;350GB
+l1-firm-br-pool-10;32;4TB
+l1-firm-br-pool-14;6;1536GB
+l1-firm-br-pool-16;6;1536GB

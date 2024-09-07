@@ -1,0 +1,3 @@
+-- Creating a Job
+EXEC jobs.sp_add_job @job_name='EASTUS2_JOB01_DBREINDEX AND SHRINK DATABASES', 
+@description='DBREINDEX and SHRINK task except scb and arystobulofreitasadvogados'; 

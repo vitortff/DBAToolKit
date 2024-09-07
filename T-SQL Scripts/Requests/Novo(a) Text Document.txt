@@ -1,0 +1,44 @@
+-- 1 - Tabela Temporária
+
+SELECT top 0 'kill ' + cast(a.session_id as varchar(10)) as Kill_session_id,a.session_id,a.wait_type, b.host_name, a.start_time,
+DATEDIFF(minute, a.start_time, GETDATE()) AS DateDiff, a.status,
+REPLACE(t.text,CHAR(13)+CHAR(10),' ') as 'text',a.cpu_time, a.reads,a.writes,a.logical_reads 
+INTO #TblTempProfile FROM sys.dm_exec_requests a cross apply 
+sys.dm_exec_sql_text(a.plan_handle) t,
+sys.dm_exec_sessions b
+WHERE A.session_id=B.session_id and 
+a.session_id <>@@SPID
+order by a.cpu_time desc
+
+
+--2 Laço captura comandos
+
+DECLARE @CONTADOR INT 
+SET @CONTADOR=0
+
+WHILE ( @CONTADOR <= 60)
+BEGIN
+
+WAITFOR DELAY '00:00:01';
+
+INSERT INTO #TblTempProfile
+SELECT 'kill ' + cast(a.session_id as varchar(10)) as Kill_session_id,a.session_id,a.wait_type, b.host_name, a.start_time,
+DATEDIFF(minute, a.start_time, GETDATE()) AS DateDiff, a.status,
+REPLACE(t.text,CHAR(13)+CHAR(10),' ') as 'text',a.cpu_time, a.reads,a.writes,a.logical_reads 
+FROM sys.dm_exec_requests a cross apply 
+sys.dm_exec_sql_text(a.plan_handle) t,
+sys.dm_exec_sessions b
+WHERE A.session_id=B.session_id and 
+a.session_id <>@@SPID
+--and REPLACE(t.text,CHAR(13)+CHAR(10),' ') like '%GED_Arquivo_Vinculo%'
+order by a.cpu_time desc
+    SET @CONTADOR  = @CONTADOR  + 1
+END
+
+--3 Consultas
+
+SELECT * FROM #TblTempProfile
+order by cpu_time desc
+
+DROP TABLE #TblTempProfile
+

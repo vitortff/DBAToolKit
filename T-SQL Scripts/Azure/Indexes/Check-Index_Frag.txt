@@ -1,0 +1,16 @@
+--Running the following T-SQL on a SQL Database, you can get the index fragmentation on a specific table in percent:
+
+DECLARE @database varchar(50) = 'RexWebService'
+DECLARE @table varchar(50) = 'ResultadosQueryStrOrigem'
+
+SELECT name, avg_fragmentation_in_percent
+FROM sys.dm_db_index_physical_stats (
+
+       DB_ID(@database),
+	   OBJECT_ID(@table), 
+	   NULL,
+	   NULL,
+	   NULL) AS a
+
+JOIN sys.indexes AS b
+ON a.object_id = b.object_id AND a.index_id = b.index_id

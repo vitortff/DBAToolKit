@@ -1,0 +1,13 @@
+--Function EOMONTH = Last day of the month 
+DECLARE @InitialDate DATE = (SELECT DATEADD(DAY, -13, (SELECT EOMONTH(GETDATE()))))
+DECLARE @LastDayOfTheMonth DATE = (SELECT EOMONTH(GETDATE()))
+DECLARE @CurrentDate DATE = (SELECT CAST(GETDATE() AS DATE))
+DECLARE @Sunday VARCHAR(20) = (SELECT DATENAME(WEEKDAY, @CurrentDate))
+
+IF @CurrentDate between @InitialDate and @LastDayOfTheMonth and @Sunday = 'Monday'
+	
+	PRINT 'Something to do!'
+
+ELSE 
+
+	PRINT 'Nothing to do!'

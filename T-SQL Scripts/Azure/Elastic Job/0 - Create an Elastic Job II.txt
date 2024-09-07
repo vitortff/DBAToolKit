@@ -1,0 +1,119 @@
+-1
+--master database
+CREATE LOGIN mastercred WITH PASSWORD = 'Strongpassw0rd'; 
+GO
+CREATE USER mastercred FROM LOGIN mastercred; 
+GO 
+CREATE LOGIN jobcred WITH PASSWORD = 'Strongpassw0rd'; 
+GO
+
+--2 Giving permission on the target database
+
+CREATE USER jobcred FROM LOGIN jobcred; 
+GO 
+exec sp_addrolemember 'db_owner', 'jobcred'; 
+GO 
+
+
+
+--3
+--Elastic job Database
+
+CREATE DATABASE SCOPED CREDENTIAL mymastercred WITH 
+IDENTITY = 'mastercred', SECRET = 'Strongpassw0rd'; 
+GO 
+
+-- Create a database scoped credential. 
+CREATE DATABASE SCOPED CREDENTIAL myjobcred WITH IDENTITY = 
+'jobcred', SECRET = 'Strongpassw0rd'; 
+GO
+
+
+-- Add a target group containing server(s) 
+EXEC jobs.sp_add_target_group 'TG_Test' 
+
+-- Add job step for create table 
+EXEC jobs.sp_add_target_group_member 'TG_Test', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='legalone-dev-eastus2.database.windows.net', 
+@database_name = 'l1_firm_br_8074014_BVianna'; 
+GO
+
+--SELECT * FROM jobs.target_groups 
+--SELECT * FROM jobs.target_group_members 
+
+
+--Add job for create table 
+EXEC jobs.sp_add_job @job_name='InsertT1', 
+@description='Insere na tabela t1'; 
+GO 
+-- Add job step for create table 
+EXEC jobs.sp_add_jobstep @job_name='InsertT1', 
+@command=N'insert into t1 values(getdate())', 
+@credential_name='myjobcred', 
+@target_group_name='TG_Test'; 
+GO
+
+--Adding schedule to a job
+/*
+EXEC jobs.sp_update_job
+@job_name='InsertT1',
+@enabled=1,
+@schedule_interval_type='Minutes',
+@schedule_interval_count=5,
+@schedule_start_time='2021-09-21 11:00:00' 
+*/
+/*
+[ @schedule_interval_type= ] schedule_interval_type
+Value indicates when the job is to be executed. schedule_interval_type is nvarchar(50) and can be one of the following values:
+
+'Once',
+'Minutes',
+'Hours',
+'Days',
+'Weeks',
+'Months'
+*/
+
+
+--Job and their executions
+
+EXEC jobs.sp_start_job 'InsertT1'; 
+--EXEC jobs.sp_stop_job 'CreateTestTable'; 
+
+SELECT * FROM jobs.job_executions; 
+GO
+
+--Dropping it
+EXEC jobs.sp_delete_job @job_name='InsertT1', @force=1
+EXEC jobs.sp_delete_target_group 'TTG' 
+
+--SELECT * FROM jobs.target_groups 
+--SELECT * FROM jobs.target_group_members 
+--SELECT * FROM jobs.job_executions; 
+
+
+--Adding schedule to a job
+/*
+EXEC jobs.sp_update_job
+@job_name='Run Sample Job',
+@enabled=1,
+@schedule_interval_type='Days',
+@schedule_interval_count=1,
+@schedule_start_time='2021-09-21 11:00:00' (sets time to 4:00am PST, adjust time accordingly)
+*/
+/*
+[ @schedule_interval_type= ] schedule_interval_type
+Value indicates when the job is to be executed. schedule_interval_type is nvarchar(50) and can be one of the following values:
+
+'Once',
+'Minutes',
+'Hours',
+'Days',
+'Weeks',
+'Months'
+*/
+
+select *from jobs.jobs
+select *from jobs.jobsteps

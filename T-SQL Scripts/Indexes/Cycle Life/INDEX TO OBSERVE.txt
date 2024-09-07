@@ -1,0 +1,72 @@
+SELECT 	ss.sum_execution_count,
+	t.TEXT,
+	ss.sum_total_elapsed_time,
+	ss.sum_total_logical_reads,
+	ss.sum_total_worker_time,
+	ss.sum_total_logical_writes
+FROM	(SELECT	s.plan_handle,
+	SUM(s.execution_count)		as	sum_execution_count,
+	SUM(s.total_elapsed_time)	as	sum_total_elapsed_time,
+	SUM(s.total_worker_time)	as 	sum_total_worker_time,
+	SUM(s.total_logical_reads)	as	sum_total_logical_reads,
+	SUM(s.total_logical_writes)	as	sum_total_logical_writes
+FROM sys.dm_exec_query_stats s
+	GROUP BY s.plan_handle
+) AS ss
+	CROSS APPLY sys.dm_exec_sql_text(ss.plan_handle) t
+WHERE t.text like '%SELECT SUM(CONTR_EMPRST_FSS.VLR_TXCRED_CEMPF),%'
+	ORDER BY 4 DESC
+
+
+
+SET STATISTICS IO ON
+
+SELECT SUM(CONTR_EMPRST_FSS.VLR_TXCRED_CEMPF),           CONTR_EMPRST_FSS.DAT_CREDTO_HTVRB       FROM CONTR_EMPRST_FSS,           PARTICIPANTE_FSS     WHERE ( PARTICIPANTE_FSS.NUM_MATR_PARTF = CONTR_EMPRST_FSS.NUM_MATR_PARTF)       AND  ( contr_emprst_fss.cod_tpepf in ( 1, 2 ))        AND ( CONTR_EMPRST_FSS.COD_SITUA_CEMPF <> 'C')       AND ( CONTR_EMPRST_FSS.DAT_INCL_CEMPF >= {ts '2014-01-01 00:00:00.000'})       AND ( CONTR_EMPRST_FSS.DAT_INCL_CEMPF <= {ts '2014-01-31 00:00:00.000'})       AND ( 0 = 0 )       AND  ( contr_emprst_fss.num_plbnf in ( 32 ))   GROUP BY CONTR_EMPRST_FSS.DAT_CREDTO_HTVRB
+
+SET STATISTICS IO OFF  
+
+
+
+
+CREATE INDEX TESTE ON contr_emprst_fss(
+
+num_plbnf,
+dat_incl_cempf,
+cod_situa_cempf,
+cod_tpepf
+)
+
+INCLUDE (
+dat_credto_htvrb,
+vlr_txcred_cempf)
+
+
+
+
+--OBSERVE THE CREATED INDEX
+
+DECLARE
+@DATABASE_NAME SYSNAME,
+@TYPE_DESC NVARCHAR(120)
+SET @DATABASE_NAME='Amd_Prev_HMP'
+SET @TYPE_DESC='NONCLUSTERED'
+
+SELECT OBJECT_NAME(a.object_id) as [object_name],b.name,e.used_pages*8/1024 "used_pages(mb)",
+e.total_pages*8/1024 "total_pages(mb)", a.user_seeks,a.user_scans,a.user_lookups,a.user_updates,
+a.last_user_seek,a.last_user_scan,a.last_user_lookup,a.last_user_update
+FROM 
+sys.dm_db_index_usage_stats a inner join sys.indexes b
+on a.object_id=b.object_id and a.index_id=b.index_id
+inner join sys.partitions d 
+on d.object_id=b.object_id and b.index_id = d.index_id
+inner join sys.allocation_units e
+on d.hobt_id = e.container_id
+WHERE 
+b.is_hypothetical=0 and
+OBJECT_NAME(a.object_id) not in ('sysallocunits','sysowners','null') and
+--OBJECT_NAME(a.object_id)='empregado' and
+DB_NAME(a.database_id)=@DATABASE_NAME and
+b.type_desc=@TYPE_DESC and 
+b.name='TESTE'
+ORDER BY 5 DESC
+GO

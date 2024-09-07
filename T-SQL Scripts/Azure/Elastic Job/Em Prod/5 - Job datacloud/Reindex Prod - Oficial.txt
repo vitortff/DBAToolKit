@@ -1,0 +1,83 @@
+--1 Scoped Credential
+
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL datacloudprod -- credential name
+WITH IDENTITY = 'datacloud', -- login or contained user name
+SECRET = 'Z2GYR3157ddUebU15IOh43OMVbR38OW'; -- login or contained user password
+GO
+
+SELECT * FROM sys.database_scoped_credentials
+
+--2 Creating Target Group
+EXEC jobs.sp_add_target_group 'TG_datacloudprod' 
+--select *from [jobs].[target_groups]
+--EXEC jobs.sp_delete_target_group 'datacloudnonprod' 
+
+--3 ADDING GROUP MEMBER TO A TARGET GROUP
+EXEC jobs.sp_add_target_group_member 'TG_datacloudprod', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='datacloudprod.database.windows.net', 
+@database_name = 'Robos_WSDatacloud'
+GO
+
+-- Creating a Job
+EXEC jobs.sp_add_job @job_name='Reindex_Robos_WSDatacloud_Prod', 
+@description='DC BR: Rebuild Index Task'; 
+
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='Reindex_Robos_WSDatacloud_Prod', 
+@command=N'
+DBCC DBREINDEX (''Processo'','''',100);
+DBCC DBREINDEX (''Consumo'','''',100);
+DBCC DBREINDEX (''Tarifario'','''',100);
+DBCC DBREINDEX (''Tarifario_Andamentos'','''',100);
+DBCC DBREINDEX (''Tarifario_DadosCapa'','''',100);
+DBCC DBREINDEX (''Resultado'','''',100);
+DBCC DBREINDEX (''Ticket'','''',100);
+DBCC DBREINDEX (''QueryString'','''',100);
+DBCC DBREINDEX (''ResultadoCloud'','''',100);
+', 
+@credential_name='datacloudprod', 
+@target_group_name='TG_datacloudprod',
+@step_name = 'step01' 
+GO
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='Reindex_Robos_WSDatacloud_Prod',
+@enabled=1,
+@schedule_interval_type='Weeks',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-07-23 05:00:00'
+
+
+
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+
+
+-- Starting a job manually
+--EXEC jobs.sp_start_job 'Reindex_Robos_WSDatacloud_Prod';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='Reindex_Robos_WSDatacloud_Prod', @force=1
+
+-- Canceling job execution with the specified job execution id
+EXEC jobs.sp_stop_job 'CF1AFCD5-6D59-4E7F-9A05-DA1E7794A893';
+
+
+
+
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='Reindex_Robos_WSDatacloud_Prod' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc

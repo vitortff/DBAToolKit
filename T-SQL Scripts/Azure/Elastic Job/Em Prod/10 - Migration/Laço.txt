@@ -1,0 +1,3 @@
+DECLARE @SQLString NVARCHAR(4000)
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [legalone-migration] WITH (TYPE=RDBMS, LOCATION = ''legalone-migration.database.windows.net'',DATABASE_NAME = ''' + 'InfolexOne_AR_8110621' + ''' ,CREDENTIAL= [legalone-migration])'
+print @SQLString

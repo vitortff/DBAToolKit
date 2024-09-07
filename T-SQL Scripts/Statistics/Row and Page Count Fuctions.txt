@@ -1,0 +1,5 @@
+SELECT * FROM sys.partitions WHERE object_id = object_id('dbo.Address')
+
+SELECT * FROM sys.dm_db_partition_stats WHERE object_id = object_id('dbo.Address')
+
+UPDATE STATISTICS dbo.Address WITH ROWCOUNT = 1000000000000000, PAGECOUNT = 1000000000000000

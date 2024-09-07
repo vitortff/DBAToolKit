@@ -1,0 +1,7 @@
+--Pools com maiores comsumo
+select @@servername as servername,elastic_pool_name,avg(avg_cpu_percent) as avg_cpu_percent,avg(avg_data_io_percent) as avg_data_io_percent from sys.elastic_pool_resource_stats
+where start_time >= DateAdd(d,-14,GetUTCDate())
+group by elastic_pool_name
+order by 3 desc
+
+

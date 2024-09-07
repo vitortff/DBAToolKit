@@ -1,0 +1,18 @@
+--2.1 Checking it
+select gm.target_id, g.target_group_name, gm.membership_type, gm.target_type, gm.server_name, gm.database_name, gm.elastic_pool_name
+from [jobs].target_groups g
+left outer join [jobs].target_group_members gm
+on g.target_group_id = gm.target_group_id
+where g.target_group_name='shrinkdb-eastus2'
+
+
+--EXEC jobs.sp_start_job 'Shrink_Databases'; 
+--EXEC jobs.sp_stop_job 'Shrink_Databases'; 
+
+
+
+SELECT target_database_name,step_name,is_active,lifecycle,start_time,end_time,last_message  FROM jobs.job_executions
+where job_name='Shrink_Databases'
+and lifecycle <> 'Succeeded' and
+create_time > '2023-06-17 00:42:00.8966667' and
+target_database_name is not null

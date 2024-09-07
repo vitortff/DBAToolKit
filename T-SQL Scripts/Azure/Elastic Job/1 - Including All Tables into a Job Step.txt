@@ -1,0 +1,1 @@
+select 'DBCC DBREINDEX(''''' + name + '' + ''''',' + ''''''''',100);' from sys.objects where type='u' and name <> 'Gen_revisao' order by 1

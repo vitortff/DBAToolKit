@@ -1,0 +1,58 @@
+--1
+WITH DB_Storage_CTE (end_time, database_name)  
+AS  
+-- Define the CTE query.  
+(  
+SELECT max(end_time) as end_time, database_name  FROM sys.resource_stats
+GROUP BY database_name 
+)  
+
+
+SELECT a.database_name,a.storage_in_megabytes into #temp FROM sys.resource_stats a, DB_Storage_CTE b
+WHERE a.database_name=b.database_name and
+b.end_time=a.end_time and
+a.database_name in (
+SELECT  d.name
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE slo.elastic_pool_name= 'l1-firm-br-pool-15')		--insira o elastic pool
+
+
+--2
+
+DECLARE @s datetime;  
+DECLARE @e datetime;  
+SET @s= DateAdd(d,-14,GetUTCDate());  -- 14 dias
+SET @e= GETUTCDATE();  
+SELECT a.database_name, AVG(a.avg_data_io_percent) AS Average_IO_Utilization, AVG(a.avg_cpu_percent) AS Average_CPU_Utilization, b.storage_in_megabytes   
+into #DBs_Full_Metrics FROM sys.resource_stats a join #temp b
+on a.database_name=b.database_name
+WHERE a.start_time BETWEEN @s AND @e  and
+a.database_name in
+(select database_name from #temp)
+
+GROUP BY a.database_name,b.storage_in_megabytes    
+order by 4 desc
+
+select b.create_date,DATEDIFF(day,b.create_date, GETDATE()) as days, a.* from #DBs_Full_Metrics a, sys.databases b
+where a.database_name=b.name
+and storage_in_megabytes < 999
+and DATEDIFF(day,b.create_date, GETDATE()) > 90
+order by 6 
+
+
+drop table #temp
+drop table #DBs_Full_Metrics 
+
+
+--select name, create_date from sys.databases
+
+/*
+select b.create_date,a.* from #DBs_Full_Metrics a, sys.databases b
+where a.database_name=b.name
+*/
+
+
+--select  name, create_date, DATEDIFF(day,create_date, GETDATE()) as days from sys.databases
+

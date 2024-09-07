@@ -1,0 +1,35 @@
+dbcc showcontig('CS_NGTB_MANIFTEMP_SQ');
+dbcc showcontig('CS_DMTB_CONFIGURACAO_SQ');
+dbcc showcontig('CS_LGTB_SERVICOLOG_SQ');
+dbcc showcontig('CS_LGTB_SERVICOLOG_SELO');
+dbcc showcontig('CS_NGTB_RECENTES_SQ');
+dbcc showcontig('CS_NGTB_MANIFTEMP_MATM');
+dbcc showcontig('CS_ASTB_MANIFESTACAODEST_SQ');
+dbcc showcontig('CS_ASTB_MANIFESTACAODEST_MADS');
+dbcc showcontig('CS_CDTB_PESSOACOMUNIC_SQ');
+dbcc showcontig('CS_CDTB_PESSOACOMUNIC_PCOM');
+dbcc showcontig('CS_ASTB_PERMISSIONAMENTO_PETO');
+dbcc showcontig('CS_NGTB_CHAMADO_CHAM');
+dbcc showcontig('CS_NGTB_CHAMADO_SQ');
+dbcc showcontig('CS_NGTB_MANIFESTACAO_SQ');
+dbcc showcontig('CS_ASTB_DETMANIFESTACAO_DTMA');
+dbcc showcontig('CS_NGTB_MANIFESPEC_MAES');
+dbcc showcontig('CS_NGTB_MANIFESTACAO_MANI');
+dbcc showcontig('ES_NGTB_MANIFDADOSPARTICIPANTES_MADP');
+dbcc showcontig('CS_NGTB_LOGS_SQ');
+dbcc showcontig('CS_NGTB_LOGS_LOGS');
+dbcc showcontig('ES_CDTB_DADOSPARTICIPANTE_SQ');
+dbcc showcontig('ES_CDTB_DADOSPARTICIPANTE_DAPA');
+dbcc showcontig('CS_NGTB_ANEXOSMANIFTEMP_ANMT');
+
+
+
+dbcc dbreindex ('CS_NGTB_MANIFTEMP_MATM','',100);
+dbcc dbreindex ('CS_ASTB_MANIFESTACAODEST_MADS','',100);
+dbcc dbreindex ('CS_NGTB_MANIFESPEC_MAES','',100);
+dbcc dbreindex ('CS_NGTB_MANIFESTACAO_MANI','',100);
+
+dbcc showcontig('CS_NGTB_MANIFTEMP_MATM');
+dbcc showcontig('CS_ASTB_MANIFESTACAODEST_MADS');
+dbcc showcontig('CS_NGTB_MANIFESPEC_MAES');
+dbcc showcontig('CS_NGTB_MANIFESTACAO_MANI');

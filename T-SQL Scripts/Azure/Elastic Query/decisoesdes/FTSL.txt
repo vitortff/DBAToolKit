@@ -1,0 +1,38 @@
+USE [decisoesdes]
+GO
+
+/****** Object:  FullTextStopList decisoes_stoplist    Script Date: 4/10/2023 10:22:37 AM ******/
+DROP FULLTEXT STOPLIST [decisoes_stoplist];
+GO
+
+/****** Object:  FullTextStopList decisoes_stoplist    Script Date: 4/10/2023 10:22:37 AM ******/
+CREATE FULLTEXT STOPLIST [decisoes_stoplist]
+;
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'a' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'ao' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'aos' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'as' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'até' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'da' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'às' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'o' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'os' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'por' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'pra' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'se' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'à' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'em' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'na' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'nas' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'no' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'nos' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'num' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'das' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'de' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'do' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'dos' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'dum' LANGUAGE 'Brazilian';
+ALTER FULLTEXT STOPLIST [decisoes_stoplist] ADD 'e' LANGUAGE 'Brazilian';
+GO
+
+

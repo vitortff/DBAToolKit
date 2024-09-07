@@ -1,0 +1,6 @@
+-- Habilitando RPC, sem habilita-lá, não é possíve executar store procedures de servidores remotos
+
+exec sp_serveroption @server='myserver', @optname='rpc', @optvalue='true'
+exec sp_serveroption @server='myserver', @optname='rpc out', @optvalue='true' 
+
+

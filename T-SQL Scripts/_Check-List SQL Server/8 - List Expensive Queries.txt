@@ -1,0 +1,51 @@
+--https://blog.sqlauthority.com/2021/03/17/sql-server-list-expensive-queries-updated-march-2021/
+--https://towardsdatascience.com/find-the-top-n-most-expensive-queries-48e46d8e9752
+
+
+SELECT TOP(50) qs.execution_count AS [Execution Count],
+(qs.total_logical_reads)*8/1024.0 AS [Total Logical Reads (MB)],
+(qs.total_logical_reads/qs.execution_count)*8/1024.0 AS [Avg Logical Reads (MB)],
+(qs.total_worker_time)/1000.0 AS [Total Worker Time (ms)],
+(qs.total_worker_time/qs.execution_count)/1000.0 AS [Avg Worker Time (ms)],
+(qs.total_elapsed_time)/1000.0 AS [Total Elapsed Time (ms)],
+(qs.total_elapsed_time/qs.execution_count)/1000.0 AS [Avg Elapsed Time (ms)],
+qs.creation_time AS [Creation Time]
+,t.text AS [Complete Query Text], qp.query_plan AS [Query Plan]
+FROM sys.dm_exec_query_stats AS qs WITH (NOLOCK)
+CROSS APPLY sys.dm_exec_sql_text(plan_handle) AS t
+CROSS APPLY sys.dm_exec_query_plan(plan_handle) AS qp
+WHERE t.dbid = DB_ID()
+ORDER BY qs.execution_count DESC OPTION (RECOMPILE);-- frequently ran query
+-- ORDER BY [Total Logical Reads (MB)] DESC OPTION (RECOMPILE);-- High Disk Reading query
+-- ORDER BY [Avg Worker Time (ms)] DESC OPTION (RECOMPILE);-- High CPU query
+-- ORDER BY [Avg Elapsed Time (ms)] DESC OPTION (RECOMPILE);-- Long Running query
+
+
+
+--https://www.sqlshack.com/the-sql-server-query-store-in-action/
+
+SELECT TOP 50
+	query_store_query.query_id,
+	query_store_query_text.query_sql_text,
+	query_store_plan.query_plan AS query_plan_text,
+	CAST(query_store_plan.query_plan AS XML) AS query_plan_xml,
+	query_store_runtime_stats.last_execution_time
+FROM sys.query_store_query
+LEFT JOIN sys.query_store_query_text
+ON query_store_query.query_text_id = query_store_query_text.query_text_id
+LEFT JOIN sys.query_store_plan
+ON query_store_query.query_id = query_store_plan.query_id
+LEFT JOIN sys.query_store_runtime_stats
+ON query_store_plan.plan_id = query_store_runtime_stats.plan_id
+LEFT JOIN sys.query_store_runtime_stats_interval
+ON query_store_runtime_stats.runtime_stats_interval_id = query_store_runtime_stats_interval.runtime_stats_interval_id
+WHERE 
+	query_store_query.query_id = 7615766
+--	query_store_runtime_stats_interval.start_time BETWEEN '11/17/2015 22:00:00' AND '11/18/2015 22:00:00'
+--	AND query_store_plan.query_plan LIKE '%convert_implicit%'
+ORDER BY query_store_runtime_stats.last_execution_time DESC
+
+
+
+
+

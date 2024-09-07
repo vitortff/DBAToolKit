@@ -1,0 +1,175 @@
+--1 Scoped Credential
+
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL [legalone-prod2] -- credential name
+WITH IDENTITY = 'cloud', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+SELECT * FROM sys.database_scoped_credentials
+
+--2 Creating Target Group
+EXEC jobs.sp_add_target_group 'JOB02-PROD2-Indices-Sync-Andamentos' 
+--select *from [jobs].[target_groups]
+--EXEC jobs.sp_delete_target_group 'datacloudnonprod' 
+
+
+--3 ADDING GROUP MEMBER TO A TARGET GROUP
+EXEC jobs.sp_add_target_group_member 'JOB02-PROD2-Indices-Sync-Andamentos', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='legalone-prod2.database.windows.net', 
+@database_name = 'NOVAJUS_FULL_8165030'
+GO
+
+-- Creating a Job
+EXEC jobs.sp_add_job @job_name='JOB02-PROD2-Indices-Sync-Andamentos', 
+@description='Ajusta índices sync Andamentos'; 
+
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='JOB02-PROD2-Indices-Sync-Andamentos', 
+@command=N'
+--1
+
+DROP INDEX IF EXISTS MON_Consulta.IX_MON_Consulta_Id_PRO_Processo;
+
+--1.1
+/****** Object:  Index [IX_MON_Consulta_Id_PRO_Processo]    Script Date: 5/15/2023 5:28:49 PM ******/
+CREATE NONCLUSTERED INDEX [IX_MON_Consulta_Id_PRO_Processo] ON [dbo].[MON_Consulta]
+(
+	[Id_PRO_Processo] ASC
+)
+INCLUDE ([QueryString],
+	[DtHrUltimaAtualizacao],
+	[TipoOrigem],
+	[Id_AGN_Contato],
+	[IsAtivo],
+	[Descricao],
+	[IsMonitoraCapa],
+	[IsMonitoraAndamentos],
+	[laststatus]) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+GO
+
+--2
+
+DROP INDEX IF EXISTS GEN_Andamento.IX_GEN_ANDAMENTO__Checksum;
+
+--2.1
+/****** Object:  Index [IX_GEN_ANDAMENTO__Checksum]    Script Date: 5/15/2023 5:51:21 PM ******/
+CREATE NONCLUSTERED INDEX [IX_GEN_ANDAMENTO__Checksum] ON [dbo].[GEN_Andamento]
+(
+	[Checksum] ASC
+)
+INCLUDE ([Id],
+	[Descricao],
+	[Observacao],
+	[TipoOrigem],
+	[ID_GEN_ANDM_COMP_TARF_TP],
+	[ID_GEN_ANDM_COMP_TARF_SB_TP],
+	[DtHrAndamento],
+	[StrData],
+	[StrHora],
+	[CaminhoPDF],
+	[IdRecorte],
+	[IdPublicacaoOrigem],
+	[IsConfidencial],
+	[Id_CA_Usuario_FezContato],
+	[Relevancia],
+	[NumeroPagina],
+	[DtHrCadastro],
+	[NomeOrgao],
+	[NomeCaderno],
+	[Identificador],
+	[IsEncerrado],
+	[Id_CA_Usuario_ExecutouAto],
+	[ID_AGN_COMP_TARF_ORIG],
+	[HighLightOffset],
+	[Pagina],
+	[Id_CA_Usuario_Cadastrou],
+	[IdGlobal_GLB_OrgaoDiarioREX],
+	[SiglaUF],
+	[Notificacao],
+	[Id_O365_Email],
+	[PublicationStatus],
+	[Id_CA_Usuario_Tratou],
+	[DateTimeTreatment],
+	[Source],
+	[Deadline], 
+	[Id_MON_CourtSystem], 
+	[AcknowledgmentDate], 
+	[AcknowledgmentDeadlineDate], 
+	[ManifestationDeadlineDate], 
+	[ElectronicSummonStatus], 
+	[LastUpdateDate], 
+	[HasPedingDocumentSynchronization],
+	[IdConc]) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+GO
+
+
+--3
+
+DROP INDEX IF EXISTS GEN_Andamento_Vinculo.IX_GEN_ANDM_VINC_001;
+
+--3.1
+/****** Object:  Index [IX_GEN_ANDM_VINC_001]    Script Date: 5/15/2023 5:52:28 PM ******/
+CREATE NONCLUSTERED INDEX [IX_GEN_ANDM_VINC_001] ON [dbo].[GEN_Andamento_Vinculo]
+(
+	[Id_GEN_Andamento] ASC
+)
+INCLUDE ([Id],
+	[Id_AGN_CompromissoTarefa],
+	[Id_AGN_Contato],
+	[Id_PRO_Processo],
+	[Id_SER_Servico],
+	[Id_CON_Negociacao],
+	[IsAtivo],
+	[Id_PRC_Procuracao],
+	[Id_CTM_EntidadeInstancia],
+	[Id_PRO_Prova],
+	[Id_IMO_Imovel],
+	[idConc]) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+GO
+', 
+@credential_name='legalone-prod2', 
+@target_group_name='JOB02-PROD2-Indices-Sync-Andamentos',
+@step_name = 'step01' 
+GO
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='Reindex_Robos_WSDatacloud_Prod',
+@enabled=1,
+@schedule_interval_type='Weeks',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-07-23 05:00:00'
+
+
+
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+
+
+-- Starting a job manually
+--EXEC jobs.sp_start_job 'JOB02-PROD2-Indices-Sync-Andamentos';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='Reindex_Robos_WSDatacloud_Prod', @force=1
+
+-- Canceling job execution with the specified job execution id
+EXEC jobs.sp_stop_job 'CF1AFCD5-6D59-4E7F-9A05-DA1E7794A893';
+
+
+
+
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='JOB02-PROD2-Indices-Sync-Andamentos' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc

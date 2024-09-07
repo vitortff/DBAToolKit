@@ -1,0 +1,134 @@
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+--Variáveis do relatório
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+
+DECLARE @SQLString2_1 NVARCHAR(4000)
+DECLARE @SQLString2_2  NVARCHAR(4000)
+DECLARE @SQLString3_1 NVARCHAR(4000)
+DECLARE @SQLString3_2  NVARCHAR(4000)
+
+DECLARE @SQLString4  NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1 and appnome in ('dbritto2','advocaciaruypedroschneider','filizolagoncalvesadvogados') 
+--UNION ALL
+--SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+--UNION ALL
+--SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '_] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+-----------------------INICIO DA PARTE A SER EDITADA------------------------------------------
+--2
+SET @SQLString2_1 = 'CREATE EXTERNAL TABLE [dbo].[PRO_Processo](
+	[Id] [int] ,
+	[NumeroCNJ] [varchar](25) ,
+	[NumeroAntigo] [varchar](50) ,
+	[OutroNumero] [varchar](50),
+	[Pasta] [varchar](40),
+	[IsMonitoraCapa] [bit] ,
+	[IsMonitorarRobo] [bit])
+
+WITH (DATA_SOURCE =[' + @servername + '_], SCHEMA_NAME = ''DBO'', OBJECT_NAME = ''PRO_Processo'')'
+
+EXECUTE sp_executesql @SQLString2_1
+
+
+--Criando a nova 
+
+SET @SQLString2_2= 'SELECT * INTO PRO_Processo_' + @appnome + ' FROM PRO_Processo'
+
+EXECUTE sp_executesql @SQLString2_2
+
+DROP EXTERNAL TABLE PRO_Processo
+
+--3
+
+SET @SQLString3_1 = 'CREATE EXTERNAL TABLE [dbo].[MON_Consulta](
+	[Id] [int],
+	[QueryString] [varchar](1000) ,
+	[TipoOrigem] [int] ,
+	[Id_PRO_Processo] [int] ,
+	[IsAtivo] [bit] ,
+	[IsMonitoraCapa] [bit] ,
+	[IsMonitoraAndamentos] [bit])
+
+WITH (DATA_SOURCE =[' + @servername + '_], SCHEMA_NAME = ''DBO'', OBJECT_NAME = ''MON_Consulta'')'
+
+EXECUTE sp_executesql @SQLString3_1
+
+
+--Criando a nova 
+
+SET @SQLString3_2= 'SELECT * INTO MON_Consulta_' + @appnome + ' FROM MON_Consulta'
+
+EXECUTE sp_executesql @SQLString3_2
+
+DROP EXTERNAL TABLE MON_Consulta
+
+
+----------------------------FIM DA PARTE A SER EDITADA------------------------------------
+
+
+SET @SQLString4 = 'DROP EXTERNAL DATA SOURCE [' + @servername + '_]'
+EXECUTE sp_executesql @SQLString4
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--SELECT
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+
+
+--drop external data source [legalone-prod-eastus2_]
+--DROP EXTERNAL TABLE PRO_Processo
+
+--select * from PRO_Pedido_dbritto2

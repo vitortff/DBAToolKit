@@ -1,0 +1,22 @@
+-- In this query, we can see the memories allocated for each component of the sql Server
+
+SELECT [type],
+memory_node_id,
+single_pages_kb,
+multi_pages_kb,
+virtual_memory_reserved_kb,
+virtual_memory_committed_kb,
+awe_allocated_kb
+FROM sys.dm_os_memory_clerks
+ORDER BY virtual_memory_reserved_kb DESC ;
+
+
+---Running this script breaks down the plan cache size by cached object type:
+
+SELECT objtype AS 'Cached Object Type',
+count(*) AS 'Number of Plans',
+sum(cast(size_in_bytes AS BIGINT))/1024/1024 AS 'Plan Cache Size (MB)',
+avg(usecounts) AS 'Avg Use Count'
+FROM sys.dm_exec_cached_plans
+GROUP BY objtype
+

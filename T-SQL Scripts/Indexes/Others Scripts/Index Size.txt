@@ -1,0 +1,12 @@
+SELECT
+OBJECT_NAME(i.OBJECT_ID) AS TableName,
+i.name AS IndexName,
+i.type_desc,
+i.is_unique,
+8 * SUM(a.used_pages)/1024 AS 'Indexsize(MB)'
+FROM sys.indexes AS i
+JOIN sys.partitions AS p ON p.OBJECT_ID = i.OBJECT_ID AND p.index_id = i.index_id
+JOIN sys.allocation_units AS a ON a.container_id = p.partition_id
+GROUP BY i.OBJECT_ID,i.type_desc,i.name,i.is_unique
+ORDER BY 5 desc
+--ORDER BY OBJECT_NAME(i.OBJECT_ID),4

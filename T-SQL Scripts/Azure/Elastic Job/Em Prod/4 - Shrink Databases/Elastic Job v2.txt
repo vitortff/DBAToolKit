@@ -1,0 +1,50 @@
+--1 Create Target
+EXEC jobs.sp_add_target_group 'shrinkdb-eastus2';
+--EXEC jobs.sp_delete_target_group 'shrinkdb-eastus2';
+--select * from jobs_internal.targets where target_group_name='shrinkdb-eastus2'
+
+--2 Add Target members
+EXEC [jobs].sp_add_target_group_member @target_group_name = N'shrinkdb-eastus2', @target_type = N'SqlDatabase', @server_name = N'legalone-prod-eastus2.database.windows.net', @database_name = N'NOVAJUS_FULL_8141397';
+EXEC [jobs].sp_add_target_group_member @target_group_name = N'shrinkdb-eastus2', @target_type = N'SqlDatabase', @server_name = N'legalone-prod-eastus2.database.windows.net', @database_name = N'l1_firm_br_8117442';
+
+--2.1 Checking it
+select gm.target_id, g.target_group_name, gm.membership_type, gm.target_type, gm.server_name, gm.database_name, gm.elastic_pool_name
+from [jobs].target_groups g
+left outer join [jobs].target_group_members gm
+on g.target_group_id = gm.target_group_id
+where g.target_group_name='shrinkdb-eastus2'
+
+--3 Creating a job
+EXEC jobs.sp_add_job @job_name='Shrink_Databases', 
+@description='Shrink Databases'; 
+
+--3.1 Delete it
+--EXEC jobs.sp_delete_job @job_name='Shrink Databases', @force=1
+
+--3.2 add a job step
+
+EXEC jobs.sp_add_jobstep @job_name='Shrink_Databases', 
+@command=N'DECLARE @DATABASE_NAME VARCHAR(50)= (SELECT DB_NAME()) SELECT @DATABASE_NAME DBCC SHRINKDATABASE(@DATABASE_NAME)',
+@credential_name='myjobcred4', 
+@target_group_name='shrinkdb-eastus2'; 
+GO
+/*
+
+-- Remove a target group member of type server
+EXEC jobs.sp_delete_target_group_member
+@target_group_name = N'shrinkdb-eastus2',
+@target_id = '078C8E08-417A-430D-9917-CF99E9EE5662';
+GO
+*/
+
+--EXEC jobs.sp_start_job 'Shrink Databases'; 
+--EXEC jobs.sp_stop_job 'Shrink Databases'; 
+
+
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+lifecycle,last_message FROM jobs.job_executions
+where job_name='Shrink Databases'
+order by 3 desc
+
+
+

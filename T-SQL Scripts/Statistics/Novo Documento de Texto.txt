@@ -1,0 +1,70 @@
+-- When a table does not have any rows.
+-- When a table has fewer 500 rows and it became to have more than 500 rows
+-- When a table has more than 500 rows and is increased by 500 rows + 20% of the number of rows
+
+
+--CONSIDERATION:
+
+--PROFILE TOOL MUST BE OPEN UPON THE FOLLOW EVENTS:
+--BATCH COMPLETED
+--AUTO STATS
+
+--OPEN A CONECTION 
+
+--SPID X
+--STEP01
+IF OBJECT_ID ('T1') IS NOT NULL
+DROP TABLE T1 
+
+CREATE TABLE DBO.T1
+(C1 INT, C2 INT IDENTITY);
+
+
+--STEP02
+SELECT TOP 1500 IDENTITY(INT,1,1) AS n
+INTO #NUMS
+FROM	MASTER.DBO.SYSCOLUMNS SC1,
+		MASTER.DBO.SYSCOLUMNS SC2;
+
+INSERT INTO DBO.T1(C1)
+SELECT N FROM #NUMS
+
+DROP TABLE #NUMS
+
+--STEP03
+CREATE NONCLUSTERED INDEX TESTE ON T1(C1)
+
+--STEP04 (HAVE A LOOK IF THE UPDATE STATISTICS HAPPENS)
+SELECT *FROM T1 WHERE C1=2
+
+
+SELECT TOP 1500
+		IDENTITY(INT,1,1) AS n
+INTO #NUMS
+FROM MASTER.DBO.SYSCOLUMNS SC1,
+     MASTER.DBO.SYSCOLUMNS SC2;
+
+INSERT INTO DBO.T1(C1)
+SELECT 2 FROM #NUMS
+
+SELECT *FROM T1 WHERE C1=2
+
+
+--SPID Y
+SELECT t.name "Table",
+i.name "Index",
+i.Type_desc "Type Index",
+STATS_date(i.object_id,i.index_id) as "Atualização"
+from sys.indexes as i
+inner join sys.tables t
+on t.object_id=i.object_id
+where i.[type] >0 and
+t.name='t1'
+order by t.name asc,
+i.type_desc asc,
+i.name asc
+
+--2013-09-16 16:53:32.260
+
+
+

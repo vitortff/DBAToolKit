@@ -1,0 +1,67 @@
+-1
+--master database
+CREATE LOGIN mastercred WITH PASSWORD = 'Strongpassw0rd'; 
+GO
+CREATE USER mastercred FROM LOGIN mastercred; 
+GO 
+CREATE LOGIN jobcred WITH PASSWORD = 'Strongpassw0rd'; 
+GO
+
+--2 Giving permission on the target database
+
+CREATE USER jobcred FROM LOGIN jobcred; 
+GO 
+exec sp_addrolemember 'db_owner', 'jobcred'; 
+GO 
+
+
+
+--3
+--Elastic job Database
+
+CREATE DATABASE SCOPED CREDENTIAL mymastercred WITH 
+IDENTITY = 'mastercred', SECRET = 'Strongpassw0rd'; 
+GO 
+
+-- Create a database scoped credential. 
+CREATE DATABASE SCOPED CREDENTIAL myjobcred WITH IDENTITY = 
+'jobcred', SECRET = 'Strongpassw0rd'; 
+GO
+
+
+-- Add a target group containing server(s) 
+EXEC jobs.sp_add_target_group 'TTG' 
+
+-- Add job step for create table 
+EXEC jobs.sp_add_target_group_member 'TTG', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='legalone-dev-eastus2.database.windows.net', 
+@database_name = 'l1_firm_br_8074014_BVianna'; 
+GO
+
+--SELECT * FROM jobs.target_groups 
+--SELECT * FROM jobs.target_group_members 
+
+
+--Add job for create table 
+EXEC jobs.sp_add_job @job_name='CreateTestTable', 
+@description='CreateTestTable'; 
+GO 
+-- Add job step for create table 
+EXEC jobs.sp_add_jobstep @job_name='CreateTestTable', 
+@command=N'create table t1(c1 int)', 
+@credential_name='myjobcred', 
+@target_group_name='TTG'; 
+GO
+
+--Job and their executions
+
+EXEC jobs.sp_start_job 'CreateTestTable'; 
+
+SELECT * FROM jobs.job_executions; 
+GO
+
+--Dropping it
+EXEC jobs.sp_delete_target_group 'TTG' 
+EXEC jobs.sp_delete_job @job_name='CreateTestTable', @force=1

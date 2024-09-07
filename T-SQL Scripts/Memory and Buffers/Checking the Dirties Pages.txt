@@ -1,0 +1,23 @@
+---Checking the dirty pages by Database
+
+SELECT db_name(database_id) AS 'Database',count(page_id) AS 'Dirty Pages'
+FROM sys.dm_os_buffer_descriptors
+WHERE is_modified =1
+GROUP BY db_name(database_id)
+ORDER BY count(page_id) DESC
+
+
+--Size in MB
+
+SELECT db_name(database_id) AS 'Database',count(page_id)*8/1024 AS 'Dirty Pages in MB'
+FROM sys.dm_os_buffer_descriptors
+WHERE is_modified =1
+GROUP BY db_name(database_id)
+ORDER BY count(page_id) DESC
+
+
+OBS: We can looking at amount of pages after a command Checkpoint
+
+
+
+dbcc dropcleanbuffers

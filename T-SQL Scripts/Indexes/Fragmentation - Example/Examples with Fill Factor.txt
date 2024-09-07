@@ -1,0 +1,82 @@
+create table teste (coll INT, COLL2 char(782))
+create clustered index teste_pk on teste(coll)
+
+INSERT INTO TESTE VALUES (10,'RAFAEL')
+INSERT INTO TESTE VALUES (11,'RAFAEL')
+INSERT INTO TESTE VALUES (12,'RAFAEL')
+INSERT INTO TESTE VALUES (13,'RAFAEL')
+INSERT INTO TESTE VALUES (14,'RAFAEL')
+INSERT INTO TESTE VALUES (15,'RAFAEL')
+INSERT INTO TESTE VALUES (16,'RAFAEL')
+INSERT INTO TESTE VALUES (17,'RAFAEL')
+INSERT INTO TESTE VALUES (18,'RAFAEL')
+INSERT INTO TESTE VALUES (19,'RAFAEL')
+
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('MASTER'), --Database Name
+OBJECT_ID('TESTE'), -- Table Name
+NULL,NULL,'SAMPLED')
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+0								1				1			99,9258710155671				10				807
+*/
+
+ALTER INDEX TESTE_PK ON TESTE REBUILD WITH (FILLFACTOR=80)
+
+
+/* THE RESULT HAS BEEN:
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+50		
+*/--						2				2			49,0857425253274				10				793
+
+INSERT INTO TESTE VALUES (7,'RAFAEL')
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+50								2				2			54,0832715591796				11				794,272
+*/
+INSERT INTO TESTE VALUES (8,'RAFAEL')
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+66,6666666666667				3				3			39,3789720780825				12				795,333
+*/
+
+INSERT INTO TESTE VALUES (20,'RAFAEL')
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+66,6666666666667				3				3			42,7106498640969				13				796,23
+*/
+
+INSERT INTO TESTE VALUES (21,'RAFAEL')
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+66,6666666666667				3				3			46,0423400049419				14				797
+*/
+
+INSERT INTO TESTE VALUES (1,'RAFAEL')
+INSERT INTO TESTE VALUES (2,'RAFAEL')
+INSERT INTO TESTE VALUES (3,'RAFAEL')
+INSERT INTO TESTE VALUES (4,'RAFAEL')
+INSERT INTO TESTE VALUES (5,'RAFAEL')
+INSERT INTO TESTE VALUES (6,'RAFAEL')
+GO 
+
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('MASTER'), --Database Name
+OBJECT_ID('TESTE'), -- Table Name
+NULL,NULL,'SAMPLED')
+
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+66,6666666666667				3				3			62,7007659995058				19				799,631
+*/
+

@@ -1,0 +1,22 @@
+--Listando o tamanho dos Bancos de Dados por Elastic Pool
+
+WITH DB_Storage_CTE (end_time, database_name)  
+AS  
+-- Define the CTE query.  
+(  
+SELECT max(end_time) as end_time, database_name  FROM sys.resource_stats
+GROUP BY database_name 
+)  
+
+SELECT a.database_name,a.storage_in_megabytes FROM sys.resource_stats a, DB_Storage_CTE b
+WHERE a.database_name=b.database_name and
+b.end_time=a.end_time and
+a.database_name in (
+SELECT  d.name
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE slo.elastic_pool_name= 'l1-firm-br-pool-12-add')		--insira o elastic pool
+ORDER BY 2 desc
+
+

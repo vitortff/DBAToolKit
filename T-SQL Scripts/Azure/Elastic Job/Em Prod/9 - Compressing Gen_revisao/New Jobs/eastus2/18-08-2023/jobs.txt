@@ -1,0 +1,130 @@
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT * FROM [jobs_internal].[jobs]  where NAME LIKE 'eastus2%' and delete_requested_time is null order by 2
+
+--EXEC jobs.sp_add_target_group 'TG_eastus2_Job01'
+--EXEC jobs.sp_add_target_group 'TG_eastus2_Job02' 
+--EXEC jobs.sp_add_target_group 'TG_eastus2_Job03' 
+--EXEC jobs.sp_add_target_group 'TG_eastus2_Job04' 
+--EXEC jobs.sp_add_target_group 'TG_eastus2_Job05'
+
+/*
+-- Creating a Job
+EXEC jobs.sp_add_job @job_name='eastus2_Job05-Gen_RevisaoCompression', @description='Compressao da Gen_revisao'; 
+
+--Add Jobstep
+EXEC jobs.sp_add_jobstep @job_name='eastus2_Job05-Gen_RevisaoCompression', 
+@command=N'
+--1 Compression
+ALTER TABLE GEN_REVISAO REBUILD WITH (xml_compression = on)
+
+--2 Shrinking
+DECLARE @DATABASE_NAME VARCHAR(50) = (SELECT DB_NAME())
+SELECT @DATABASE_NAME
+DBCC SHRINKDATABASE(@DATABASE_NAME)
+', 
+@credential_name='legalone-prod-eastus2', 
+@target_group_name='TG_eastus2_Job05',
+@step_name = 'step01' 
+GO
+
+
+
+-- Starting a job manually
+--EXEC jobs.sp_start_job 'eastus2_Job01-Gen_RevisaoCompression';
+--EXEC jobs.sp_start_job 'eastus2_Job02-Gen_RevisaoCompression';
+--EXEC jobs.sp_start_job 'eastus2_Job03-Gen_RevisaoCompression';  
+--EXEC jobs.sp_start_job 'eastus2_Job04-Gen_RevisaoCompression';  
+--EXEC jobs.sp_start_job 'eastus2_Job05-Gen_RevisaoCompression';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='eastus2_Job01-Gen_RevisaoCompression', @force=1
+--EXEC jobs.sp_delete_job @job_name='eastus2_Job02-Gen_RevisaoCompression', @force=1
+--EXEC jobs.sp_delete_job @job_name='eastus2_Job03-Gen_RevisaoCompression', @force=1
+--EXEC jobs.sp_delete_job @job_name='eastus2_Job04-Gen_RevisaoCompression', @force=1
+--EXEC jobs.sp_delete_job @job_name='eastus2_Job05-Gen_RevisaoCompression', @force=1
+
+-- Checking the execution
+SELECT job_id, job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name in ('eastus2_Job01-Gen_RevisaoCompression','eastus2_Job02-Gen_RevisaoCompression','eastus2_Job03-Gen_RevisaoCompression','eastus2_Job04-Gen_RevisaoCompression','eastus2_Job05-Gen_RevisaoCompression')
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc
+
+
+-- Canceling job execution with the specified job execution id
+
+--eastus2_Job01-Gen_RevisaoCompression
+--EXEC jobs.sp_stop_job '90C7B89B-E33C-4EEB-A8AE-B196E23078CF';
+
+--eastus2_Job02-Gen_RevisaoCompression
+--EXEC jobs.sp_stop_job '581DE61E-288A-4690-A558-33A2BA04604C';
+
+--eastus2_Job03-Gen_RevisaoCompression
+--EXEC jobs.sp_stop_job 'BBBA9C94-697F-4381-BD19-AE05E9740C6B';
+
+
+/*
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+--'eastus2_Job01-Gen_RevisaoCompression';
+--'eastus2_Job02-Gen_RevisaoCompression';
+--'eastus2_Job03-Gen_RevisaoCompression';
+
+
+EXEC jobs.sp_update_job
+@job_name='eastus2_Job01-Gen_RevisaoCompression',
+@enabled=1,
+@schedule_interval_type='Once',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-08-19 03:00:00'
+
+EXEC jobs.sp_update_job
+@job_name='eastus2_Job02-Gen_RevisaoCompression',
+@enabled=1,
+@schedule_interval_type='Once',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-08-19 03:00:00'
+
+EXEC jobs.sp_update_job
+@job_name='PROD3_Job01-Gen_RevisaoCompression',
+@enabled=1,
+@schedule_interval_type='Once',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-08-19 09:00:00'
+
+EXEC jobs.sp_update_job
+@job_name='PROD3_Job04-Gen_RevisaoCompression',
+@enabled=1,
+@schedule_interval_type='Once',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-08-19 17:00:00'
+
+EXEC jobs.sp_update_job
+@job_name='PROD3_Job04-Gen_RevisaoCompression',
+@enabled=1,
+@schedule_interval_type='Once',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-08-19 23:00:00'
+
+*/
+
+--Check Target members:
+
+select g.target_group_name, gm.server_name, gm.database_name
+from [jobs].target_groups g
+left outer join [jobs].target_group_members gm
+on g.target_group_id = gm.target_group_id
+where g.target_group_name in ('TG_eastus2_Job01','TG_eastus2_Job02','TG_eastus2_Job03','TG_eastus2_Job04') 
+
+select g.target_group_name, gm.server_name, count(gm.database_name) as Freq_DBs
+from [jobs].target_groups g
+left outer join [jobs].target_group_members gm
+on g.target_group_id = gm.target_group_id
+where g.target_group_name in ('TG_eastus2_Job01','TG_eastus2_Job02','TG_eastus2_Job03','TG_eastus2_Job04')
+group by g.target_group_name, gm.server_name
+
+
+

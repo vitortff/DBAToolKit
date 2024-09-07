@@ -1,0 +1,20 @@
+dbcc showcontig (mov_cont_partic_fss)
+dbcc showcontig (sld_conta_partic_fss)
+dbcc showcontig (fch_finan_partic_fss)
+dbcc showcontig (ficha_financeira)
+dbcc showcontig (lancto_emprest_fss)
+dbcc showcontig (base_mensal_fss)
+dbcc showcontig (parc_pagto_benef_fss)
+dbcc showcontig (empregado)
+dbcc showcontig (hist_sal_base_fss)
+
+
+DBCC DBREINDEX ('mov_cont_partic_fss','',100);
+DBCC DBREINDEX ('sld_conta_partic_fss','',100);
+DBCC DBREINDEX ('fch_finan_partic_fss','',100);
+DBCC DBREINDEX ('ficha_financeira','',100);
+DBCC DBREINDEX ('lancto_emprest_fss','',100);
+DBCC DBREINDEX ('base_mensal_fss','',100);
+DBCC DBREINDEX ('parc_pagto_benef_fss','',100);
+DBCC DBREINDEX ('empregado','',100);
+DBCC DBREINDEX ('hist_sal_base_fss','',100);

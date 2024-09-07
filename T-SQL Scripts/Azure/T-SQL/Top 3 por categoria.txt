@@ -1,0 +1,10 @@
+WITH TOPTEN AS (
+    SELECT *, ROW_NUMBER() 
+    over (
+        PARTITION BY servername, elastic_pool_name
+        order by servername, elastic_pool_name 
+    ) AS RowNo 
+    FROM Tbl_Hist_Databases_Metrics
+	where avg_cpu > '0,5'
+)
+SELECT * FROM TOPTEN WHERE RowNo <= 3

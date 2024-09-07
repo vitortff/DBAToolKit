@@ -1,0 +1,49 @@
+--2
+-- data source to remote Azure SQL Database server and database
+CREATE EXTERNAL DATA SOURCE account_corp_br
+WITH
+(
+    TYPE=RDBMS, -- data source type
+    LOCATION = 'legalone-prod-eastus2.database.windows.net', -- Azure SQL Database server name
+    DATABASE_NAME = 'account_corp_br', -- database name
+    CREDENTIAL= [legalone-prod-eastus2] -- credential used to connect to server / database  
+)
+
+
+
+CREATE EXTERNAL TABLE NVJ_Escritorio_CorpBR(
+	[Id] [int],
+	[AppNome] [varchar](50),
+	[AppDominio] [varchar](250),
+	[AppIdInstancia] [int],
+	[AppVersao] [varchar](20),
+	[AppIP] [varchar](40),
+	[DBNomeBase] [varchar](50),
+	[DBNomeServidor] [varchar](50),
+	[DBVersao] [varchar](20),
+	[IsAtivo] [bit],
+	[IdResponsavelParceria] [int],
+	[Distribuicao] [varchar](50),
+	[EmManutencao] [bit],
+	[Winsip] [varchar](max),
+	[Pais] [varchar](2),
+	[DTCadastro] [datetime2](7),
+	[TranslationInterfaceConfig] [nvarchar](100),
+	[WorkflowDbServer] [varchar](200),
+	[WorkflowDbName] [varchar](200),
+	[LicenseId] [varchar](50),
+	[QuoteNumber] [varchar](20),
+	[Renewals] [int],
+	[GedContainerName] [varchar](50),
+	[GroupName] [varchar](50),
+	[FeatureToggles] [varchar](max),
+	[TenantIdentifier] [varchar](32),
+	[IsBlobStorageActived] [bit],
+	[BlobConnectionString] [varchar](4000),
+	[IsMigration] [bit])
+	
+	WITH (DATA_SOURCE = account_corp_br,  -- data source 
+      SCHEMA_NAME = 'dbo',           -- external table schema
+      OBJECT_NAME = 'nvj_escritorio'       -- name of table in external database
+     )
+GO

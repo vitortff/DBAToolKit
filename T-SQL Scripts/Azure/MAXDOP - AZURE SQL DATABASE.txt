@@ -1,0 +1,7 @@
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/configure-max-degree-of-parallelism?view=azuresql
+--Data: 07/02/2023
+--NOVAJUS_FULL_8162456
+--NOVAJUS_FULL_8173358 
+
+SELECT * FROM sys.database_scoped_configurations WHERE [name] = 'MAXDOP';
+ALTER DATABASE SCOPED CONFIGURATION SET MAXDOP = 8;

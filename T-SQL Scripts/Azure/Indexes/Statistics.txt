@@ -1,0 +1,9 @@
+SELECT t.name "Table",
+i.name "Statistics_Name",
+STATS_date(i.object_id,i.stats_id) as "Atualização"
+from sys.stats as i
+inner join sys.tables t
+on t.object_id=i.object_id
+where STATS_date(i.object_id,i.stats_id) is not null
+order by t.name asc,
+i.name desc

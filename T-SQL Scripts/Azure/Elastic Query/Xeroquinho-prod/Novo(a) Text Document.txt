@@ -1,0 +1,30 @@
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL datacloudprod -- credential name
+WITH IDENTITY = 'datacloud', -- login or contained user name
+SECRET = 'Z2GYR3157ddUebU15IOh43OMVbR38OW'; -- login or contained user password
+GO
+
+-- data source to remote Azure SQL Database server and database
+CREATE EXTERNAL DATA SOURCE datacloudprod
+WITH
+(
+    TYPE=RDBMS, -- data source type
+    LOCATION = 'datacloudprod.database.windows.net', -- Azure SQL Database server name
+    DATABASE_NAME = 'Robos_WSDatacloud', -- database name
+    CREDENTIAL= datacloudprod -- credential used to connect to server / database  
+
+
+
+
+	CREATE EXTERNAL TABLE [dbo].[tbl_creditos_hist](
+	[userId] [int] NOT NULL,
+	[Usado_Capa] [bigint] NULL,
+	[DtHora] [datetime] NOT NULL,
+	[id_servico] [varchar](1) NOT NULL
+)
+	
+	WITH (DATA_SOURCE = [datacloudprod],  -- data source 
+      SCHEMA_NAME = 'dbo',           -- external table schema
+      OBJECT_NAME = 'tbl_creditos_hist'       -- name of table in external database
+     )
+GO

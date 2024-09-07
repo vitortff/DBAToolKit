@@ -1,0 +1,92 @@
+--Antes de Execute este script, clique no "MENU QUERY" e selecione "SQLCMD mode"
+
+--CHG
+:setvar path "\\bprevdb-hlg\HMPWRK\DBScripts\NewVer\CHG\"
+:r $(path)\02.amdchgddl000008_sql.sql
+
+--HMP
+:setvar path "\\bprevdb-hlg\HMPWRK\DBScripts\NewVer\HMP\"
+:r $(path)\01.amdhmpddl000001_sql.sql
+
+--SCB
+:setvar path "\\bprevdb-hlg\HMPWRK\DBScripts\NewVer\SCB\"
+:r $(path)\06.amdscbddl000007_sql.sql
+:r $(path)\06.amdscbddl000008_sql.sql
+:r $(path)\06.amdscbddl000009_sql.sql
+:r $(path)\06.amdscbddl000010_sql.sql
+:r $(path)\06.amdscbddl000011_sql.sql
+:r $(path)\06.amdscbddl000012_sql.sql
+
+--SCP
+:setvar path "\\bprevdb-hlg\HMPWRK\DBScripts\NewVer\SCP\"
+:r $(path)\04.amdscpddl000019_sql.sql
+:r $(path)\04.amdscpddl000020_sql.sql
+:r $(path)\04.amdscpddl000021_sql.sql
+:r $(path)\04.amdscpddl000022_sql.sql
+:r $(path)\04.amdscpddl000023_sql.sql
+:r $(path)\04.amdscpddl000024_sql.sql
+:r $(path)\04.amdscpddl000025_sql.sql
+:r $(path)\04.amdscpddl000026_sql.sql
+:r $(path)\04.amdscpddl000027_sql.sql
+:r $(path)\04.amdscpddl000028_sql.sql
+:r $(path)\04.amdscpddl000029_sql.sql
+:r $(path)\04.amdscpddl000030_sql.sql
+
+--SCR
+
+:setvar path "\\bprevdb-hlg\HMPWRK\DBScripts\NewVer\SCR\"
+:r $(path)\03.amdscrddl000016_sql.sql
+:r $(path)\03.amdscrddl000017_sql.sql
+:r $(path)\03.amdscrddl000018_sql.sql
+:r $(path)\03.amdscrddl000019_sql.sql
+:r $(path)\03.amdscrddl000020_sql.sql
+:r $(path)\03.amdscrddl000021_sql.sql
+:r $(path)\03.amdscrddl000022_sql.sql
+:r $(path)\03.amdscrddl000023_sql.sql
+:r $(path)\03.amdscrddl000024_sql.sql
+:r $(path)\03.amdscrddl000025_sql.sql
+:r $(path)\03.amdscrddl000026_sql.sql
+:r $(path)\03.amdscrddl000027_sql.sql
+
+
+--SEF
+
+:setvar path "\\bprevdb-hlg\HMPWRK\DBScripts\NewVer\SEF\"
+:r $(path)\05.amdsefddl000013_sql.sql
+:r $(path)\05.amdsefddl000014_sql.sql
+:r $(path)\05.amdsefddl000015_sql.sql
+:r $(path)\05.amdsefddl000016_sql.sql
+:r $(path)\05.amdsefddl000017_sql.sql
+:r $(path)\05.amdsefddl000018_sql.sql
+:r $(path)\05.amdsefddl000019_sql.sql
+:r $(path)\05.amdsefddl000020_sql.sql
+:r $(path)\05.amdsefddl000021_sql.sql
+:r $(path)\05.amdsefddl000022_sql.sql
+:r $(path)\05.amdsefddl000023_sql.sql
+:r $(path)\05.amdsefddl000024_sql.sql
+:r $(path)\05.amdsefddl000025_sql.sql
+:r $(path)\05.amdsefddl000026_sql.sql
+:r $(path)\05.amdsefddl000027_sql.sql
+:r $(path)\05.amdsefddl000028_sql.sql
+:r $(path)\05.amdsefddl000029_sql.sql
+:r $(path)\05.amdsefddl000030_sql.sql
+:r $(path)\05.amdsefddl000031_sql.sql
+:r $(path)\05.amdsefddl000032_sql.sql
+:r $(path)\05.amdsefddl000033_sql.sql
+:r $(path)\05.amdsefddl000034_sql.sql
+:r $(path)\amdsefddl000035_sql.sql
+:r $(path)\amdsefddl000036_sql.sql
+:r $(path)\amdsefddl000037_sql.sql
+:r $(path)\amdsefddl000038_sql.sql
+:r $(path)\amdsefddl000039_sql.sql
+
+--SPB
+:setvar path "\\bprevdb-hlg\HMPWRK\DBScripts\NewVer\SPB\"
+:r $(path)\07.amdspbddl000011_sql.sql
+:r $(path)\07.amdspbddl000012_sql.sql
+:r $(path)\07.amdspbddl000013_sql.sql
+:r $(path)\07.amdspbddl000014_sql.sql
+:r $(path)\07.amdspbddl000015_sql.sql
+:r $(path)\07.amdspbddl000016_sql.sql
+:r $(path)\07.amdspbddl000017_sql.sql
+:r $(path)\07.amdspbddl000018_sql.sql

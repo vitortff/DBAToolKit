@@ -1,0 +1,11 @@
+--Listando o tamanho dos Bancos de Dados
+
+select max(start_time) as end_time, database_name  into #temp01 from sys.resource_stats
+group by database_name
+
+select a.database_name,a.storage_in_megabytes from sys.resource_stats a, #temp01 b
+where a.database_name=b.database_name and
+b.end_time=a.end_time
+order by 2 desc
+
+drop table #temp01

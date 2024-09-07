@@ -1,0 +1,110 @@
+CREATE PROCEDURE USP_GEN_Andamento_L1
+AS
+
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+--Variáveis do relatório
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+DECLARE @DataSourceNumber varchar(10) = '11'
+
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+
+DECLARE @SQLString2_1 NVARCHAR(4000)
+DECLARE @SQLString2_2  NVARCHAR(4000)
+
+
+DECLARE @SQLString4  NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '_' + @DataSourceNumber + '] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+-----------------------INICIO DA PARTE A SER EDITADA------------------------------------------
+--2
+SET @SQLString2_1 = '
+
+CREATE EXTERNAL TABLE [dbo].[GEN_Andamento](
+	
+	[TipoOrigem] [int]
+)
+WITH (DATA_SOURCE =[' + @servername + '_' + @DataSourceNumber + '], SCHEMA_NAME = ''dbo'', OBJECT_NAME = ''GEN_Andamento'')'
+
+EXECUTE sp_executesql @SQLString2_1
+
+
+--Criando a nova 
+
+SET @SQLString2_2= 'INSERT INTO GEN_Andamento_l1 SELECT ''' + @appnome + ''',''' + @dbnomebase + ''', Tipo = CASE TipoOrigem When 0 THEN ''robos'' Else ''diarios'' End, count(1) as Count, getdate () as datetime FROM GEN_Andamento (nolock) where tipoorigem = 0 or TipoOrigem = 1 group by TipoOrigem'
+
+EXECUTE sp_executesql @SQLString2_2
+
+DROP EXTERNAL TABLE GEN_Andamento
+
+
+----------------------------FIM DA PARTE A SER EDITADA------------------------------------
+
+
+SET @SQLString4 = 'DROP EXTERNAL DATA SOURCE [' + @servername + '_' + @DataSourceNumber + ']'
+EXECUTE sp_executesql @SQLString4
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--SELECT
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+
+
+--drop external data source [legalone-prod-eastus2_]
+--DROP EXTERNAL TABLE PRO_Processo
+

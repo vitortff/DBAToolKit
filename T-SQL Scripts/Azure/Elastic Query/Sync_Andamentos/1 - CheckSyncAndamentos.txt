@@ -1,0 +1,89 @@
+--Variáveis do relatório
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+DECLARE @SQLString2 NVARCHAR(4000)
+DECLARE @SQLString3 NVARCHAR(4000)
+DECLARE @SQLString4 NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1 
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+--Parte editável para futuras consultas
+SET @SQLString2 = 'CREATE EXTERNAL TABLE SYS_INDEXES(name varchar(400), object_id bigint) WITH (DATA_SOURCE =[' + @servername + '], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''indexes'')'
+EXECUTE sp_executesql @SQLString2
+
+--
+SET @SQLString3 = 'CREATE EXTERNAL TABLE SYS_OBJECTS(object_id bigint, create_date datetime, modify_date datetime) WITH (DATA_SOURCE =[' + @servername + '], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''objects'')'
+EXECUTE sp_executesql @SQLString3
+
+--2
+INSERT INTO LO_Check_Sync_Andamentos_Indexes
+--SELECT @dbnomebase, count(*) Isnabled FROM Xml_CompressionReport where xml_compression = 1
+SELECT @appnome, @distribuicao, @dbnomebase, @dbnomeservidor,i.name,  o.create_date, o.modify_date
+from SYS_INDEXES i join SYS_OBJECTS o on i.object_id=o.object_id 
+where i.name in ('IX_MON_Consulta_Id_PRO_Processo','IX_GEN_ANDAMENTO__Checksum','IX_GEN_ANDM_VINC_001')
+
+--3
+DROP EXTERNAL TABLE SYS_INDEXES
+DROP EXTERNAL TABLE SYS_OBJECTS
+
+
+SET @SQLString4 = 'DROP EXTERNAL DATA SOURCE [' + @servername + ']'
+EXECUTE sp_executesql @SQLString4
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+
+
+--DROP EXTERNAL TABLE SYS_INDEXES
+--DROP EXTERNAL TABLE SYS_OBJECTS
+--DROP EXTERNAL DATA SOURCE [legalone-prod-eastus2]

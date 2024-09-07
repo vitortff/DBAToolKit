@@ -1,0 +1,39 @@
+--Backup by datetime file name
+
+--It is an optional tool to use SQL Server Maintainence Plan to schedule regular backups of your databases. 
+--To take advantages of full control, total flexibility, I use my own scripts to backup databases. 
+--Here is an simple example to show how to backup database by the datetime file name. You can simply modify 
+--this to run differential backup or to backup log. Put them as SP in AdminDB and schedule Agent Job for it, 
+--just that simple. Use my other script to check review disk space. If you have custom request, please email me.
+
+--I suggest readers further enhance this script by coding the parameter in database table such as the backup drive 
+--letter, use sys.sysservers to get server name, use a loop to pick up active db names (see my other code publication), 
+--use xp_cmdshell to create backup directory, use admindb data table to store runtime and status, etc. I have coded 
+--comprehansive DB backup scripts I use for the DBs I manage.
+
+
+--Full backup using datetime file name
+
+DECLARE @devname varchar(256)
+
+DECLARE @DirLocationPre varchar(256)
+
+DECLARE @DatabaseName varchar(256) 
+
+SET @DirLocationPre = 'U:\backup\DB1\DB1FullBackup' 
+
+SET @DatabaseName = 'DB1'
+
+
+
+SELECT @devname = @DirLocationPre + REPLACE(REPLACE(REPLACE(CONVERT(Varchar(40), GETDATE(), 120),'-',''),':',''), ' ', '') + '.bak';
+
+BACKUP DATABASE @DatabaseName to DISK = @devname
+
+GO
+
+
+
+
+
+

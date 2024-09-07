@@ -1,0 +1,110 @@
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='EASTUS2_JOB01_DBREINDEX AND SHRINK DATABASES', 
+@command=N'
+DECLARE @TABLE_NAME NVARCHAR(200)
+DECLARE @SQLString NVARCHAR(4000)
+
+DECLARE @STATEMENT01 VARCHAR(4000) = ''DBCC DBREINDEX('' 
+DECLARE @STATEMENT02 VARCHAR(4000) = ''''''''
+DECLARE @STATEMENT03 VARCHAR(4000) = ''''''''
+DECLARE @STATEMENT04 VARCHAR(4000) = '',''
+DECLARE @STATEMENT05 VARCHAR(4000) = ''''''''
+DECLARE @STATEMENT06 VARCHAR(4000) = ''''''''
+DECLARE @STATEMENT07 VARCHAR(4000) = '',''
+DECLARE @STATEMENT08 VARCHAR(4000) = ''100''
+DECLARE @STATEMENT09 VARCHAR(4000) = '');''
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+SELECT name FROM sys.objects WHERE [type] = ''u'' and
+name <> ''Gen_revisao'' and
+(name not like ''%bkp%'' or name not like ''%backup%'')
+ORDER BY name
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @TABLE_NAME
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+
+SET @SQLString=  @STATEMENT01 + @STATEMENT02 + @TABLE_NAME + @STATEMENT03 + @STATEMENT04 + @STATEMENT05 + @STATEMENT06 + @STATEMENT07 + @STATEMENT08 + @STATEMENT09
+
+EXECUTE sp_executesql @SQLString
+
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @TABLE_NAME
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--Shrinking
+DECLARE @DATABASE_NAME VARCHAR(50) = (SELECT DB_NAME())
+SELECT @DATABASE_NAME
+DBCC SHRINKDATABASE(@DATABASE_NAME) 
+', 
+@credential_name='legalone-prod-eastus2', 
+@target_group_name='TG_EASTUS2_JOB01_DBREINDEX AND SHRINK DATABASES',
+@step_name = 'Reindexing and Shrink',
+@step_id = 3 
+GO
+
+/*
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='EASTUS2_JOB01_DBREINDEX AND SHRINK DATABASES',
+@enabled=1,
+@schedule_interval_type='Weeks',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-07-23 05:00:00'
+*/
+
+
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+
+
+-- Starting a job manually
+--EXEC jobs.sp_start_job 'EASTUS2_JOB01_DBREINDEX AND SHRINK DATABASES';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='Reindex_Robos_WSDatacloud_Prod', @force=1
+
+-- Canceling job execution with the specified job execution id
+--EXEC jobs.sp_stop_job 'CF1AFCD5-6D59-4E7F-9A05-DA1E7794A893';
+
+
+
+
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='EASTUS2_JOB01_DBREINDEX AND SHRINK DATABASES' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc

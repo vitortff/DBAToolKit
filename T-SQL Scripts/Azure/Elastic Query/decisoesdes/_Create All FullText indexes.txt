@@ -1,0 +1,75 @@
+**************************************************
+1
+**************************************************
+CREATE FULLTEXT CATALOG conteudo
+WITH ACCENT_SENSITIVITY = OFF
+GO
+
+CREATE FULLTEXT INDEX ON [dbo].[conteudo] (
+ementa Language 1046 
+,conteudo Language 1046 
+) 
+KEY INDEX PK_conteudo_produzido
+ON conteudo
+WITH CHANGE_TRACKING OFF
+GO
+**************************************************
+2
+**************************************************
+CREATE FULLTEXT CATALOG decisoes
+WITH ACCENT_SENSITIVITY = OFF
+GO
+
+CREATE FULLTEXT INDEX ON [dbo].[decisoes] (
+titulo Language 1033 
+,ementa Language 1046 
+,conteudo Language 1046 
+) 
+KEY INDEX PK_decisoes
+ON decisoes
+WITH CHANGE_TRACKING AUTO
+GO
+**************************************************
+3
+**************************************************
+CREATE FULLTEXT CATALOG especie_decisoes
+WITH ACCENT_SENSITIVITY = OFF
+GO
+
+CREATE FULLTEXT INDEX ON [dbo].[especie_decisoes] (
+especie Language 1046 
+) 
+KEY INDEX PK_especie_decisoes
+ON especie_decisoes
+WITH CHANGE_TRACKING AUTO
+GO
+**************************************************
+4
+**************************************************
+CREATE FULLTEXT CATALOG meu_arquivo
+WITH ACCENT_SENSITIVITY = OFF
+GO
+
+CREATE FULLTEXT INDEX ON [dbo].[meu_arquivo] (
+tags Language 1046 
+) 
+KEY INDEX PK_meu_arquivo
+ON meu_arquivo
+WITH CHANGE_TRACKING AUTO
+GO
+**************************************************
+5
+**************************************************
+CREATE FULLTEXT CATALOG orgaos
+WITH ACCENT_SENSITIVITY = OFF
+GO
+
+CREATE FULLTEXT INDEX ON [dbo].[orgaos] (
+orgao Language 1046 
+) 
+KEY INDEX IX_orgaos
+ON orgaos
+WITH CHANGE_TRACKING AUTO
+GO
+
+Completion time: 2023-04-12T11:00:20.5194271-03:00

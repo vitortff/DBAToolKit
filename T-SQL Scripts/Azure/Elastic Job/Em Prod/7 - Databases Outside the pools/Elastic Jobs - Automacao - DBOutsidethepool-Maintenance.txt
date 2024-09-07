@@ -1,0 +1,145 @@
+--SELECT 'DROP DATABASE SCOPED CREDENTIAL ' + name FROM sys.database_scoped_credentials
+--SELECT * FROM sys.database_scoped_credentials
+
+--Dropping it
+--EXEC jobs.sp_delete_job @job_name='legalone-migration_CheckDBsOutsidePool', @force=1
+--EXEC jobs.sp_delete_target_group 'TG_legalone-maintenance' 
+
+/*
+-1
+--MASTER DATABASE WHERE THE JOB WILL RUN.
+
+CREATE LOGIN mastercred WITH PASSWORD = 'Strongpassw0rd'; 
+GO
+CREATE USER mastercred FROM LOGIN mastercred; 
+GO 
+CREATE LOGIN jobcred WITH PASSWORD = 'Strongpassw0rd'; 
+GO
+
+
+--CHECK
+SELECT * FROM sys.database_scoped_credentials
+--DROP DATABASE SCOPED CREDENTIAL credential_name 
+
+--2 GIVING PERMISSION ON THE TARGET DATABASE
+
+CREATE USER jobcred FROM LOGIN jobcred; 
+GO 
+exec sp_addrolemember 'db_owner', 'jobcred'; 
+GO 
+
+--3
+--Elastic job Database
+
+CREATE DATABASE SCOPED CREDENTIAL mymastercred WITH IDENTITY = 'cloud', SECRET = 'Y6t5r4e3w2q1@' 
+GO 
+
+-- Create a database scoped credential. 
+CREATE DATABASE SCOPED CREDENTIAL myjobcred WITH IDENTITY = 'cloud', SECRET = 'Y6t5r4e3w2q1@'
+GO
+*/
+
+-- Add a target group containing server(s) 
+
+EXEC jobs.sp_add_target_group 'TG_legalone-maintenance' 
+
+
+-- ADD GROUP MEMBER TO A TARGET GROUP
+EXEC jobs.sp_add_target_group_member 'TG_legalone-maintenance', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='legalone-maintenance.database.windows.net', 
+@database_name = 'master'
+GO
+
+
+-- CREATING A JOB
+EXEC jobs.sp_add_job @job_name='legalone-maintenance_CheckDBsOutsidePool', 
+@description='Ajusta os bancos fora do pool'; 
+
+-- ADD JOB STEP
+EXEC jobs.sp_add_jobstep @job_name='legalone-maintenance_CheckDBsOutsidePool', 
+@command=N'
+DECLARE @NAME NVARCHAR(50)
+DECLARE @SQLString NVARCHAR(500)
+DECLARE @freq INT =(SELECT COUNT(*) AS FREQ from sys.databases WHERE name not in (
+SELECT d.name as database_name FROM sys.databases d inner join sys.database_service_objectives dso 
+on d.database_id = dso.database_id
+WHERE d.Name <> ''master'' and dso.elastic_pool_name is not null) and
+name <> ''master'')
+	IF @freq > 0
+
+		BEGIN
+			-- Cursor para percorrer os registros
+			DECLARE cursor1 CURSOR FOR
+
+			SELECT name from sys.databases WHERE name not in (
+			SELECT d.name as database_name       
+			FROM
+				   sys.databases d inner join sys.database_service_objectives dso on d.database_id = dso.database_id
+			WHERE d.Name <> ''master'' and dso.elastic_pool_name is not null) and
+			name <> ''master''
+
+			 --Abrindo Cursor
+			OPEN cursor1
+ 
+			-- Lendo a próxima linha
+			FETCH NEXT FROM cursor1 INTO @NAME
+ 
+			-- Percorrendo linhas do cursor (enquanto houverem)
+			--FETCHSTATUS
+			--Essa função retorna o status do último cursor 
+			--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+			WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+			BEGIN
+ 
+			-- Executando as rotinas desejadas manipulando o registro
+
+			--SET @SQLString= ''use ''+ @name + ''; CREATE USER [Nelson Junior Castro de Jesus] FOR LOGIN [x212561] WITH DEFAULT_SCHEMA=[dbo]''
+
+			SET @SQLString= ''ALTER DATABASE ['' + @NAME + ''] MODIFY (SERVICE_OBJECTIVE = ELASTIC_POOL(name=[maintenance-pool]))''
+
+
+			EXECUTE sp_executesql @SQLString
+
+			-- Lendo a próxima linha
+			FETCH NEXT FROM cursor1 INTO @NAME
+		END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+	END
+
+	Else
+		print ''Nothing to do''', 
+@credential_name='myjobcred4', 
+@target_group_name='TG_legalone-maintenance'; 
+GO
+
+--Adding a scheduler:
+
+--Adding schedule to a job
+
+EXEC jobs.sp_update_job
+@job_name='legalone-maintenance_CheckDBsOutsidePool',
+@enabled=1,
+@schedule_interval_type='Minutes',
+@schedule_interval_count=10,
+@schedule_start_time='2021-09-21 11:00:00' 
+
+
+--EXEC jobs.sp_start_job 'legalone-maintenance_CheckDBsOutsidePool'; 
+--EXEC jobs.sp_stop_job 'CreateTestTable'; 
+
+
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+lifecycle,last_message FROM jobs.job_executions
+where job_name='legalone-maintenance_CheckDBsOutsidePool'
+order by 3 desc

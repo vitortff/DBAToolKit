@@ -1,0 +1,5 @@
+select database_name, count(*) as Freq from sys.resource_stats
+where start_time > = cast(cast(getdate() as date) as varchar(20)) + ' 03:00:00.000'
+and avg_cpu_percent > 80
+group by database_name
+order by 2 desc

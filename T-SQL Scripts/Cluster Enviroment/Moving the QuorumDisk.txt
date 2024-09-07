@@ -1,0 +1,11 @@
+I received this question from a friend the other day - asking how on a Windows Server 2008 cluster you can move the quorum disk group to another node?  Much has changed with failover clusters in Windows Server 2008, and after digging around for several minutes, I was unable to find a way to move this using the new Failover Cluster Management GUI tool.
+
+Today I found out from Rick Bergman (fellow Dedicated Support Engineer supporting Windows) that there is a way to do this via command-line:
+
+Cluster group “Cluster Group” /move:<newnode>
+
+For example, my quorum disk was on server "TX154809-N1" and I wanted to move it to "TX154809-N2".  I used the following syntax:
+
+cluster group "cluster group" /move:TX154809-N2
+
+Problem solved.  Thank you Rick!  This must be my week to ask Windows questions.

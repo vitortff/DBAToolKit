@@ -1,0 +1,1 @@
+https://docs.microsoft.com/en-us/biztalk/technical-guides/using-the-performance-analysis-of-logs-pal-tool

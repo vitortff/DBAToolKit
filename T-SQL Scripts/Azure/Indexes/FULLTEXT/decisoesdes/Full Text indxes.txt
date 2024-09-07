@@ -1,0 +1,19 @@
+USE [decisoesdes]
+GO
+
+/****** Object:  Index [meu_arquivo]    Script Date: 4/10/2023 11:02:57 AM ******/
+DROP INDEX [meu_arquivo] ON [dbo].[meu_arquivo]
+GO
+
+SET ANSI_PADDING ON
+GO
+
+/****** Object:  Index [meu_arquivo]    Script Date: 4/10/2023 11:02:57 AM ******/
+CREATE UNIQUE NONCLUSTERED INDEX [meu_arquivo] ON [dbo].[meu_arquivo]
+(
+	[username] ASC,
+	[id_decisao] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+
+

@@ -1,0 +1,16 @@
+--1
+sys.dm_os_out_of_memory_events
+
+
+
+--2 sys.dm_exec_query_memory_grants
+
+/*
+A Null value in the column grant_time indicates that the process is still waiting for a memory grant.
+This is one method you can use to troubleshooting query timeouts by identifying that a query is waiting
+on memory in order to execute.
+*/
+
+SELECT * FROM sys.dm_exec_query_memory_grants CROSS APPLY 
+sys.dm_exec_sql_text(plan_handle)
+WHERE session_id <> @@SPID

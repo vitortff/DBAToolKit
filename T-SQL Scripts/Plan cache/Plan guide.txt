@@ -1,0 +1,15 @@
+DECLARE @stmt nvarchar(max)
+DECLARE @params nvarchar(max)
+EXEC sp_get_query_template N'SELECT def_verba_emprg.mrc_calcul_dfvbem , def_verba_emprg.mes_prical_dfvbem , def_verba_emprg.ano_prical_dfvbem FROM participante_fss , def_verba_emprg WHERE participante_fss.COD_EMPRS =10 AND participante_fss.NUM_RGTRO_EMPRG =116 AND def_verba_emprg.cod_emprs =10 AND def_verba_emprg.num_rgtro_emprg =116 AND def_verba_emprg.cod_verba =90901',
+@stmt OUTPUT, 
+@params OUTPUT
+EXEC sp_create_plan_guide N'TemplateGuide1', 
+@stmt, 
+N'TEMPLATE', 
+NULL, 
+@params, 
+N'OPTION(PARAMETERIZATION FORCED)'
+
+EXEC sp_control_plan_guide N'DROP', N'TemplateGuide1';
+
+EXEC sp_control_plan_guide N'DISABLE ALL';

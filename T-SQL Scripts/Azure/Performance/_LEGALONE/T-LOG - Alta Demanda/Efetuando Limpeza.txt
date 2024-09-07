@@ -1,0 +1,6 @@
+SP_SPACEUSED GEN_AndamentoTemp
+
+TRUNCATE TABLE GEN_AndamentoTemp 
+GO
+
+SP_SPACEUSED GEN_AndamentoTemp

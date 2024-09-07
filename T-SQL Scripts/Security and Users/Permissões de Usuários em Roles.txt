@@ -1,0 +1,48 @@
+set ANSI_NULLS ON
+set QUOTED_IDENTIFIER ON
+go
+
+
+ALTER PROCEDURE [dbo].[Usp_Audit_DBSecurity]
+as
+BEGIN
+-- Retrieve DB Role Level Info
+CREATE TABLE ##DBSecurity (
+ DatabaseName varchar(300), 
+ Login_Name sysname NULL, 
+ Principal_Name sysname,
+ DB_RoleMember varchar(300), 
+ Permission_Type sysname)
+
+INSERT INTO ##DBSecurity
+EXEC sp_MSforeachdb '
+ SELECT DISTINCT ''?'' AS DatabaseName, suser_sname(users.sid) AS Login_Name,users.Name AS UserName, 
+ roles.Name AS Role_Member_Name, roles.type_desc
+ FROM [?].sys.database_role_members r 
+ LEFT OUTER JOIN [?].sys.database_principals users on r.member_principal_id = users.principal_id
+ LEFT OUTER JOIN [?].sys.database_principals roles on r.role_principal_id = roles.principal_id
+ --WHERE users.type not in (''R'')'
+
+--Lista Usuários de acesso aos Databases (Exceto os analistas do STIN)
+SELECT DatabaseName,Login_Name,Principal_Name,DB_RoleMember,
+CASE	WHEN DB_RoleMember='Usr_Sef_Cons' THEN 'Grupo de Consultas para Amadeus Empréstimos'
+		WHEN DB_RoleMember='Usr_Scp_Cons' THEN 'Grupo de Consultas para Amadeus Capitalização'	
+		WHEN DB_RoleMember='Usr_Cate_Cons' THEN 'Grupo de Consultas para Amadeus Empréstimos'
+		WHEN DB_RoleMember='Usr_Ctb_Cons' THEN 'Grupo de Consultas para Amadeus Contabilidade'
+		WHEN DB_RoleMember='Usr_sbf_irdcrg' THEN 'Grupo de Carga de IRD'
+		WHEN DB_RoleMember='Usr_sbf_cons' THEN 'Grupo de Consultas para Amadeus Benefícios'
+		WHEN DB_RoleMember='Usr_drl_cons' THEN 'Grupo de Consultas de Janelas Auditadas pelo DRLock'
+		WHEN DB_RoleMember='Usr_Prev_Drl_Cons' THEN 'Grupo de Consultas de Janelas Auditadas pelo DRLock'
+		WHEN DB_RoleMember='Usr_drl_cons' THEN 'Grupo de Consultas de Auditoría de Acesso pelo DRLock'
+		END "Descrição da Role",convert(varchar,getdate(),103) "Date" from ##DBSecurity 
+where DatabaseName not in ('master','tempdb','model','msdb')  
+and Login_Name like 'T%' and DB_RoleMember not in ('db_datareader') ORDER BY 1,4 ; 
+
+--Listando todos os usuários
+--select *from ##DBSecurity
+
+DROP TABLE ##DBSecurity
+END
+
+
+

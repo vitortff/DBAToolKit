@@ -1,0 +1,31 @@
+--1 Ajuste da coluna DriverID
+update QSTS set Driverid = substring(valor,1,charindex('~',valor)-1)
+
+--2 QueryTypeId
+alter table QSTS add  valor2 varchar(900)
+
+update QSTS set valor2 = substring(valor,len(substring(valor,1,charindex('#',valor)+2)),1000)
+
+update QSTS set QueryTypeId = substring(valor2,1,charindex('~',valor2)-1)
+
+--3 OtherParametersWithValue
+
+select substring(valor,len(cast(driverid as varchar(50)) + '~#~' + cast(querytypeId as varchar(50)) + '~#~')+1,1000) from QSTS
+where id < 10
+
+update QSTS
+set OtherParametersWithValue = substring(valor,len(cast(driverid as varchar(50)) + '~#~' + cast(querytypeId as varchar(50)) + '~#~')+1,1000)
+
+update QSTS
+set OtherParametersWithValue = replace (OtherParametersWithValue,'~#~','')
+
+alter table QSTS drop column valor2
+
+--4 Após a conferência, atualização em producao
+
+update querystring set
+DriverId = b.DriverId,
+QueryTypeId = b.QueryTypeId,
+OtherParametersWithValue = b.OtherParametersWithValue
+from querystring a join QSTS b
+on a.id=b.id

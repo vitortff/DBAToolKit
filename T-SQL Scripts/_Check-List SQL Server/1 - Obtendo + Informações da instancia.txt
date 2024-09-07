@@ -1,0 +1,27 @@
+--- Identificando nome + Serviços
+--- identificando porta TCP que a instancia está escutando
+--- Service Pack da Versão
+
+
+SELECT @@SERVERNAME AS ServerName, @@SERVICENAME AS ServiceName
+SELECT SERVERPROPERTY('Edition') AS SQLEdition,
+SERVERPROPERTY('ProductVersion')AS SQLVersion,
+SERVERPROPERTY('ProductLevel') AS SQLLevel
+DECLARE @value VARCHAR(20)
+DECLARE @key VARCHAR(100)
+IF ISNULL(CHARINDEX('', @@SERVERNAME, 0), 0) > 0
+BEGIN
+-- Instância nomeada. Ex. MYSERVERSQLEXPRESS
+SET @key = 'SOFTWAREMicrosoftMicrosoft SQL Server' + @@servicename +
+'MSSQLServerSuperSocketNetLibTcp'
+END
+ELSE
+BEGIN
+-- Instância Default
+SET @key = 'SOFTWAREMICROSOFTMSSQLSERVERMSSQLSERVERSUPERSOCKETNETLIBTCP'
+END
+SELECT @KEY as [Key]
+EXEC master..xp_regread @rootkey = 'HKEY_LOCAL_MACHINE', @key = @key,
+@value_name = 'TcpPort', @value = @value OUTPUT
+SELECT 'Port Number : ' + CAST(@value AS VARCHAR(5)) AS PortNumber
+GO

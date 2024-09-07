@@ -1,0 +1,22 @@
+
+--Performance Counters
+select * from vw_pivot_L1_Hist_DB_Performance_Counters_datadog
+
+select * from vw_pivot_L1_Hist_DB_Performance_Counters
+where elastic_pool_name = 'l1-firm-br-pool-11-add'
+order by 3 desc
+
+
+
+--Buffer Pool
+SELECT * FROM vw_L1_Hist_BufferPoolbyDatabase_Last10Min_datadog
+order by 5 desc
+
+select * from vw_L1_Hist_BufferPoolbyDatabase
+where elastic_pool_name = 'l1-firm-br-pool-10-add' and [database_name] = 'l1_firm_br_8084151_cp_default'
+order by 7 desc
+
+
+
+
+

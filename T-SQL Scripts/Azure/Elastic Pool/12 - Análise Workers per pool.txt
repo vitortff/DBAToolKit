@@ -1,0 +1,6 @@
+select @@servername as servername,elastic_pool_name,avg(max_worker_percent) as avg_max_worker_percent,avg(max_session_percent) as max_session_percent from sys.elastic_pool_resource_stats
+where start_time >='2023-01-17 16:00:00.00000000'
+group by elastic_pool_name
+order by 3 desc
+
+

@@ -1,0 +1,24 @@
+CREATE EXTERNAL TABLE [dbo].[Tbl_Hist_Pool_CPU_Consumption2](
+	[servername] [varchar](50) NOT NULL,
+	[Row#] [bigint] NULL,
+	[elastic_pool_name] [nvarchar](128) NULL,
+	[avg_cpu_percent] [decimal](38, 6) NULL,
+	[avg_data_io_percent] [decimal](38, 6) NULL,
+	[DateTime] [datetime] NOT NULL
+) 
+WITH (DATA_SOURCE =[MSDB_Elastic_Jobs], SCHEMA_NAME = 'DBO', OBJECT_NAME = 'Tbl_Hist_Pool_CPU_Consumption')
+
+
+CREATE EXTERNAL TABLE [dbo].[Tbl_Hist_Databases_Metrics2](
+	[servername] [nvarchar](128) NULL,
+	[elastic_pool_name] [sysname] NULL,
+	[database_name] [nvarchar](128) NULL,
+	[avg_io] [varchar](8000) NULL,
+	[avg_cpu] [varchar](8000) NULL,
+	[avg_log] [varchar](8000) NULL,
+	[storage_in_megabytes] [float] NULL,
+	[datetime] [datetime] NOT NULL
+)
+WITH (DATA_SOURCE =[MSDB_Elastic_Jobs], SCHEMA_NAME = 'DBO', OBJECT_NAME = 'Tbl_Hist_Databases_Metrics')
+
+

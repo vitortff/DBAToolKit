@@ -1,0 +1,92 @@
+/*
+--1 Scoped Credential
+
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL [legalone-migration] -- credential name
+WITH IDENTITY = 'legalone', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+
+*/
+SELECT * FROM sys.database_scoped_credentials
+
+/*
+--2 Creating Target Group
+EXEC jobs.sp_add_target_group 'TG-firmbr-prod-JOB01'
+--select *from [jobs].[target_groups]
+--EXEC jobs.sp_delete_target_group 'TG-legalone-prod2-JOB01'
+*/
+
+/*
+EXEC jobs.sp_add_target_group_member 'TG-firmbr-prod-JOB01', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='firmbr-prod.database.windows.net', 
+@database_name = 'MSDB_Elastic_Jobs'
+GO
+/*
+-- Creating a Job
+EXEC jobs.sp_add_job @job_name='JOB01-FIRMBR-Pools_Consumo', 
+@description='Coleta de informações - Elastic Pools'; 
+
+-- Adding a Job Step
+EXEC jobs.sp_add_jobstep @job_name='JOB01-FIRMBR-Pools_Consumo', 
+@command=N'INSERT INTO Tbl_Pools_Consumo
+select ''eastus2'' as servername,elastic_pool_name,avg(avg_cpu_percent) as avg_cpu_percent,avg(avg_data_io_percent) as avg_data_io_percent, getdate() time from elastic_pool_resource_stats_eastus2
+where start_time >= DateAdd(hour,-1,GetUTCDate())
+group by elastic_pool_name
+UNION ALL
+select ''prod2'' as servername,elastic_pool_name,avg(avg_cpu_percent) as avg_cpu_percent,avg(avg_data_io_percent) as avg_data_io_percent, getdate() time from elastic_pool_resource_stats_prod2
+where start_time >= DateAdd(hour,-1,GetUTCDate())
+group by elastic_pool_name', 
+@credential_name='firmbr-prod', 
+@target_group_name='TG-firmbr-prod-JOB01',
+@step_name = 'step01' 
+GO
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='JOB01-FIRMBR-Pools_Consumo',
+@enabled=1,
+@schedule_interval_type='Hours',
+@schedule_interval_count=1,
+@schedule_start_time='2023-10-16 13:00:00'
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+*/
+
+-- Starting a job manually
+EXEC jobs.sp_start_job 'JOB01-FIRMBR-Pools_Consumo';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='JOB01-FIRMBR-Pools_Consumo', @force=1
+
+-- Checking the execution
+SELECT job_id, job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='JOB01-FIRMBR-Pools_Consumo' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc
+
+
+-- Canceling job execution with the specified job execution id
+EXEC jobs.sp_stop_job '86C2C995-2AFD-4FA0-851B-3EAA87512AEB';
+
+
+
+--4
+--Pools com maiores comsumo
+
+
+
+
+
+
+
+

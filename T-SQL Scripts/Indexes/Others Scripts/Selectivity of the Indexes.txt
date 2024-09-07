@@ -1,0 +1,111 @@
+--Selectivity of the indexes
+
+SELECT	COUNT (DISTINCT cod_emprs) AS DistinctColValues,
+	COUNT(cod_emprs) as NumberOfRows,
+	(CAST(COUNT(DISTINCT cod_emprs) AS DECIMAL)
+	/CAST(COUNT(cod_emprs) AS DECIMAL)) AS Selectivity
+	From dbo.empregado
+
+--------------------------------------------------------
+--Pratical Example
+--------------------------------------------------------
+
+CREATE TABLE teste ( coll int, coll2 int, coll3 int)
+--------------------------------------------------------
+
+DECLARE @i AS INT,@j as int, @l as int;
+SET @i = 1;
+SET @j = 100;
+SET @l = 13000;
+WHILE @i <= 1000
+BEGIN
+  INSERT INTO teste VALUES(@i,@j,@l);
+  SET @i = @i + 1;
+  SET @j = @j + 1;
+  SET @l = @l + 1;		
+	
+END
+
+SELECT *FROM teste WHERE [coll]=100
+--------------------------------------------------------
+--Selectivity of the indexes
+
+SELECT	COUNT (DISTINCT coll) AS DistinctColValues,
+	COUNT(coll) as NumberOfRows,
+	(CAST(COUNT(DISTINCT coll) AS DECIMAL)
+	/CAST(COUNT(coll) AS DECIMAL)) AS Selectivity
+	From dbo.teste
+
+--1000	1000	1.0000000000000000000
+--------------------------------------------------------
+
+
+---Other example:
+
+CREATE TABLE teste ( coll int, coll2 int, coll3 int,coll4 int, coll5 int, coll6 int)
+
+DECLARE @i AS INT,@j as int, @l as int, @m as int,@n as int, @o as int;
+SET @i = 1;
+SET @j = 100;
+SET @l = 12002;
+SET @m = 130044;
+SET @n = 130012;
+SET @o= 210340;
+
+WHILE @i <= 100000
+BEGIN
+  INSERT INTO teste VALUES(@i,@j,@l,@m,@n,@o);
+  SET @i = @i + 1;
+  SET @j = @j + 1;
+  SET @l = @l + 1;		
+  SET @m = @m + 1;	
+  SET @n = @n + 1;	
+  SET @o = @o + 1;	
+	
+END
+
+
+
+--Another example:
+
+DECLARE @i AS INT,@j as int, @l as int, @m as int,@n as int, @o as int;
+SET @i = 1;
+SET @j = 100;
+SET @l = 12002;
+SET @m = 130044;
+SET @n = 130012;
+SET @o= 210340;
+
+WHILE @i <= 1000000000
+BEGIN
+  INSERT INTO teste VALUES(@i,@j,@l,@m,@n,@o);
+  SET @i = @i + 1;
+  SET @j = @j + 1;
+  SET @l = @l + 1;		
+  SET @m = @m + 1;	
+  SET @n = @n + 1;	
+  SET @o = @o + 1;	
+	
+END
+
+
+
+
+--Selectivity of the indexes (Before you create one).
+
+SELECT	COUNT (DISTINCT cod_emprs) AS DistinctColValues,
+	COUNT(cod_emprs) as NumberOfRows,
+	(CAST(COUNT(DISTINCT cod_emprs) AS DECIMAL)
+	/CAST(COUNT(cod_emprs) AS DECIMAL)) AS Selectivity
+	From dbo.empregado
+
+
+--Other great example (Existing Index)
+
+--Index with sigle column
+select 1.0/count(distinct coll) from teste
+go
+
+--Composite index (two or more columns)
+select 1.0/count(*) from (select distinct cod_emprs, num_rgtro_emprg from empregado) teste
+go

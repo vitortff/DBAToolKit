@@ -1,0 +1,141 @@
+/* Pós reindex DC
+table				used_mb		allocated_mb
+dbo.Processo			126270.13	126276.24
+dbo.Tarifario_Andamentos	52936.76	52938.41
+dbo.Tarifario			45739.89	45741.53
+dbo.Tarifario_DadosCapa		43355.62	43357.36
+dbo.Resultado			27016.63	27017.65
+dbo.Ticket			26021.42	26023.62
+dbo.Consumo			14796.62	14798.15
+dbo.QueryString			3096.84		3099.71
+dbo.ResultadoCloud		1677.53		1679.16
+dbo.Servico			0.02		0.07
+dbo.Gen_Revisao			0.02		0.07
+dbo.Modulo			0.02		0.07
+dbo.TipoProcesso		0.02		0.07
+dbo.Operacao			0.00		0.00
+dbo.IdTarifarioDelete		0.00		0.00
+dbo.Processo_old		0.00		0.00
+
+
+--Consumo caiu de 94.8 GB para 14796.62 MB, ou 14,45 GB, reduziu 84,75%
+
+
+DBCC SHOWCONTIG scanning 'Processo' table...
+Table: 'Processo' (795149878); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 14200151
+- Extents Scanned..............................: 1775026
+- Extent Switches..............................: 1775071
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 100.00% [1775019:1775072]
+- Logical Scan Fragmentation ..................: 1.92%
+- Extent Scan Fragmentation ...................: 0.82%
+- Avg. Bytes Free per Page.....................: 69.2
+- Avg. Page Density (full).....................: 99.15%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+DBCC SHOWCONTIG scanning 'Consumo' table...
+Table: 'Consumo' (1525580473); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 597312
+- Extents Scanned..............................: 74672
+- Extent Switches..............................: 75214
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 99.27% [74664:75215]
+- Logical Scan Fragmentation ..................: 0.12%
+- Extent Scan Fragmentation ...................: 54.89%
+- Avg. Bytes Free per Page.....................: 7.5
+- Avg. Page Density (full).....................: 99.91%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+DBCC SHOWCONTIG scanning 'Tarifario' table...
+Table: 'Tarifario' (603149194); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 3546695
+- Extents Scanned..............................: 443346
+- Extent Switches..............................: 443353
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 100.00% [443337:443354]
+- Logical Scan Fragmentation ..................: 0.01%
+- Extent Scan Fragmentation ...................: 17.83%
+- Avg. Bytes Free per Page.....................: 4.1
+- Avg. Page Density (full).....................: 99.95%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+DBCC SHOWCONTIG scanning 'Tarifario_Andamentos' table...
+Table: 'Tarifario_Andamentos' (651149365); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 5951609
+- Extents Scanned..............................: 743959
+- Extent Switches..............................: 743963
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 100.00% [743952:743964]
+- Logical Scan Fragmentation ..................: 0.01%
+- Extent Scan Fragmentation ...................: 50.81%
+- Avg. Bytes Free per Page.....................: 55.4
+- Avg. Page Density (full).....................: 99.32%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+DBCC SHOWCONTIG scanning 'Tarifario_DadosCapa' table...
+Table: 'Tarifario_DadosCapa' (699149536); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 4891857
+- Extents Scanned..............................: 611490
+- Extent Switches..............................: 611496
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 100.00% [611483:611497]
+- Logical Scan Fragmentation ..................: 0.01%
+- Extent Scan Fragmentation ...................: 30.96%
+- Avg. Bytes Free per Page.....................: 56.8
+- Avg. Page Density (full).....................: 99.30%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+DBCC SHOWCONTIG scanning 'Resultado' table...
+Table: 'Resultado' (859150106); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 3450661
+- Extents Scanned..............................: 431345
+- Extent Switches..............................: 431350
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 100.00% [431333:431351]
+- Logical Scan Fragmentation ..................: 0.01%
+- Extent Scan Fragmentation ...................: 23.30%
+- Avg. Bytes Free per Page.....................: 11.0
+- Avg. Page Density (full).....................: 99.86%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+DBCC SHOWCONTIG scanning 'Ticket' table...
+Table: 'Ticket' (555149023); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 3323547
+- Extents Scanned..............................: 415425
+- Extent Switches..............................: 417783
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 99.44% [415444:417784]
+- Logical Scan Fragmentation ..................: 0.60%
+- Extent Scan Fragmentation ...................: 16.90%
+- Avg. Bytes Free per Page.....................: 5.0
+- Avg. Page Density (full).....................: 99.94%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+DBCC SHOWCONTIG scanning 'QueryString' table...
+Table: 'QueryString' (1733581214); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 192185
+- Extents Scanned..............................: 24031
+- Extent Switches..............................: 24030
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 99.97% [24024:24031]
+- Logical Scan Fragmentation ..................: 0.05%
+- Extent Scan Fragmentation ...................: 5.89%
+- Avg. Bytes Free per Page.....................: 145.9
+- Avg. Page Density (full).....................: 98.20%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+DBCC SHOWCONTIG scanning 'ResultadoCloud' table...
+Table: 'ResultadoCloud' (747149707); index ID: 1, database ID: 8
+TABLE level scan performed.
+- Pages Scanned................................: 116805
+- Extents Scanned..............................: 14608
+- Extent Switches..............................: 14607
+- Avg. Pages per Extent........................: 8.0
+- Scan Density [Best Count:Actual Count].......: 99.95% [14601:14608]
+- Logical Scan Fragmentation ..................: 0.08%
+- Extent Scan Fragmentation ...................: 4.18%
+- Avg. Bytes Free per Page.....................: 44.4
+- Avg. Page Density (full).....................: 99.45%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+*/

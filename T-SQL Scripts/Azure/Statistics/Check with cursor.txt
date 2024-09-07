@@ -1,0 +1,52 @@
+
+CREATE TABLE #sp_autostats (
+Index_Name varchar(200),
+AutoStats varchar(10),
+Last_Updated datetime)
+
+CREATE TABLE #sp_autostats2 (
+database_name varchar(100),
+name varchar(100),
+Index_Name varchar(200),
+AutoStats varchar(10),
+Last_Updated datetime)
+
+
+
+--CREATE TABLE #TEMP (Banco varchar(100), PROVIDERNAME VARCHAR(100), Freq int)
+
+DECLARE @name varchar(100) 
+
+ 
+DECLARE db_cursor CURSOR FOR
+
+SELECT name FROM sys.objects WHERE type = 'U'
+ 
+OPEN db_cursor
+
+FETCH NEXT FROM db_cursor INTO @name
+ 
+WHILE @@FETCH_STATUS = 0
+
+BEGIN
+
+INSERT INTO #sp_autostats 
+EXEC sys.sp_autostats 'gen_andamento';
+
+insert into #sp_autostats2 SELECT DB_name() as database_name, @name, * FROM #sp_autostats
+ 
+FETCH NEXT FROM db_cursor INTO @name
+
+END
+ 
+CLOSE db_cursor
+DEALLOCATE db_cursor
+
+--select *from #sp_autostats2
+
+select Db_name() as 'Database_Name', cast(last_updated as date) as last_updated, count(*) as Freq from #sp_autostats2
+group by cast(last_updated as date) 
+order by 2 desc
+
+drop table #sp_autostats
+drop table #sp_autostats2

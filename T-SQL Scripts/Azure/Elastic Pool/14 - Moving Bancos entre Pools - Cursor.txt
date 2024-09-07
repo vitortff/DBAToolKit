@@ -1,0 +1,68 @@
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+DECLARE @name  NVARCHAR(4000)
+DECLARE @elastic_pool_name  NVARCHAR(4000)
+
+DECLARE @elastic_pool_name_source VARCHAR(100) = 'l1-corp-br-pool-2'
+DECLARE @elastic_pool_name_destination VARCHAR(100) = 'l1-corp-br-pool-02-eastus2'
+
+DECLARE @SQLString  NVARCHAR(4000)
+DECLARE @SQLString2  NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+
+
+
+SELECT  d.name FROM sys.databases d 
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE
+ elastic_pool_name = @elastic_pool_name_source  
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @name
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'ALTER DATABASE [' + @name + '] MODIFY (SERVICE_OBJECTIVE = ELASTIC_POOL (name = [' + @elastic_pool_name_destination + ']));'
+EXECUTE sp_executesql @SQLString
+--Print @SQLString
+
+--2
+SET @SQLString2= 'WAITFOR DELAY ''00:00:05'' --10 seconds'
+EXECUTE sp_executesql @SQLString2
+--Print @SQLString2
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @name
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+GO
+
+

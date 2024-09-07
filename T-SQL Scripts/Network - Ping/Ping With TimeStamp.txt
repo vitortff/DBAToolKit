@@ -1,0 +1,1 @@
+ping.exe -t 10.62.161.21|Foreach{"{0} - {1}" -f (Get-Date),$_} > rafael.txt

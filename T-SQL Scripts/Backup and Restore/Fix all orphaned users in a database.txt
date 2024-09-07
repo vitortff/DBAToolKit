@@ -1,0 +1,31 @@
+--Fix all orphaned users in a database
+
+--When you restore a db on a different machine, users are orphaned ie: there is no login id or 
+--password associated with the user (SID differs from machine to machine). This script finds and fixes 
+--all orphaned users in a restored database
+
+CREATE TABLE #OrphanedUsers(
+row_num  INT IDENTITY(1,1),
+username VARCHAR(1000),
+id       VARCHAR(1000)
+
+)
+
+INSERT INTO #OrphanedUsers(username,id)
+EXEC sp_change_users_login 'Report'
+
+DECLARE @rowCount INT = (SELECT COUNT(1) FROM #OrphanedUsers );
+
+DECLARE @i INT =1 ;
+DECLARE @tempUsername VARCHAR(1000);
+
+WHILE(@i <= @rowCount)
+BEGIN
+	SELECT @tempUsername = username FROM #OrphanedUsers WHERE row_num = @i;
+	
+	EXEC  sp_change_users_login 'Auto_Fix',@tempUsername;
+	
+	SET @i = @i+1;
+END
+
+DROP TABLE #OrphanedUsers

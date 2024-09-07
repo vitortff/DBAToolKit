@@ -1,0 +1,2 @@
+https://www.sqlshack.com/sp_updatestats-overview-and-usage/
+https://www.sqlshack.com/sql-server-statistics-and-how-to-perform-update-statistics-in-sql/

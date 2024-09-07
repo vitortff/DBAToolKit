@@ -1,0 +1,14 @@
+--Identificar o total de registros nas tabelas de um banco e consequentemente as tabelas que 
+--possuem mais registros seria a principio uma tarefa complicada, devido a necessidade de 
+--aplicar um count(*) em todas as tabelas e o tempo que tal count(*) levaria se as tabelas forem realmente grandes. 
+--Uma forma simples de resolver o problema é aproveitar-se das tabelas de sistema : 
+--a tabela sysindexes possui um campo chamado rowcnt que contém o número de linhas de cada 
+--objeto registrado na sysindexes. De quebra temos ainda dpages, o total de paginas de dados da tabela. 
+--A tabela sysindexes porem guarda uma linha para cada indice da tabela. Portanto devemos pegar apenas 
+--as linhas referentes a tabela. Para isso devemos fazer 2 testes : O campo indid deve ser 0 ou 1, 
+--valores referentes a tabela sem índice ou ao indice clustered. Devemos também nos aproveitar 
+--da função OBJECTPROPERTY, que nos devolve o valor de uma propriedade de um objeto para garantirmos 
+--que o objeto listado seja realmente uma tabela. 
+--Veja como fica : 
+select substring(object_name(id),1,30),rowcnt,dpages*8 as tamanho from sysindexes 
+where indid in (1,0) and objectproperty(id,'isusertable')=1  order by rowcnt desc

@@ -1,0 +1,171 @@
+--1 Extracts the elastic pool names
+WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+SELECT  max(end_time),elastic_pool_name FROM sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+
+SELECT  b.end_time,b.elastic_pool_name,a.avg_storage_percent  INTO #elastic_pools FROM  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+
+
+
+
+--2
+;WITH DB_Storage_CTE (end_time, database_name)  
+AS  
+-- Define the CTE query.  
+(  
+SELECT  max(end_time) as end_time, database_name  FROM sys.resource_stats
+GROUP BY database_name 
+)  
+
+
+SELECT  a.database_name,a.storage_in_megabytes INTO #temp FROM sys.resource_stats a, DB_Storage_CTE b
+WHERE a.database_name=b.database_name and
+b.end_time=a.end_time and
+a.database_name in (
+SELECT   d.name
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE slo.elastic_pool_name in (SELECT  elastic_pool_name FROM #elastic_pools))		--insira o elastic pool
+
+
+--3 Mostrando o Consumo das bases pelo Elastic Pool informado
+
+DECLARE @s datetime;  
+DECLARE @e datetime;  
+SET @s= DateAdd(d,-14,GetUTCDate());  -- 14 dias
+SET @e= GETUTCDATE();  
+SELECT  a.database_name, AVG(a.avg_data_io_percent) AS Average_IO_Utilization, AVG(a.avg_cpu_percent) AS Average_CPU_Utilization,
+AVG(a.avg_log_write_percent) as avg_log_write_percent, b.storage_in_megabytes   
+INTO #DBs_AllMetrics FROM sys.resource_stats a join #temp b
+on a.database_name=b.database_name
+WHERE a.start_time BETWEEN @s AND @e  and
+a.database_name in
+(SELECT  database_name FROM #temp)
+
+GROUP BY a.database_name,b.storage_in_megabytes    
+order by 3 desc
+
+--4 DBs x Elastic pool
+SELECT   d.name as [database_name],   
+     slo.elastic_pool_name  
+ INTO #DBsXElasticPool      
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id;  
+
+SELECT  a.database_name into #teste FROM #DBs_AllMetrics a, #DBsXElasticPool b
+WHERE a.database_name=b.database_name
+
+
+select name from sys.databases where name not in (select database_name from #teste)
+
+-- 5 Dropping das Tabelas Temporárias
+DROP TABLE #temp
+DROP TABLE #elastic_pools
+DROP TABLE #DBsXElasticPool 
+DROP TABLE #DBs_AllMetrics
+DROP TABLE #teste
+
+
+
+/*
+--1
+WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+select max(end_time),elastic_pool_name from sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+select b.end_time,b.elastic_pool_name,a.avg_storage_percent from  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+order by 3 desc
+
+
+--2
+
+
+;WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+select max(end_time),elastic_pool_name from sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+select b.end_time,b.elastic_pool_name,a.avg_storage_percent from  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+order by 3 desc
+
+*/
+
+--3
+
+;WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+select max(end_time),elastic_pool_name from sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+select b.end_time,b.elastic_pool_name,a.avg_storage_percent,a.avg_allocated_storage_percent, a.avg_allocated_storage_percent - a.avg_storage_percent as PercNaoAlocado from  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+order by 4 desc
+
+/*
+---------------------------------ELASTIC POOLS-----------------------------
+
+***********************legalone-prod-eastus2********************************
+Name                       Tier            Family    Capacity    MaxSize
+-------------------------  --------------  --------  ----------  ---------
+l1-firm-br-pool-3-add      GeneralPurpose  Gen5      10          2TB
+l1-firm-br-pool-big-2-add  GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool-7          GeneralPurpose  Gen5      32          4TB
+l1-firm-br-pool-7-add      GeneralPurpose  Gen5      12          2TB
+l1-firm-br-pool-5-add      GeneralPurpose  Gen5      12          2TB
+l1-firm-br-pool-2-add      GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool-2          GeneralPurpose  Gen5      12          2TB
+l1-firm-br-pool-10-add     GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool-big-add    GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool-10         GeneralPurpose  Gen5      14          2TB
+l1-firm-br-pool-3          GeneralPurpose  Gen5      18      /;    3TB
+l1-firm-br-pool-add        GeneralPurpose  Gen5      8           2TB
+l1-corp-br-pool            GeneralPurpose  Gen5      10          2TB
+l1-firm-br-pool            GeneralPurpose  Gen5      32          4TB
+l1-firm-ar-pool            GeneralPurpose  Gen5      6           300GB
+l1-shared-pool             GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool-5          GeneralPurpose  Gen5      18          3TB
+l1-firm-br-pool-big-17     GeneralPurpose  Gen5      8           2TB
+L1-FIRM-BR-POOL-6-ADD      GeneralPurpose  Gen5      12          2TB
+l1-firm-br-pool-big        GeneralPurpose  Gen5      32          4TB
+l1-firm-br-pool-6          GeneralPurpose  Gen5      18          3TB
+l1-firm-br-pool-big-2      GeneralPurpose  Gen5      32          3584GB
+l1-corp-br-pool-2          GeneralPurpose  Gen5      12          2TB
+
+*************************legalone-prod2********************************
+Name                    Tier            Family    Capacity    MaxSize
+----------------------  --------------  --------  ----------  ---------
+l1-firm-br-pool-15      GeneralPurpose  Gen5      6           800GB
+l1-firm-br-pool-12      GeneralPurpose  Gen5      8           1536GB
+l1-firm-br-pool-11-add  GeneralPurpose  Gen5      12          2TB
+l1-firm-br-pool-10-add  GeneralPurpose  Gen5      4           756GB
+l1-firm-br-pool-11      GeneralPurpose  Gen5      18          3TB
+l1-firm-br-pool-12-add  GeneralPurpose  Gen5      4           756GB
+l1-firm-br-pool-10      GeneralPurpose  Gen5      32          4TB
+l1-firm-br-pool-14      GeneralPurpose  Gen5      6           1536GB
+l1-firm-br-pool-16      GeneralPurpose  Gen5      18          3TB
+l1-firm-br-pool-13      GeneralPurpose  Gen5      6           1536GB
+l1-firm-br-pool-17      GeneralPurpose  Gen5      16          2TB
+*/
+
+
+

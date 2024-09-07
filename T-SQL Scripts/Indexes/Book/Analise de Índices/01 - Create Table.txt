@@ -1,0 +1,144 @@
+---------------------------------------------------------------
+--Parte 1
+---------------------------------------------------------------
+ 
+CREATE TABLE teste ( coll int, coll2 int, coll3 int,coll4 int, coll5 int, coll6 int)
+
+DECLARE @i AS INT,@j as int, @l as int, @m as int,@n as int, @o as int;
+SET @i = 1;
+SET @j = 100;
+SET @l = 12002;
+SET @m = 130044;
+SET @n = 130012;
+SET @o= 210340;
+
+WHILE @i <= 1000000
+BEGIN
+  INSERT INTO teste VALUES(@i,@j,@l,@m,@n,@o);
+  SET @i = @i + 1;
+  SET @j = @j + 2;
+  SET @l = @l + 3;		
+  SET @m = @m + 4;	
+  SET @n = @n + 5;	
+  SET @o = @o + 6;	
+	
+END
+
+---------------------------------------------------------------
+--Parte 2
+---------------------------------------------------------------
+--Seletividade da coluna (Coll)
+
+SELECT	COUNT (DISTINCT coll) AS DistinctColValues,
+	COUNT(coll) as NumberOfRows,
+	(CAST(COUNT(DISTINCT coll) AS DECIMAL)
+	/CAST(COUNT(coll) AS DECIMAL)) AS Selectivity
+	From teste
+
+/*
+Results:
+DistinctColValues	NumberOfRows	AS Selectivity
+1000000			1000000		1.0000000000000000000
+*/
+---------------------------------------------------------------
+--Seletividade da coluna (Coll2)
+SELECT	COUNT (DISTINCT coll2) AS DistinctColValues,
+	COUNT(coll2) as NumberOfRows,
+	(CAST(COUNT(DISTINCT coll2) AS DECIMAL)
+	/CAST(COUNT(coll2) AS DECIMAL)) AS Selectivity
+	From teste
+
+/*
+Results:
+DistinctColValues	NumberOfRows	AS Selectivity
+1000000			1000000		1.0000000000000000000
+*/
+
+create  clustered index teste_pk on teste(coll)
+
+
+
+
+
+---------------------------------------------------------------
+--Parte 3
+---------------------------------------------------------------
+--Verificando a eficiencia do Index Cluster.
+
+set statistics io on
+select *from teste where coll=20
+set statistics io off
+
+--Table 'teste'. Scan count 1, logical reads 3
+
+set statistics time on
+select *from teste where coll=20
+set statistics time off
+
+/*
+SQL Server parse and compile time: 
+   CPU time = 0 ms, elapsed time = 0 ms.
+
+(1 row(s) affected)
+
+ SQL Server Execution Times:
+   CPU time = 0 ms,  elapsed time = 0 ms.
+   */
+--
+
+
+create nonclustered index teste_2 on teste(coll2)
+
+
+---------------------------------------------------------------
+--Parte 3
+---------------------------------------------------------------
+--Verificando a eficiencia do Index Noncluster.
+
+set statistics io on
+select *from teste where coll2=2000
+set statistics io off
+
+--Table 'teste'. Scan count 1, logical reads 6,
+
+set statistics time on
+select *from teste where coll2=2000
+set statistics time off
+
+/*
+SQL Server parse and compile time: 
+   CPU time = 0 ms, elapsed time = 0 ms.
+
+(1 row(s) affected)
+
+ SQL Server Execution Times:
+   CPU time = 0 ms,  elapsed time = 0 ms.
+*/
+
+sp_helpindex 'teste'
+
+/*
+teste_2		nonclustered located on PRIMARY	coll2
+teste_pk	clustered located on PRIMARY	coll
+*/
+
+--Parte 5
+
+/****** Object:  Index [teste_pk]    Script Date: 12/14/2011 10:45:08 ******/
+IF  EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[teste]') AND name = N'teste_pk')
+DROP INDEX [teste_pk] ON [dbo].[teste] WITH ( ONLINE = OFF )
+GO
+
+
+USE [AdventureWorks]
+GO
+
+/****** Object:  Index [teste_2]    Script Date: 12/14/2011 10:45:18 ******/
+IF  EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[teste]') AND name = N'teste_2')
+DROP INDEX [teste_2] ON [dbo].[teste] WITH ( ONLINE = OFF )
+GO
+
+sp_helpindex 'teste'
+/*
+The object 'teste' does not have any indexes, or you do not have permissions.
+*/

@@ -1,0 +1,16 @@
+
+--1
+WITH [Databases] (start_time, database_name)
+AS
+(
+SELECT max(start_time) as start_time, database_name FROM sys.resource_stats
+GROUP BY database_name 
+)
+--2
+select max(a.start_time) as start_time, a.database_name, a.storage_in_megabytes, a.allocated_storage_in_megabytes, substring(cast(a.allocated_storage_in_megabytes/a.storage_in_megabytes as varchar(10)),1,4) as [%] from sys.resource_stats a
+join [Databases] b
+on a.start_time=b.start_time and
+a.database_name=b.database_name and
+substring(cast(a.allocated_storage_in_megabytes/a.storage_in_megabytes as varchar(10)),1,4) > 1.1
+and a.storage_in_megabytes > 1024
+group by a.database_name, a.storage_in_megabytes, a.allocated_storage_in_megabytes

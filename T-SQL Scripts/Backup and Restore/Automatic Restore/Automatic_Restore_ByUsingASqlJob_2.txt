@@ -1,0 +1,101 @@
+CREATE TABLE #tempList (Files VARCHAR(500))
+
+INSERT INTO #tempList
+EXEC MASTER..XP_CMDSHELL 'dir F:\DBBackup(BPREVDBCLUSTER)\Amd_Prev_Prod'
+
+
+--delete all directories
+DELETE #tempList WHERE Files LIKE '%<dir>%'
+
+--delete all informational messages
+DELETE #tempList WHERE Files LIKE ' %'
+
+--delete the null values
+DELETE #tempList WHERE Files IS NULL
+
+--get rid of dateinfo
+UPDATE #tempList SET files =RIGHT(files,(LEN(files)-20))
+
+--get rid of leading spaces
+UPDATE #tempList SET files =LTRIM(files)
+
+DECLARE
+@BackupPathLocation varchar(100);
+set @BackupPathLocation=(select 'F:\DBBackup(BPREVDBCLUSTER)\Amd_Prev_Prod\' + RIGHT(files,LEN(files) -PATINDEX('% %',files)) AS FileName
+FROM #tempList)
+
+RESTORE FILELISTONLY 
+FROM 	DISK = @BackupPathLocation;
+
+----------------------------------------------------------------------------------------------------------------
+
+RESTORE DATABASE Amd_Prev_Prod
+FROM 	DISK = @BackupPathLocation
+WITH 	REPLACE,
+RECOVERY,
+MOVE N'Amd_Prev_Prod' TO N'F:\USERSDB\DATA\Amd_Prev_Prod.mdf',
+MOVE N'Amd_Prev_Prod_Log' TO N'L:\USERSDB\LOG\Amd_Prev_Prod_log.ldf';
+
+------------------------------------------------
+ALTER DATABASE Amd_Prev_Prod SET RECOVERY FULL;
+
+------------------------------------------------
+
+-- Verificar Users a sincronizar
+USE Amd_Prev_Prod;
+
+
+EXEC sp_change_users_login 'Report';
+
+
+EXEC sp_changedbowner 'Amadeus';
+
+EXEC sp_change_users_login 'update_one', 'AmdFinCnx','AmdFinCnx';
+EXEC sp_change_users_login 'update_one', 'AmdPrvCnx','AmdPrvCnx';
+EXEC sp_change_users_login 'update_one', 'usrinetcnx','usrinetcnx';
+
+EXEC sp_change_users_login 'update_one', 'Leandro Leme','TE68303';
+EXEC sp_change_users_login 'update_one', 'Paulo Celso A. Picciuto','T545C37';
+EXEC sp_change_users_login 'update_one', 'Rodrigo Ferreira Ribeiro','TE06244';
+EXEC sp_change_users_login 'update_one', 'Rogerio Aguiar Delanhesi','TE19336';
+EXEC sp_change_users_login 'update_one', 'Felipe Estevão Izidorio Silva','X032289';
+
+EXEC sp_change_users_login 'update_one', 'Alice do Carmo Kaneko','T545C34';
+EXEC sp_change_users_login 'update_one', 'Ana Lucia Capuani Dutra','E839542';
+EXEC sp_change_users_login 'update_one', 'Cesar Augusto Magalhães','TE37380';
+
+EXEC sp_change_users_login 'update_one', 'Claudia Regina Lopes','TE17690';
+EXEC sp_change_users_login 'update_one', 'Daniel Marcondes Godofredo','T545C30';
+EXEC sp_change_users_login 'update_one', 'Patricia Rosa Aranha de Godoy','T545C32';
+EXEC sp_change_users_login 'update_one', 'Edson Príncipe Gimenes','T545C31';
+EXEC sp_change_users_login 'update_one', 'Flavio Bettio','T546G01';
+EXEC sp_change_users_login 'update_one', 'Leandro da Trindade Cruz','TE86336';
+
+EXEC sp_change_users_login 'update_one', 'Amarilza da Silva Bertoli','T545V03';
+EXEC sp_change_users_login 'update_one', 'Gisele Ramos Anastacio','TE12771';
+EXEC sp_change_users_login 'update_one', 'Laila Jose de Almeida','TE77544';
+EXEC sp_change_users_login 'update_one', 'Roseli Fernandes da Silva','TE24225';
+EXEC sp_change_users_login 'update_one', 'Sirleide Rodrigues','E842761';
+EXEC sp_change_users_login 'update_one', 'Patricia Azevedo Morais','E839424';
+EXEC sp_change_users_login 'update_one', 'Vanessa Trancozo de Souza','E836943';
+
+EXEC sp_change_users_login 'update_one', 'Maria de Fatima Gonçalves','TE27716';
+EXEC sp_change_users_login 'update_one', 'Regiane Aparecida Vaz Augusto','TE39250';
+EXEC sp_change_users_login 'update_one', 'Caroline de Araujo Cabrera','TE28400';
+
+EXEC sp_change_users_login 'Report';
+
+----------------------------------------------------------
+-- Script to Shrink Transaction Log File (Amd_Prev_Prod)
+----------------------------------------------------------
+DBCC SHRINKFILE ('Amd_Prev_Prod_Log', 5) WITH NO_INFOMSGS;
+
+----------------------------------------------------------
+-- Script to CHECK DB Integrity (Amd_Prev_Prod)
+----------------------------------------------------------
+USE Amd_Prev_Prod;
+
+DBCC CHECKDB WITH NO_INFOMSGS, ALL_ERRORMSGS;
+
+----------------------------------------------------------
+DROP TABLE #tempList

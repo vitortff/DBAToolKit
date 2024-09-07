@@ -1,0 +1,66 @@
+/*
+Buffer cache hit ratio
+  
+This counter should be as high as possible. It's extremely common to find this counter value as 99 percent or more
+for most prodution servers. A low value indicates that few requests could be served out of the buffer cache, with the
+rest of the requests being served from disk.
+
+                                                                                                        
+--Checkpoint pages/sec
+
+It indicates the number of pages that are moved to disk by a checkpoint operation. Higher
+values on this counter indicate a large number of writes occurring within the system, possibly indicative of I/O problems. 
+                                                                                                            
+--Lazy writes/sec 
+
+A dirty, aged buffer is one that has changes and needs to be written to the disk. Higher values
+on this counter possibly indicates IO Issues or even memory problems. It should be consistently be less than 20
+for the average system.
+                                                                                                              
+--Memory Grants Pending
+
+It represents the number of process pending for a memory grant within SQL Server memory. If this counter is high, then
+SQL Server is short of memory. Under normal conditions, this counter should consistently be 0 for most production servers.
+                                                                                                          
+--Page life expectancy
+It ndicates how long a page will stay in the buffer pool without being referenced. It must to be higher than 300                                                                                                           
+
+--Target Server Memory (KB) 
+It represents the amount of dynamic memory SQL Server is willing to consume.                                                                                                      
+
+--Total Server Memory (KB) 
+It indicates the amount of memory currently assigned to SQL Server.                                                                                                       
+*/
+
+SELECT * FROM sys.dm_os_performance_counters
+WHERE counter_name in
+('Buffer cache hit ratio',
+'Page life expectancy',
+'Checkpoint pages/sec',
+'Lazy writes/sec',
+'Memory Grants Pending',
+'Target Server Memory (KB)',
+'Total Server Memory (KB)')  
+and object_name <> 'MSSQL$AE0FC9C71BED:Buffer Node'                                                                                                  
+order by 2  
+
+
+SELECT *,(cntr_value/1024/1024) SizeInGB FROM sys.dm_os_performance_counters
+WHERE counter_name in
+(
+'Target Server Memory (KB)',
+'Total Server Memory (KB)'
+)  
+and object_name <> 'MSSQL$AE0FC9C71BED:Buffer Node'                                                                                                  
+order by 2                
+
+--Buffer Pool Size
+
+--MEMORYCLERK_SQLBUFFERPOOL allocation 
+SELECT TOP 10 [type], SUM(pages_kb)/1024 AS SizeMB
+FROM sys.dm_os_memory_clerks
+GROUP BY [type]
+ORDER BY SUM(pages_kb) / 1024 DESC      
+                                                                                                                                                                                            
+                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                                                 

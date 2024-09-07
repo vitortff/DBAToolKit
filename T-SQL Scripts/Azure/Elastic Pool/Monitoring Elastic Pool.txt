@@ -1,0 +1,64 @@
+--Returns resource usage statistics for all the elastic pools on a server. 
+--For each elastic pool, there is one row for each 15 second reporting window (four rows per minute). 
+--This includes CPU, IO, Log, storage consumption and concurrent request/session utilization by all databases in the pool.
+
+-- Last 30 min
+select @@SERVERNAME as ServerName,*from sys.elastic_pool_resource_stats
+where start_time > dateadd(minute, -60, getdate())
+and elastic_pool_name='l1-corp-br-pool'
+--order by 5 desc
+
+
+--https://docs.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-elastic-pool-resource-stats-azure-sql-database?view=azuresqldb-current
+--Avarage DTU Percent
+SELECT start_time, end_time,
+(SELECT Max(v)
+FROM (VALUES (avg_cpu_percent), (avg_data_io_percent), (avg_log_write_percent)) AS value(v)) AS [avg_DTU_percent]
+FROM sys.elastic_pool_resource_stats
+WHERE elastic_pool_name = 'l1-corp-br-pool'
+ORDER BY end_time DESC;
+
+
+--The following example returns the average and maximum values for CPU percent, data and log I/O, and memory consumption over the last hour.
+
+SELECT    
+    AVG(avg_cpu_percent) AS 'Average CPU Utilization In Percent',   
+    MAX(avg_cpu_percent) AS 'Maximum CPU Utilization In Percent',   
+    AVG(avg_data_io_percent) AS 'Average Data IO In Percent',   
+    MAX(avg_data_io_percent) AS 'Maximum Data IO In Percent',   
+    AVG(avg_log_write_percent) AS 'Average Log Write I/O Throughput Utilization In Percent',   
+    MAX(avg_log_write_percent) AS 'Maximum Log Write I/O Throughput Utilization In Percent',   
+    AVG(avg_memory_usage_percent) AS 'Average Memory Usage In Percent',   
+    MAX(avg_memory_usage_percent) AS 'Maximum Memory Usage In Percent'   
+FROM sys.dm_db_resource_stats;  
+
+
+SELECT SUM(unallocated_extent_page_count) AS [free pages],   
+(SUM(unallocated_extent_page_count)*1.0/128) AS [free space in MB]  
+FROM sys.dm_db_file_space_usage;  
+
+
+
+--sys.resource_stats (Azure SQL Database)
+--Returns CPU usage and storage data for an Azure SQL Database. 
+--The data is collected and aggregated within five-minute intervals. 
+--For each user database, there is one row for every five-minute reporting window 
+--in which there is a change in resource consumption. The data returned includes CPU usage, 
+--storage size change, and database SKU modification. Idle databases with no changes may not have rows 
+--for every five-minute interval. Historical data is retained for approximately 14 days.
+--https://docs.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-resource-stats-azure-sql-database?view=azuresqldb-current
+
+
+DECLARE @s datetime;  
+DECLARE @e datetime;  
+SET @s= DateAdd(d,-1,GetUTCDate());  
+SET @e= GETUTCDATE();  
+SELECT database_name, AVG(avg_cpu_percent) AS Average_Compute_Utilization   
+FROM sys.resource_stats   
+WHERE start_time BETWEEN @s AND @e  
+GROUP BY database_name  
+order by 2 desc
+--HAVING AVG(avg_cpu_percent) >= 80;
+
+
+

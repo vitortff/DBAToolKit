@@ -1,0 +1,36 @@
+--Eastus2
+
+Name                     Tier            Family    Capacity    MaxSize
+-----------------------  --------------  --------  ----------  ---------
+l1-firm-br-pool-3-add    GeneralPurpose  Gen5      10          2TB
+l1-firm-br-pool-2-add    GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool-2        GeneralPurpose  Gen5      12          2TB
+l1-firm-br-pool-10-add   GeneralPurpose  Gen5      10          2TB
+l1-firm-br-pool-11       GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool-12       GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool-big-add  GeneralPurpose  Gen5      10          2TB
+l1-firm-br-pool-10       GeneralPurpose  Gen5      14          2TB
+l1-firm-br-pool-3        GeneralPurpose  Gen5      18          3TB
+l1-firm-br-pool-add      GeneralPurpose  Gen5      8           2TB
+l1-firm-br-pool          GeneralPurpose  Gen5      32          4TB
+l1-firm-ar-pool          GeneralPurpose  Gen5      6           500GB
+l1-firm-br-pool-5        GeneralPurpose  Gen5      18          3TB
+l1-firm-br-pool-14       GeneralPurpose  Gen5      40          4TB
+l1-firm-br-pool-6        GeneralPurpose  Gen5      18          3TB
+l1-corp-br-pool-2        GeneralPurpose  Gen5      10          2TB
+
+--Prod2
+Name                                    Tier              Family    Capacity    MaxSize
+--------------------------------------  ----------------  --------  ----------  ---------
+l1-firm-br-pool-15                      GeneralPurpose    Gen5      8           2TB
+l1-firm-br-pool-18                      BusinessCritical  Gen5      14          1229GB
+l1-firm-br-pool-17                      GeneralPurpose    Gen5      10          1TB
+l1-firm-br-pool-12                      GeneralPurpose    Gen5      12          2TB
+l1-firm-br-pool-11-add                  GeneralPurpose    Gen5      12          2TB
+l1-firm-br-pool-10-add                  GeneralPurpose    Gen5      8           2TB
+l1-firm-br-pool-11                      GeneralPurpose    Gen5      20          3TB
+l1-firm-br-pool-12-add                  GeneralPurpose    Gen5      8           2TB
+l1-firm-br-pool_Internal_accounts_ONLY  GeneralPurpose    Gen5      2           350GB
+l1-firm-br-pool-10                      GeneralPurpose    Gen5      32          4TB
+l1-firm-br-pool-14                      GeneralPurpose    Gen5      6           1536GB
+l1-firm-br-pool-16                      GeneralPurpose    Gen5      6           1536GB

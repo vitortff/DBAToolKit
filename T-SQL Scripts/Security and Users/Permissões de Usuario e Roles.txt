@@ -1,0 +1,46 @@
+set ANSI_NULLS ON
+set QUOTED_IDENTIFIER ON
+go
+
+--Listar as permissões de usuários e roles de cada Database em uma Instância SQL Server
+
+ALTER PROCEDURE [dbo].[Usp_Audit_DBRoleSecurity]
+AS
+BEGIN
+
+CREATE TABLE ##DBRoleSecurity (
+ databasename varchar(300), 
+ principal_name sysname,
+ principal_type_desc sysname,
+ [schema] sysname,	
+ [object_name] sysname,
+ permission_name sysname,
+ permission_state_desc sysname)
+
+
+INSERT INTO ##DBRoleSecurity
+exec sp_MSforeachdb ' use ?
+SELECT ''?'' "Database",
+	dp.NAME AS principal_name,
+	dp.type_desc AS principal_type_desc,
+	sc.name as [schema],
+	o.NAME AS [object_name],
+	p.permission_name,
+	p.state_desc AS permission_state_desc
+FROM    
+	sys.database_permissions p,sys.all_objects o,sys.database_principals dp,sys.schemas sc
+WHERE
+	p.major_id = o.[OBJECT_ID]	and
+	p.grantee_principal_id = dp.principal_id and
+	o.schema_id=sc.schema_id' 
+
+	
+SELECT *FROM ##DBRoleSecurity 
+WHERE principal_name not in ('public','##MS_PolicyEventProcessingLogin##','##MS_AgentSigningCertificate##') 
+and databasename not in ('master','msdb','tempdb','model')
+ORDER BY 1 
+;
+
+DROP TABLE ##DBRoleSecurity 
+
+END

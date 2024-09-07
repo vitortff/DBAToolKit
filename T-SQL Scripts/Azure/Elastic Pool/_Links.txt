@@ -1,0 +1,6 @@
+https://docs.microsoft.com/en-us/azure/azure-sql/database/elastic-pool-resource-management
+https://docs.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-elastic-pool-resource-stats-azure-sql-database?view=azuresqldb-current
+https://docs.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-resource-stats-azure-sql-database?view=azuresqldb-current
+
+General Purpose
+https://learn.microsoft.com/en-us/sql/t-sql/statements/alter-database-transact-sql?view=azuresqldb-current&tabs=sqlpool#b-moving-a-database-to-a-different-elastic-pool

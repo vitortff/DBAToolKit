@@ -1,0 +1,111 @@
+select *from t1
+
+sp_helpindex 't1'
+
+dbcc showcontig(t1)
+
+set statistics io on
+select *from t1 where c1 between 21 and 25 
+set statistics io off
+
+--Table 't1'. Scan count 1, logical reads 7
+
+set statistics io on
+select *from t1 where c1 between 1 and 40
+set statistics io off
+
+--Table 't1'. Scan count 1, logical reads 21
+
+alter index i1 on t1 rebuild
+
+set statistics io on
+select *from t1 where c1 between 21 and 25 
+set statistics io off
+
+--Table 't1'. Scan count 1, logical reads 5
+
+set statistics io on
+select *from t1 where c1 between 1 and 40
+set statistics io off
+
+--Table 't1'. Scan count 1, logical reads 13
+
+drop table t1
+
+
+IF (SELECT  OBJECT_ID('t1')
+   ) IS NOT NULL 
+    DROP TABLE t1
+GO
+CREATE TABLE t1
+    (c1 INT
+    ,c2 INT
+    ,c3 INT
+    ,c4 CHAR(2000))
+CREATE CLUSTERED INDEX i1 ON t1 (c1) ;
+WITH    Nums
+          AS (SELECT    1 AS n
+              UNION ALL
+              SELECT    n + 1
+              FROM      Nums
+              WHERE     n < 21
+             )
+    INSERT  INTO t1 (c1, c2, c3, c4)
+            SELECT  n
+                   ,n
+                   ,n
+                   ,'a'
+            FROM    Nums ;
+WITH    Nums
+          AS (SELECT    1 AS n
+              UNION ALL
+              SELECT    n + 1
+              FROM      Nums
+              WHERE     n < 21
+             )
+    INSERT  INTO t1 (c1, c2, c3, c4)
+            SELECT  41 - n
+                   ,n
+                   ,n
+                   ,'a'
+            FROM    Nums
+
+set statistics io on
+select *from t1 where c1=10
+set statistics io off
+
+--Table 't1'. Scan count 1, logical reads 3
+alter index i1 on t1 rebuild
+
+set statistics io on
+select *from t1 where c1=10
+set statistics io off
+
+--Table 't1'. Scan count 1, logical reads 2
+
+
+IF (SELECT  OBJECT_ID('t1')
+   ) IS NOT NULL 
+    DROP TABLE t1
+GO
+CREATE TABLE t1
+    (c1 INT
+    ,c2 INT
+    ,c3 INT
+    ,c4 CHAR(2000)) ;
+WITH    Nums
+          AS (SELECT    1 AS n
+              UNION ALL
+              SELECT    n + 1
+              FROM      Nums
+              WHERE     n < 28
+             )
+    INSERT  INTO t1 (c1, c2, c3, c4)
+            SELECT  n
+                   ,n
+                   ,n
+                   ,'a'
+            FROM    Nums;
+CREATE CLUSTERED INDEX i1 ON t1 (c1);
+
+dbcc showcontig (t1)

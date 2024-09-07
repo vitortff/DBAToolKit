@@ -1,0 +1,24 @@
+CREATE DATABASE PLUSOFTCRM_ss ON
+( NAME = PLUSOFTCRM, FILENAME = 
+'F:\USERSDB\DATA\PLUSOFTCRM_ss' )
+AS SNAPSHOT OF PLUSOFTCRM;
+GO
+
+
+CREATE DATABASE decisoesdes_b_ss ON
+(NAME = decisoesdes_Data, FILENAME = 'G:\DATA\decisoesdes_Data_ss' ),
+(NAME = ftrow_decisoes, FILENAME = 'G:\DATA\ftrow_decisoes_ss' ),
+(NAME = ftrow_conteudo, FILENAME = 'G:\DATA\ftrow_conteudo_ss' ),
+(NAME = ftrow_meu_arquivo, FILENAME = 'G:\DATA\ftrow_meu_arquivo' )
+AS SNAPSHOT OF decisoesdes_b;
+GO
+
+
+
+--Restoring
+
+USE master;
+
+RESTORE DATABASE PLUSOFTCRM from 
+DATABASE_SNAPSHOT = 'PLUSOFTCRM_ss';
+GO

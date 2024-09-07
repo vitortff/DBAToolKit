@@ -1,0 +1,49 @@
+DECLARE @DBNAME VARCHAR(100)
+SET @DBNAME=NULL  -- Default NULL(All Databses)
+select 'BackUp Name'=BS.name,
+'User Name'=BS.user_name,
+'Start Date'=BS.backup_start_date,
+'Finish Date'=BS.backup_finish_date,
+'Backup Type'=Case when BS.type='D' then 'FULL Backup'
+              when BS.type='L' then 'Transaction Log Backup'
+              when BS.type='I' then 'Differential Backup' end
+,'Backup Size MB'=floor(((BS.backup_size/1024)/1024))
+,'DbName'=BS.database_name
+,'Server Name'=BS.server_name
+,MF.physical_device_name
+,'IS Ever Restored'=case when BS.backup_set_id in 
+(select backup_set_id from msdb.dbo.restorehistory)
+ then 'Yes' else 'No' end
+,'Destination Db'
+=isnull(RH.destination_database_name,'Yet Not Restored From This BackUpSet')
+,'Restore Path'
+=isnull(min(RF.destination_phys_name),'Yet Not Restored From This BackUpSet')
+,'restore Type'=isnull(CASE WHEN RH.restore_type = 'D' THEN 'Database'
+              WHEN RH.restore_type = 'F' THEN 'File'
+              WHEN RH.restore_type = 'G' THEN 'Filegroup'
+              WHEN RH.restore_type = 'I' THEN 'Differential'
+              WHEN RH.restore_type = 'L' THEN 'Log'
+              WHEN RH.restore_type = 'V' THEN 'Verifyonly'
+              WHEN RH.restore_type = 'R' THEN 'Revert'
+              ELSE RH.restore_type 
+             END ,'Yet Not')
+,Rh.restore_date,'Restore By'=isnull(RH.user_name,'No One')
+,'Time Taken'
+=cast(datediff(ss,BS.backup_start_date,BS.backup_finish_date)/3600 as varchar(10))
++' Hours, ' + 
+cast(datediff(ss,BS.backup_start_date,BS.backup_finish_date)/60 as varchar(10))
++ ' Minutes, ' + 
+cast(datediff(ss,BS.backup_start_date,BS.backup_finish_date)%60 as varchar(10)) 
++' Seconds'
+from msdb..backupset BS 
+JOIN msdb..backupmediafamily MF 
+on BS.media_set_id=MF.media_set_id
+left outer join msdb..restorehistory RH 
+on BS.backup_set_id =RH.backup_set_id
+left outer join msdb..restorefile RF 
+on RF.restore_history_id=Rh.restore_history_id
+where BS.database_name = isnull(@DBNAME,BS.database_name)
+group by BS.name,BS.user_name,BS.backup_start_date,BS.backup_finish_date,
+BS.TYPE,BS.backup_size,BS.database_name,BS.server_name
+,MF.physical_device_name,BS.backup_set_id,RH.destination_database_name
+,RH.restore_type,Rh.restore_date,RH.user_name

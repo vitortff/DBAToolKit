@@ -1,0 +1,71 @@
+--1 Scoped Credential
+
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL datacloudprod -- credential name
+WITH IDENTITY = 'datacloud', -- login or contained user name
+SECRET = 'Z2GYR3157ddUebU15IOh43OMVbR38OW'; -- login or contained user password
+GO
+
+SELECT * FROM sys.database_scoped_credentials
+
+--2 Create Target Group
+EXEC jobs.sp_add_target_group 'datacloudprod' 
+--select *from [jobs].[target_groups]
+
+--3 ADD GROUP MEMBER TO A TARGET GROUP
+EXEC jobs.sp_add_target_group_member 'datacloudprod', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='datacloudprod.database.windows.net', 
+@database_name = 'Robos_WSDatacloud'
+GO
+
+-- CREATING A JOB
+EXEC jobs.sp_add_job @job_name='Reindex_Robos_WSDatacloud', 
+@description='Reindexação'; 
+
+-- ADD JOB STEP
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='Reindex_Robos_WSDatacloud', 
+@command=N'
+DBCC DBREINDEX (''Processo'','''',100);
+DBCC DBREINDEX (''Consumo'','''',100);
+DBCC DBREINDEX (''Tarifario'','''',100);
+DBCC DBREINDEX (''Tarifario_Andamentos'','''',100);
+DBCC DBREINDEX (''Tarifario_DadosCapa'','''',100);
+DBCC DBREINDEX (''Resultado'','''',100);
+DBCC DBREINDEX (''Ticket'','''',100);
+DBCC DBREINDEX (''QueryString'','''',100);
+DBCC DBREINDEX (''ResultadoCloud'','''',100);
+', 
+@credential_name='datacloudprod', 
+@target_group_name='datacloudprod',
+@step_name = 'step01' 
+GO
+
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='Reindex_Robos_WSDatacloud',
+@enabled=1,
+@schedule_interval_type='Days',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-07-04 01:00:00'
+
+
+-- Start Manually the job
+--EXEC jobs.sp_start_job 'Reindex_Robos_WSDatacloud';  
+--EXEC jobs.sp_delete_job @job_name='Reindex_Robos_WSDatacloud', @force=1
+
+
+-- Check Execution
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message FROM jobs.job_executions
+where job_name='Reindex_Robos_WSDatacloud' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc

@@ -1,0 +1,818 @@
+<?xml version="1.0" encoding="utf-16"?>
+<ShowPlanXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.0" Build="9.00.4035.00" xmlns="http://schemas.microsoft.com/sqlserver/2004/07/showplan">
+  <BatchSequence>
+    <Batch>
+      <Statements>
+        <StmtSimple StatementCompId="1" StatementEstRows="13120" StatementId="1" StatementOptmLevel="FULL" StatementOptmEarlyAbortReason="TimeOut" StatementSubTreeCost="10.0425" StatementText="SELECT ADESAO_PLANO_PARTIC_FSS.NUM_MATR_PARTF,HIST_PART_CAPIT_FSS.DAT_FIM_HPCAP,PARTICIPANTE_FSS.COD_EMPRS,EMPREGADO.NOM_EMPRG,ISNULL(EMPREGADO.DAT_DESLG_EMPRG,'01/01/1900'),EMPREGADO.COD_MTDSL,EMPREGADO.NUM_RGTRO_EMPRG,MAX(MOV_CONT_PARTIC_FSS.DAT_MVCPR),EMPREGADO.NUM_CPF_EMPRG,EMPREGADO.COD_BANCO,EMPREGADO.COD_AGBCO,EMPREGADO.TIP_CTCOR_EMPRG,EMPREGADO.NUM_CTCOR_EMPRG,ADESAO_PLANO_PARTIC_FSS.COD_TPPCP,ADESAO_PLANO_PARTIC_FSS.COD_SITPAR,ADESAO_PLANO_PARTIC_FSS.NUM_PLBNF FROM HIST_PART_CAPIT_FSS,PARTICIPANTE_FSS,EMPREGADO,MOV_CONT_PARTIC_FSS,ADESAO_PLANO_PARTIC_FSS WHERE EMPREGADO.COD_EMPRS = PARTICIPANTE_FSS.COD_EMPRS AND EMPREGADO.NUM_RGTRO_EMPRG = PARTICIPANTE_FSS.NUM_RGTRO_EMPRG AND HIST_PART_CAPIT_FSS.NUM_MATR_PARTF = PARTICIPANTE_FSS.NUM_MATR_PARTF AND ADESAO_PLANO_PARTIC_FSS.NUM_MATR_PARTF = PARTICIPANTE_FSS.NUM_MATR_PARTF AND PARTICIPANTE_FSS.NUM_MATR_PARTF = MOV_CONT_PARTIC_FSS.NUM_MATR_PARTF AND ADESAO_PLANO_PARTIC_FSS.NUM_PLBNF = HIST_PART_CAPIT_FSS.NUM_PLBNF AND ADESAO_PLANO_PARTIC_FSS.NUM_PLBNF IN (21,22,23,24) AND ADESAO_PLANO_PARTIC_FSS.COD_TPPCP = 1 AND ADESAO_PLANO_PARTIC_FSS.COD_SITPAR = 4 AND HIST_PART_CAPIT_FSS.TIP_MOVIM_HPCAP = 1 AND MOV_CONT_PARTIC_FSS.DAT_MVCPR &lt;= ADESAO_PLANO_PARTIC_FSS.DAT_FIM_ADPLPR GROUP BY ADESAO_PLANO_PARTIC_FSS.NUM_MATR_PARTF,HIST_PART_CAPIT_FSS.DAT_FIM_HPCAP,PARTICIPANTE_FSS.COD_EMPRS,EMPREGADO.NOM_EMPRG,ISNULL(EMPREGADO.DAT_DESLG_EMPRG,'01/01/1900'),EMPREGADO.COD_MTDSL,EMPREGADO.NUM_RGTRO_EMPRG,EMPREGADO.NUM_CPF_EMPRG,EMPREGADO.COD_BANCO,EMPREGADO.COD_AGBCO,EMPREGADO.TIP_CTCOR_EMPRG,EMPREGADO.NUM_CTCOR_EMPRG,ADESAO_PLANO_PARTIC_FSS.COD_TPPCP,ADESAO_PLANO_PARTIC_FSS.COD_SITPAR,ADESAO_PLANO_PARTIC_FSS.NUM_PLBNF ORDER BY PARTICIPANTE_FSS.COD_EMPRS ASC,EMPREGADO.NUM_RGTRO_EMPRG ASC										" StatementType="SELECT">
+          <StatementSetOptions ANSI_NULLS="false" ANSI_PADDING="false" ANSI_WARNINGS="false" ARITHABORT="true" CONCAT_NULL_YIELDS_NULL="false" NUMERIC_ROUNDABORT="false" QUOTED_IDENTIFIER="false" />
+          <QueryPlan CachedPlanSize="104">
+            <RelOp AvgRowSize="137" EstimateCPU="0.82389" EstimateIO="0.0112613" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="13120" LogicalOp="Sort" NodeId="0" Parallel="false" PhysicalOp="Sort" EstimatedTotalSubtreeCost="10.0425">
+              <OutputList>
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                <ColumnReference Column="Expr1015" />
+                <ColumnReference Column="Expr1016" />
+              </OutputList>
+              <MemoryFractions Input="0.95572" Output="1" />
+              <Sort Distinct="false">
+                <OrderBy>
+                  <OrderByColumn Ascending="true">
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                  </OrderByColumn>
+                  <OrderByColumn Ascending="true">
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                  </OrderByColumn>
+                </OrderBy>
+                <RelOp AvgRowSize="137" EstimateCPU="0.014432" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="13120" LogicalOp="Aggregate" NodeId="1" Parallel="false" PhysicalOp="Stream Aggregate" EstimatedTotalSubtreeCost="9.20731">
+                  <OutputList>
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                    <ColumnReference Column="Expr1015" />
+                    <ColumnReference Column="Expr1016" />
+                  </OutputList>
+                  <StreamAggregate>
+                    <DefinedValues>
+                      <DefinedValue>
+                        <ColumnReference Column="Expr1016" />
+                        <ScalarOperator ScalarString="MAX([Amd_Prev_Prod].[dbo].[mov_cont_partic_fss].[dat_mvcpr])">
+                          <Aggregate AggType="MAX" Distinct="false">
+                            <ScalarOperator>
+                              <Identifier>
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[mov_cont_partic_fss]" Column="dat_mvcpr" />
+                              </Identifier>
+                            </ScalarOperator>
+                          </Aggregate>
+                        </ScalarOperator>
+                      </DefinedValue>
+                      <DefinedValue>
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                        <ScalarOperator ScalarString="ANY([Amd_Prev_Prod].[dbo].[participante_fss].[cod_emprs])">
+                          <Aggregate AggType="ANY" Distinct="false">
+                            <ScalarOperator>
+                              <Identifier>
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                              </Identifier>
+                            </ScalarOperator>
+                          </Aggregate>
+                        </ScalarOperator>
+                      </DefinedValue>
+                      <DefinedValue>
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                        <ScalarOperator ScalarString="ANY([Amd_Prev_Prod].[dbo].[empregado].[num_rgtro_emprg])">
+                          <Aggregate AggType="ANY" Distinct="false">
+                            <ScalarOperator>
+                              <Identifier>
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                              </Identifier>
+                            </ScalarOperator>
+                          </Aggregate>
+                        </ScalarOperator>
+                      </DefinedValue>
+                      <DefinedValue>
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                        <ScalarOperator ScalarString="ANY([Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[cod_tppcp])">
+                          <Aggregate AggType="ANY" Distinct="false">
+                            <ScalarOperator>
+                              <Identifier>
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                              </Identifier>
+                            </ScalarOperator>
+                          </Aggregate>
+                        </ScalarOperator>
+                      </DefinedValue>
+                      <DefinedValue>
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                        <ScalarOperator ScalarString="ANY([Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[cod_sitpar])">
+                          <Aggregate AggType="ANY" Distinct="false">
+                            <ScalarOperator>
+                              <Identifier>
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                              </Identifier>
+                            </ScalarOperator>
+                          </Aggregate>
+                        </ScalarOperator>
+                      </DefinedValue>
+                    </DefinedValues>
+                    <GroupBy>
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                      <ColumnReference Column="Expr1015" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                    </GroupBy>
+                    <RelOp AvgRowSize="148" EstimateCPU="0.0548416" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="13120" LogicalOp="Inner Join" NodeId="2" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="9.19288">
+                      <OutputList>
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[mov_cont_partic_fss]" Column="dat_mvcpr" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                        <ColumnReference Column="Expr1015" />
+                      </OutputList>
+                      <NestedLoops Optimized="false" WithOrderedPrefetch="true">
+                        <OuterReferences>
+                          <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                          <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                          <ColumnReference Column="Expr1020" />
+                        </OuterReferences>
+                        <RelOp AvgRowSize="148" EstimateCPU="0.00783202" EstimateIO="0.0112613" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="545.21" LogicalOp="Sort" NodeId="4" Parallel="false" PhysicalOp="Sort" EstimatedTotalSubtreeCost="3.66653">
+                          <OutputList>
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                            <ColumnReference Column="Expr1015" />
+                          </OutputList>
+                          <MemoryFractions Input="0.5" Output="0.0442804" />
+                          <Sort Distinct="false">
+                            <OrderBy>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Column="Expr1015" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                              </OrderByColumn>
+                            </OrderBy>
+                            <RelOp AvgRowSize="148" EstimateCPU="5.4521E-05" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="545.21" LogicalOp="Compute Scalar" NodeId="5" Parallel="false" PhysicalOp="Compute Scalar" EstimatedTotalSubtreeCost="3.64744">
+                              <OutputList>
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                                <ColumnReference Column="Expr1015" />
+                              </OutputList>
+                              <ComputeScalar>
+                                <DefinedValues>
+                                  <DefinedValue>
+                                    <ColumnReference Column="Expr1015" />
+                                    <ScalarOperator ScalarString="isnull([Amd_Prev_Prod].[dbo].[empregado].[dat_deslg_emprg],'1900-01-01 00:00:00.000')">
+                                      <Intrinsic FunctionName="isnull">
+                                        <ScalarOperator>
+                                          <Identifier>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="dat_deslg_emprg" />
+                                          </Identifier>
+                                        </ScalarOperator>
+                                        <ScalarOperator>
+                                          <Const ConstValue="'1900-01-01 00:00:00.000'" />
+                                        </ScalarOperator>
+                                      </Intrinsic>
+                                    </ScalarOperator>
+                                  </DefinedValue>
+                                </DefinedValues>
+                                <RelOp AvgRowSize="148" EstimateCPU="0.00227898" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="545.21" LogicalOp="Inner Join" NodeId="6" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="3.64738">
+                                  <OutputList>
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="dat_deslg_emprg" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                                  </OutputList>
+                                  <NestedLoops Optimized="true" WithUnorderedPrefetch="true">
+                                    <OuterReferences>
+                                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_rgtro_emprg" />
+                                      <ColumnReference Column="Expr1019" />
+                                    </OuterReferences>
+                                    <RelOp AvgRowSize="68" EstimateCPU="0.00227898" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="545.21" LogicalOp="Inner Join" NodeId="9" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="2.42168">
+                                      <OutputList>
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_rgtro_emprg" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                                      </OutputList>
+                                      <NestedLoops Optimized="false" WithUnorderedPrefetch="true">
+                                        <OuterReferences>
+                                          <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                          <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                          <ColumnReference Column="Expr1018" />
+                                        </OuterReferences>
+                                        <RelOp AvgRowSize="49" EstimateCPU="0.36442" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="368.881" LogicalOp="Inner Join" NodeId="11" Parallel="false" PhysicalOp="Hash Match" EstimatedTotalSubtreeCost="1.31384">
+                                          <OutputList>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_rgtro_emprg" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                                          </OutputList>
+                                          <MemoryFractions Input="0" Output="0" />
+                                          <Hash>
+                                            <DefinedValues />
+                                            <HashKeysBuild>
+                                              <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                            </HashKeysBuild>
+                                            <HashKeysProbe>
+                                              <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_matr_partf" />
+                                            </HashKeysProbe>
+                                            <ProbeResidual>
+                                              <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_matr_partf]=[Amd_Prev_Prod].[dbo].[participante_fss].[num_matr_partf]">
+                                                <Compare CompareOp="EQ">
+                                                  <ScalarOperator>
+                                                    <Identifier>
+                                                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                    </Identifier>
+                                                  </ScalarOperator>
+                                                  <ScalarOperator>
+                                                    <Identifier>
+                                                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_matr_partf" />
+                                                    </Identifier>
+                                                  </ScalarOperator>
+                                                </Compare>
+                                              </ScalarOperator>
+                                            </ProbeResidual>
+                                            <RelOp AvgRowSize="35" EstimateCPU="0.233031" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="368.883" LogicalOp="Inner Join" NodeId="13" Parallel="false" PhysicalOp="Hash Match" EstimatedTotalSubtreeCost="0.768985">
+                                              <OutputList>
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                                              </OutputList>
+                                              <MemoryFractions Input="0" Output="0" />
+                                              <Hash>
+                                                <DefinedValues />
+                                                <HashKeysBuild>
+                                                  <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                  <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                </HashKeysBuild>
+                                                <HashKeysProbe>
+                                                  <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                  <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                </HashKeysProbe>
+                                                <ProbeResidual>
+                                                  <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_matr_partf] = [Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_matr_partf] AND [Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_plbnf] = [Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_plbnf]">
+                                                    <Logical Operation="AND">
+                                                      <ScalarOperator>
+                                                        <Compare CompareOp="IS">
+                                                          <ScalarOperator>
+                                                            <Identifier>
+                                                              <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                            </Identifier>
+                                                          </ScalarOperator>
+                                                          <ScalarOperator>
+                                                            <Identifier>
+                                                              <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                            </Identifier>
+                                                          </ScalarOperator>
+                                                        </Compare>
+                                                      </ScalarOperator>
+                                                      <ScalarOperator>
+                                                        <Compare CompareOp="IS">
+                                                          <ScalarOperator>
+                                                            <Identifier>
+                                                              <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                            </Identifier>
+                                                          </ScalarOperator>
+                                                          <ScalarOperator>
+                                                            <Identifier>
+                                                              <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                            </Identifier>
+                                                          </ScalarOperator>
+                                                        </Compare>
+                                                      </ScalarOperator>
+                                                    </Logical>
+                                                  </ScalarOperator>
+                                                </ProbeResidual>
+                                                <RelOp AvgRowSize="27" EstimateCPU="0.000562771" EstimateIO="0.00386574" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="368.883" LogicalOp="Index Seek" NodeId="14" Parallel="false" PhysicalOp="Index Seek" EstimatedTotalSubtreeCost="0.00442851">
+                                                  <OutputList>
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                                  </OutputList>
+                                                  <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" NoExpandHint="false">
+                                                    <DefinedValues>
+                                                      <DefinedValue>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                      </DefinedValue>
+                                                      <DefinedValue>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                      </DefinedValue>
+                                                      <DefinedValue>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                                      </DefinedValue>
+                                                      <DefinedValue>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                                      </DefinedValue>
+                                                    </DefinedValues>
+                                                    <Object Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Index="[id_adesaoplanoparticfss_004]" />
+                                                    <SeekPredicates>
+                                                      <SeekPredicate>
+                                                        <Prefix ScanType="EQ">
+                                                          <RangeColumns>
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                          </RangeColumns>
+                                                          <RangeExpressions>
+                                                            <ScalarOperator ScalarString="(1.)">
+                                                              <Const ConstValue="(1.)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator ScalarString="(4.)">
+                                                              <Const ConstValue="(4.)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator ScalarString="(21.)">
+                                                              <Const ConstValue="(21.)" />
+                                                            </ScalarOperator>
+                                                          </RangeExpressions>
+                                                        </Prefix>
+                                                      </SeekPredicate>
+                                                      <SeekPredicate>
+                                                        <Prefix ScanType="EQ">
+                                                          <RangeColumns>
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                          </RangeColumns>
+                                                          <RangeExpressions>
+                                                            <ScalarOperator ScalarString="(1.)">
+                                                              <Const ConstValue="(1.)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator ScalarString="(4.)">
+                                                              <Const ConstValue="(4.)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator ScalarString="(22.)">
+                                                              <Const ConstValue="(22.)" />
+                                                            </ScalarOperator>
+                                                          </RangeExpressions>
+                                                        </Prefix>
+                                                      </SeekPredicate>
+                                                      <SeekPredicate>
+                                                        <Prefix ScanType="EQ">
+                                                          <RangeColumns>
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                          </RangeColumns>
+                                                          <RangeExpressions>
+                                                            <ScalarOperator ScalarString="(1.)">
+                                                              <Const ConstValue="(1.)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator ScalarString="(4.)">
+                                                              <Const ConstValue="(4.)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator ScalarString="(23.)">
+                                                              <Const ConstValue="(23.)" />
+                                                            </ScalarOperator>
+                                                          </RangeExpressions>
+                                                        </Prefix>
+                                                      </SeekPredicate>
+                                                      <SeekPredicate>
+                                                        <Prefix ScanType="EQ">
+                                                          <RangeColumns>
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_tppcp" />
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="cod_sitpar" />
+                                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                          </RangeColumns>
+                                                          <RangeExpressions>
+                                                            <ScalarOperator ScalarString="(1.)">
+                                                              <Const ConstValue="(1.)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator ScalarString="(4.)">
+                                                              <Const ConstValue="(4.)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator ScalarString="(24.)">
+                                                              <Const ConstValue="(24.)" />
+                                                            </ScalarOperator>
+                                                          </RangeExpressions>
+                                                        </Prefix>
+                                                      </SeekPredicate>
+                                                    </SeekPredicates>
+                                                  </IndexScan>
+                                                </RelOp>
+                                                <RelOp AvgRowSize="25" EstimateCPU="0.112311" EstimateIO="0.26831" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="31355" LogicalOp="Index Scan" NodeId="15" Parallel="false" PhysicalOp="Index Scan" EstimatedTotalSubtreeCost="0.380621">
+                                                  <OutputList>
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                                                  </OutputList>
+                                                  <IndexScan Ordered="false" ForcedIndex="false" NoExpandHint="false">
+                                                    <DefinedValues>
+                                                      <DefinedValue>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                      </DefinedValue>
+                                                      <DefinedValue>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                      </DefinedValue>
+                                                      <DefinedValue>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                                                      </DefinedValue>
+                                                    </DefinedValues>
+                                                    <Object Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Index="[Id_dat_fim_adplpr_adesao_plano_partic]" />
+                                                    <Predicate>
+                                                      <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_plbnf]=(21.) OR [Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_plbnf]=(22.) OR [Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_plbnf]=(23.) OR [Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_plbnf]=(24.)">
+                                                        <Logical Operation="OR">
+                                                          <ScalarOperator>
+                                                            <Compare CompareOp="EQ">
+                                                              <ScalarOperator>
+                                                                <Identifier>
+                                                                  <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                                </Identifier>
+                                                              </ScalarOperator>
+                                                              <ScalarOperator>
+                                                                <Const ConstValue="(21.)" />
+                                                              </ScalarOperator>
+                                                            </Compare>
+                                                          </ScalarOperator>
+                                                          <ScalarOperator>
+                                                            <Compare CompareOp="EQ">
+                                                              <ScalarOperator>
+                                                                <Identifier>
+                                                                  <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                                </Identifier>
+                                                              </ScalarOperator>
+                                                              <ScalarOperator>
+                                                                <Const ConstValue="(22.)" />
+                                                              </ScalarOperator>
+                                                            </Compare>
+                                                          </ScalarOperator>
+                                                          <ScalarOperator>
+                                                            <Compare CompareOp="EQ">
+                                                              <ScalarOperator>
+                                                                <Identifier>
+                                                                  <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                                </Identifier>
+                                                              </ScalarOperator>
+                                                              <ScalarOperator>
+                                                                <Const ConstValue="(23.)" />
+                                                              </ScalarOperator>
+                                                            </Compare>
+                                                          </ScalarOperator>
+                                                          <ScalarOperator>
+                                                            <Compare CompareOp="EQ">
+                                                              <ScalarOperator>
+                                                                <Identifier>
+                                                                  <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                                </Identifier>
+                                                              </ScalarOperator>
+                                                              <ScalarOperator>
+                                                                <Const ConstValue="(24.)" />
+                                                              </ScalarOperator>
+                                                            </Compare>
+                                                          </ScalarOperator>
+                                                        </Logical>
+                                                      </ScalarOperator>
+                                                    </Predicate>
+                                                  </IndexScan>
+                                                </RelOp>
+                                              </Hash>
+                                            </RelOp>
+                                            <RelOp AvgRowSize="26" EstimateCPU="0.0565705" EstimateIO="0.123866" EstimateRebinds="0" EstimateRewinds="0" EstimateRows="51285" LogicalOp="Index Scan" NodeId="28" Parallel="false" PhysicalOp="Index Scan" EstimatedTotalSubtreeCost="0.180436">
+                                              <OutputList>
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_matr_partf" />
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_rgtro_emprg" />
+                                              </OutputList>
+                                              <IndexScan Ordered="false" ForcedIndex="false" NoExpandHint="false">
+                                                <DefinedValues>
+                                                  <DefinedValue>
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_matr_partf" />
+                                                  </DefinedValue>
+                                                  <DefinedValue>
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                                                  </DefinedValue>
+                                                  <DefinedValue>
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_rgtro_emprg" />
+                                                  </DefinedValue>
+                                                </DefinedValues>
+                                                <Object Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Index="[id_participante001]" />
+                                              </IndexScan>
+                                            </RelOp>
+                                          </Hash>
+                                        </RelOp>
+                                        <RelOp AvgRowSize="30" EstimateCPU="0.000158626" EstimateIO="0.003125" EstimateRebinds="367.881" EstimateRewinds="0" EstimateRows="1.47801" LogicalOp="Clustered Index Seek" NodeId="30" Parallel="false" PhysicalOp="Clustered Index Seek" EstimatedTotalSubtreeCost="1.10491">
+                                          <OutputList>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="tip_movim_hpcap" />
+                                          </OutputList>
+                                          <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" NoExpandHint="false">
+                                            <DefinedValues>
+                                              <DefinedValue>
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                                              </DefinedValue>
+                                              <DefinedValue>
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                                              </DefinedValue>
+                                              <DefinedValue>
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="dat_fim_hpcap" />
+                                              </DefinedValue>
+                                              <DefinedValue>
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="tip_movim_hpcap" />
+                                              </DefinedValue>
+                                            </DefinedValues>
+                                            <Object Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Index="[PK_HPCAP]" />
+                                            <SeekPredicates>
+                                              <SeekPredicate>
+                                                <Prefix ScanType="EQ">
+                                                  <RangeColumns>
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_matr_partf" />
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                                                  </RangeColumns>
+                                                  <RangeExpressions>
+                                                    <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_matr_partf]">
+                                                      <Identifier>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                                      </Identifier>
+                                                    </ScalarOperator>
+                                                    <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_plbnf]">
+                                                      <Identifier>
+                                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_plbnf" />
+                                                      </Identifier>
+                                                    </ScalarOperator>
+                                                  </RangeExpressions>
+                                                </Prefix>
+                                              </SeekPredicate>
+                                            </SeekPredicates>
+                                            <Predicate>
+                                              <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[hist_part_capit_fss].[tip_movim_hpcap]=(1.) AND [Amd_Prev_Prod].[dbo].[hist_part_capit_fss].[num_plbnf]&gt;=(21.) AND [Amd_Prev_Prod].[dbo].[hist_part_capit_fss].[num_plbnf]&lt;=(24.)">
+                                                <Logical Operation="AND">
+                                                  <ScalarOperator>
+                                                    <Compare CompareOp="EQ">
+                                                      <ScalarOperator>
+                                                        <Identifier>
+                                                          <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="tip_movim_hpcap" />
+                                                        </Identifier>
+                                                      </ScalarOperator>
+                                                      <ScalarOperator>
+                                                        <Const ConstValue="(1.)" />
+                                                      </ScalarOperator>
+                                                    </Compare>
+                                                  </ScalarOperator>
+                                                  <ScalarOperator>
+                                                    <Compare CompareOp="GE">
+                                                      <ScalarOperator>
+                                                        <Identifier>
+                                                          <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                                                        </Identifier>
+                                                      </ScalarOperator>
+                                                      <ScalarOperator>
+                                                        <Const ConstValue="(21.)" />
+                                                      </ScalarOperator>
+                                                    </Compare>
+                                                  </ScalarOperator>
+                                                  <ScalarOperator>
+                                                    <Compare CompareOp="LE">
+                                                      <ScalarOperator>
+                                                        <Identifier>
+                                                          <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[hist_part_capit_fss]" Column="num_plbnf" />
+                                                        </Identifier>
+                                                      </ScalarOperator>
+                                                      <ScalarOperator>
+                                                        <Const ConstValue="(24.)" />
+                                                      </ScalarOperator>
+                                                    </Compare>
+                                                  </ScalarOperator>
+                                                </Logical>
+                                              </ScalarOperator>
+                                            </Predicate>
+                                          </IndexScan>
+                                        </RelOp>
+                                      </NestedLoops>
+                                    </RelOp>
+                                    <RelOp AvgRowSize="96" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="543.732" EstimateRewinds="0.47801" EstimateRows="1" LogicalOp="Clustered Index Seek" NodeId="31" Parallel="false" PhysicalOp="Clustered Index Seek" EstimatedTotalSubtreeCost="1.22343">
+                                      <OutputList>
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="dat_deslg_emprg" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                                      </OutputList>
+                                      <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" NoExpandHint="false">
+                                        <DefinedValues>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="dat_deslg_emprg" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="nom_emprg" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_cpf_emprg" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_ctcor_emprg" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_banco" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_agbco" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_mtdsl" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="Tip_ctcor_emprg" />
+                                          </DefinedValue>
+                                        </DefinedValues>
+                                        <Object Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Index="[PK_EMPRG]" />
+                                        <SeekPredicates>
+                                          <SeekPredicate>
+                                            <Prefix ScanType="EQ">
+                                              <RangeColumns>
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="cod_emprs" />
+                                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[empregado]" Column="num_rgtro_emprg" />
+                                              </RangeColumns>
+                                              <RangeExpressions>
+                                                <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[participante_fss].[cod_emprs]">
+                                                  <Identifier>
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="cod_emprs" />
+                                                  </Identifier>
+                                                </ScalarOperator>
+                                                <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[participante_fss].[num_rgtro_emprg]">
+                                                  <Identifier>
+                                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[participante_fss]" Column="num_rgtro_emprg" />
+                                                  </Identifier>
+                                                </ScalarOperator>
+                                              </RangeExpressions>
+                                            </Prefix>
+                                          </SeekPredicate>
+                                        </SeekPredicates>
+                                      </IndexScan>
+                                    </RelOp>
+                                  </NestedLoops>
+                                </RelOp>
+                              </ComputeScalar>
+                            </RelOp>
+                          </Sort>
+                        </RelOp>
+                        <RelOp AvgRowSize="15" EstimateCPU="0.00137913" EstimateIO="0.0120139" EstimateRebinds="543.732" EstimateRewinds="0.47801" EstimateRows="24.0641" LogicalOp="Clustered Index Seek" NodeId="35" Parallel="false" PhysicalOp="Clustered Index Seek" EstimatedTotalSubtreeCost="5.18075">
+                          <OutputList>
+                            <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[mov_cont_partic_fss]" Column="dat_mvcpr" />
+                          </OutputList>
+                          <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" NoExpandHint="false">
+                            <DefinedValues>
+                              <DefinedValue>
+                                <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[mov_cont_partic_fss]" Column="dat_mvcpr" />
+                              </DefinedValue>
+                            </DefinedValues>
+                            <Object Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[mov_cont_partic_fss]" Index="[PK_MVCPR]" />
+                            <SeekPredicates>
+                              <SeekPredicate>
+                                <Prefix ScanType="EQ">
+                                  <RangeColumns>
+                                    <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[mov_cont_partic_fss]" Column="num_matr_partf" />
+                                  </RangeColumns>
+                                  <RangeExpressions>
+                                    <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[num_matr_partf]">
+                                      <Identifier>
+                                        <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="num_matr_partf" />
+                                      </Identifier>
+                                    </ScalarOperator>
+                                  </RangeExpressions>
+                                </Prefix>
+                              </SeekPredicate>
+                            </SeekPredicates>
+                            <Predicate>
+                              <ScalarOperator ScalarString="[Amd_Prev_Prod].[dbo].[mov_cont_partic_fss].[dat_mvcpr]&lt;=[Amd_Prev_Prod].[dbo].[adesao_plano_partic_fss].[dat_fim_adplpr]">
+                                <Compare CompareOp="LE">
+                                  <ScalarOperator>
+                                    <Identifier>
+                                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[mov_cont_partic_fss]" Column="dat_mvcpr" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                  <ScalarOperator>
+                                    <Identifier>
+                                      <ColumnReference Database="[Amd_Prev_Prod]" Schema="[dbo]" Table="[adesao_plano_partic_fss]" Column="dat_fim_adplpr" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                </Compare>
+                              </ScalarOperator>
+                            </Predicate>
+                          </IndexScan>
+                        </RelOp>
+                      </NestedLoops>
+                    </RelOp>
+                  </StreamAggregate>
+                </RelOp>
+              </Sort>
+            </RelOp>
+          </QueryPlan>
+        </StmtSimple>
+      </Statements>
+    </Batch>
+  </BatchSequence>
+</ShowPlanXML>

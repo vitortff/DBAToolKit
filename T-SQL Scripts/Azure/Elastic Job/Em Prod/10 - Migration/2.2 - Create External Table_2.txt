@@ -1,0 +1,17 @@
+CREATE EXTERNAL TABLE [dbo].[Tbl_sp_estimate_data_compression_savings_migration](
+	[Banco] [nvarchar](128) NULL,
+	[object_name] [sysname] NOT NULL,
+	[schema_name] [sysname] NOT NULL,
+	[index_id] [int] NULL,
+	[partition_number] [int] NULL,
+	[size_with_current_compression_setting] [bigint] NULL,
+	[size_with_requested_compression_setting] [bigint] NULL,
+	[sample_size_with_current_compression_setting] [bigint] NULL,
+	[sample_size_with_requested_compression_setting] [bigint] NULL
+)
+
+WITH (DATA_SOURCE = [legalone-migration],  -- data source 
+      SCHEMA_NAME = 'dbo',           -- external table schema
+      OBJECT_NAME = 'Tbl_sp_estimate_data_compression_savings_II'       -- name of table in external database
+     )
+GO

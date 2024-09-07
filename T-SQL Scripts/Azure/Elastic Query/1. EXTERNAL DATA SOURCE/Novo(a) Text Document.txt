@@ -1,0 +1,36 @@
+CREATE DATABASE SCOPED CREDENTIAL [legalone-prod-eastus2] -- credential name
+WITH IDENTITY = 'cloud', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+CREATE DATABASE SCOPED CREDENTIAL [legalone-prod2] -- credential name
+WITH IDENTITY = 'cloud', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+CREATE DATABASE SCOPED CREDENTIAL [firmbr-prod] -- credential name
+WITH IDENTITY = 'cloud', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+
+
+/****** Object:  ExternalDataSource [account_corp_br]    Script Date: 3/26/2024 4:46:02 PM ******/
+CREATE EXTERNAL DATA SOURCE [account_corp_br] WITH (TYPE = RDBMS, LOCATION = N'legalone-prod-eastus2.database.windows.net', CREDENTIAL = [legalone-prod-eastus2], DATABASE_NAME = N'account_corp_br')
+GO
+
+/****** Object:  ExternalDataSource [account_firm_ar]    Script Date: 3/26/2024 4:46:02 PM ******/
+CREATE EXTERNAL DATA SOURCE [account_firm_ar] WITH (TYPE = RDBMS, LOCATION = N'legalone-prod-eastus2.database.windows.net', CREDENTIAL = [legalone-prod-eastus2], DATABASE_NAME = N'account_firm_ar')
+GO
+
+/****** Object:  ExternalDataSource [account_firm_br]    Script Date: 3/26/2024 4:46:02 PM ******/
+CREATE EXTERNAL DATA SOURCE [account_firm_br] WITH (TYPE = RDBMS, LOCATION = N'firmbr-prod.database.windows.net', CREDENTIAL = [firmbr-prod], DATABASE_NAME = N'account_firm_br')
+GO
+
+/****** Object:  ExternalDataSource [legalone-prod-eastus2]    Script Date: 3/26/2024 4:46:02 PM ******/
+CREATE EXTERNAL DATA SOURCE [legalone-prod-eastus2] WITH (TYPE = RDBMS, LOCATION = N'legalone-prod-eastus2.database.windows.net', CREDENTIAL = [legalone-prod-eastus2], DATABASE_NAME = N'master')
+GO
+
+/****** Object:  ExternalDataSource [legalone-prod-eastus2]    Script Date: 3/26/2024 4:46:02 PM ******/
+CREATE EXTERNAL DATA SOURCE [legalone-prod2] WITH (TYPE = RDBMS, LOCATION = N'legalone-prod2.database.windows.net', CREDENTIAL = [legalone-prod-eastus2], DATABASE_NAME = N'master')
+GO

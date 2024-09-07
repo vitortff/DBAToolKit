@@ -1,0 +1,15 @@
+05/06/2023 - l1_firm_br_8099663: l1-firm-br-pool-10 -->l1-firm-br-pool-10-add[legalone-prod2]
+           - l1_firm_br_8108445: l1-firm-br-pool-11 -->l1-firm-br-pool-14[legalone-prod2]
+           - l1_firm_br_8084151_cp_default: l1-firm-br-pool-17--l1-firm-br-pool-10-add[legalone-prod2]
+	   - l1_firm_br_8072683 l1-firm-br-pool-2-add-->l1-firm-br-pool-11[eastus2]
+	   - l1_firm_br_8112543 l1-firm-br-pool-6--> l1-firm-br-pool-11[eastus2]
+
+	   - l1_firm_br_8106074 l1-firm-br-pool-6--> l1-firm-br-pool-11[eastus2]
+	- l1_firm_br_8121469 l1-firm-br-pool-6--> l1-firm-br-pool-11[eastus2]
+	-l1_firm_br_8124438 l1-firm-br-pool-6--> l1-firm-br-pool-11[eastus2]
+ 
+
+06/06/2023 - Ajuste Sync Andamentos (NOVAJUS_FULL_8156071, l1_firm_br_8101213)
+            l1-firm-br-pool-big-2-->l1-shared-pool: NOVAJUS_FULL_8156875
+
+  		

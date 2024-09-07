@@ -1,0 +1,163 @@
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+--1 Scoped Credential
+
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL ScopedCredentialName -- credential name
+WITH IDENTITY = 'cloud', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+SELECT * FROM sys.database_scoped_credentials
+
+
+
+--2 Create Target Group
+EXEC jobs.sp_add_target_group 'Local' 
+--select *from [jobs].[target_groups]
+
+--3 ADD GROUP MEMBER TO A TARGET GROUP
+EXEC jobs.sp_add_target_group_member 'Local', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='legalone-dev-eastus2.database.windows.net', 
+@database_name = 'DB_Test_Elastic_Job'
+GO
+--select *from [jobs].[target_group_members]
+
+
+--4.1 Create data source to remote Azure SQL Database server and database
+
+CREATE EXTERNAL DATA SOURCE [legalone-prod2]
+WITH
+(
+    TYPE=RDBMS, -- data source type
+    LOCATION = 'legalone-prod2.database.windows.net', -- Azure SQL Database server name
+    DATABASE_NAME = 'master', -- database name
+    CREDENTIAL= mymastercred4  -- credential used to connect to server / database  
+)
+GO
+
+--4.2
+
+CREATE EXTERNAL DATA SOURCE [legalone-eastus2]
+WITH
+(
+    TYPE=RDBMS, -- data source type
+    LOCATION = 'legalone-prod-eastus2.database.windows.net', -- Azure SQL Database server name
+    DATABASE_NAME = 'master', -- database name
+    CREDENTIAL= mymastercred4  -- credential used to connect to server / database  
+)
+GO
+
+--5.1
+-- Create External Table
+-- prod2
+CREATE EXTERNAL TABLE [dbo].[elastic_pool_resource_stats_prod2] (
+start_time datetime2,
+end_time datetime2,
+elastic_pool_name nvarchar(128),
+avg_cpu_percent decimal(5,2),
+avg_data_io_percent decimal(5,2),
+avg_log_write_percent decimal(5,2),
+avg_storage_percent decimal(5,2),
+max_worker_percent decimal(5,2),
+max_session_percent decimal(5,2),
+elastic_pool_dtu_limit int,
+elastic_pool_storage_limit_mb bigint,
+max_xtp_storage_percent decimal(5,2),
+avg_login_rate_percent decimal(5,2),
+avg_instance_cpu_percent decimal(5,2),
+avg_instance_memory_percent decimal(5,2),
+elastic_pool_cpu_limit decimal(5,2),
+avg_allocated_storage_percent decimal(5,2))
+
+WITH (DATA_SOURCE = [legalone-prod2],  -- data source 
+SCHEMA_NAME = 'sys',           -- external table schema
+OBJECT_NAME = 'elastic_pool_resource_stats')       -- name of table in external database
+GO
+
+--5.2
+--eastus2
+CREATE EXTERNAL TABLE [dbo].[elastic_pool_resource_stats_eastus2] (
+start_time datetime2,
+end_time datetime2,
+elastic_pool_name nvarchar(128),
+avg_cpu_percent decimal(5,2),
+avg_data_io_percent decimal(5,2),
+avg_log_write_percent decimal(5,2),
+avg_storage_percent decimal(5,2),
+max_worker_percent decimal(5,2),
+max_session_percent decimal(5,2),
+elastic_pool_dtu_limit int,
+elastic_pool_storage_limit_mb bigint,
+max_xtp_storage_percent decimal(5,2),
+avg_login_rate_percent decimal(5,2),
+avg_instance_cpu_percent decimal(5,2),
+avg_instance_memory_percent decimal(5,2),
+elastic_pool_cpu_limit decimal(5,2),
+avg_allocated_storage_percent decimal(5,2))
+
+WITH (DATA_SOURCE = [legalone-eastus2],  -- data source 
+SCHEMA_NAME = 'sys',           -- external table schema
+OBJECT_NAME = 'elastic_pool_resource_stats')       -- name of table in external database
+GO
+
+--6 
+-- CREATING A JOB
+EXEC jobs.sp_add_job @job_name='Hist_Pool_CPU_Consumption', 
+@description='Ranking de Consumo dos Pools'; 
+
+-- ADD JOB STEP
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='Hist_Pool_CPU_Consumption', 
+@command=N'insert into Tbl_Hist_Pool_CPU_Consumption
+SELECT ''legalone-prod2'' as [servername],ROW_NUMBER() OVER(ORDER BY avg(avg_cpu_percent) desc) AS Row#, elastic_pool_name, avg(avg_cpu_percent) as avg_cpu_percent,avg(avg_data_io_percent) as avg_data_io_percent,Getdate() as [DateTime] from elastic_pool_resource_stats_prod2
+where start_time >= DateAdd(d,-1,GetUTCDate())
+group by elastic_pool_name', 
+@credential_name='myjobcred4', 
+@target_group_name='Local',
+@step_name = 'prod2' 
+GO
+
+-- ADD JOB STEP 
+-- eastus2
+
+-- ADD JOB STEP
+-- eastus2
+EXEC jobs.sp_add_jobstep @job_name='Hist_Pool_CPU_Consumption', 
+@command=N'insert into Tbl_Hist_Pool_CPU_Consumption
+SELECT ''legalone-eastus2'' as [servername],ROW_NUMBER() OVER(ORDER BY avg(avg_cpu_percent) desc) AS Row#, elastic_pool_name, avg(avg_cpu_percent) as avg_cpu_percent,avg(avg_data_io_percent) as avg_data_io_percent,Getdate() as [DateTime] from elastic_pool_resource_stats_eastus2
+where start_time >= DateAdd(d,-1,GetUTCDate())
+group by elastic_pool_name', 
+@credential_name='myjobcred4', 
+@target_group_name='Local',
+@step_name = 'eastus2' 
+GO
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='Hist_Pool_CPU_Consumption',
+@enabled=1,
+@schedule_interval_type='Days',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-05-05 00:00:00'
+
+
+-- Start Manually the job
+EXEC jobs.sp_start_job 'Hist_Pool_CPU_Consumption';  
+--EXEC jobs.sp_delete_job @job_name='Hist_Pool_CPU_Consumption', @force=1
+
+
+-- Check Execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+lifecycle,last_message FROM jobs.job_executions
+where job_name='Hist_Pool_CPU_Consumption'
+order by 3 desc
+
+--Table Result
+select *from Tbl_Hist_Pool_CPU_Consumption
+where servername='legalone-eastus2'
+order by 6 desc

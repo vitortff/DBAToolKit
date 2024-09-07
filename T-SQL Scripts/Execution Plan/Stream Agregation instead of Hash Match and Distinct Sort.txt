@@ -1,0 +1,17 @@
+drop index TESTE on Sales.SalesOrderHeader 
+
+SET STATISTICS IO ON
+SELECT ContactID, COUNT(*)FROM Sales.SalesOrderHeader GROUP BY ContactID option(recompile)
+SET STATISTICS IO OFF
+
+--Have a look on execution plan
+--Table 'SalesOrderHeader'. Scan count 1, logical reads 703,
+
+CREATE INDEX TESTE ON Sales.SalesOrderHeader (ContactID)
+
+
+--Execute the query again and see the execution plan is much better.
+
+--Table 'SalesOrderHeader'. Scan count 1, logical reads 45,
+
+--As you can see, the QO switch the hash match operation to stream agregation

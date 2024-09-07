@@ -1,0 +1,79 @@
+IF (SELECT  OBJECT_ID('t1')
+   ) IS NOT NULL 
+    DROP TABLE t1
+GO
+CREATE TABLE t1 (c1 INT, c2 CHAR(999)) ;
+WITH    Nums
+          AS (SELECT    1 AS n
+              UNION ALL
+              SELECT    n + 1
+              FROM      Nums
+              WHERE     n < 24
+             )
+    INSERT  INTO t1 (c1, c2)
+            SELECT  n * 100
+                   ,'a'
+            FROM    Nums;
+
+CREATE CLUSTERED INDEX i1 ON t1(c1);
+
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('TEMPDB'), --Database Name
+OBJECT_ID('T1'), -- Table Name
+NULL,NULL,'SAMPLED')
+
+--66,6666666666667	3	3	100	24	1010
+
+ALTER INDEX I1 ON T1 REBUILD WITH (FILLFACTOR=75)
+
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('TEMPDB'), --Database Name
+OBJECT_ID('T1'), -- Table Name
+NULL,NULL,'SAMPLED')
+
+--75	4	4	74,9938225846306	24	1010
+
+INSERT INTO T1 VALUES (111,'Intermediate Row')
+INSERT INTO T1 VALUES (112,'Intermediate Row')
+INSERT INTO T1 VALUES (801,'Intermediate Row')
+INSERT INTO T1 VALUES (802,'Intermediate Row')
+INSERT INTO T1 VALUES (1501,'Intermediate Row')
+INSERT INTO T1 VALUES (1502,'Intermediate Row')
+INSERT INTO T1 VALUES (2401,'Intermediate Row')
+INSERT INTO T1 VALUES (2402,'Intermediate Row')
+
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('TEMPDB'), --Database Name
+OBJECT_ID('T1'), -- Table Name
+NULL,NULL,'SAMPLED')
+
+/*
+--FINAL RESULT
+--BEFORE
+avg_fragmentation_in_percent	fragment_count page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+--75							4				4			74,9938225846306				24				1010 
+
+-- AFTER
+avg_fragmentation_in_percent	fragment_count page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+--75							4				4			100								32				1010
+*/
+
+select *from t1
+
+
+drop table t1

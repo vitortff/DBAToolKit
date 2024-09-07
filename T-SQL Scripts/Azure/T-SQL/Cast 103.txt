@@ -1,0 +1,6 @@
+https://www.mssqltips.com/sqlservertip/1145/date-and-time-conversions-using-sql-server/
+
+
+select db_name() as database_name,CONVERT(varchar, dthrinicioUltimaConsulta, 103) as dtUltimaConsulta,
+DATEPART(hour, dthrinicioUltimaConsulta) as [hour],DATEPART(minute, dthrinicioUltimaConsulta) as [minute] from MON_HorarioAgendador where isativo=1
+and dthrinicioUltimaConsulta > '2023-06-01 00:00:00'

@@ -1,0 +1,2 @@
+exec dbo.Usp_Insert_Tbl_Hist_Databases_Metrics_prod2
+exec dbo.Usp_Insert_Tbl_Hist_Databases_Metrics_eastus2

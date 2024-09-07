@@ -1,0 +1,46 @@
+set ANSI_NULLS ON
+set QUOTED_IDENTIFIER ON
+go
+
+---Alterar o valor 'Amd_Prev_Hmp' para o banco de dados correspondente
+
+ALTER procedure [dbo].[Usp_GerScriptToRstHmp]
+as
+-- Turn off the row number message
+set nocount on
+-- Gera script para Restore do 
+declare @physical_device_name nvarchar(128)
+declare @backup_start_date datetime
+declare @db nvarchar(128)
+declare @cmd nvarchar (1000)
+SET @db='Amd_Prev_Hmp'
+SET @physical_device_name = ''
+-- get the name of the last full database backup
+ select @physical_device_name = physical_device_name , @backup_start_date = backup_start_date
+ from  msdb.dbo.backupset a join msdb.dbo.backupmediaset b on a.media_set_id = b.media_set_id
+      join msdb.dbo.backupmediafamily c on a.media_set_id = c.media_set_id 
+       where type='d' and backup_start_date = 
+        (select top 1 backup_start_date from msdb.dbo.backupset 
+             where @db = database_name and type = 'd'
+              order by backup_start_date desc)  
+-- Did a full database backup name get found 
+IF @physical_device_name = ''
+	BEGIN
+	    raiserror (15004,-1,-1)
+	    return (1)
+	END
+ELSE
+	BEGIN
+	-- Build restore command to restore the last database backup 
+	SELECT @cmd = 'RESTORE DATABASE ' + rtrim(@db) + char(13) +
+            ' FROM DISK =  '  + char(39) +  'D:\' +
+             rtrim(substring(@physical_device_name,4,len(@physical_device_name))) + 
+               char(39) + char(13) + ' WITH REPLACE, RECOVERY,';
+	PRINT @cmd
+	PRINT ' MOVE N''Amd_Prev_Hmp'' TO N''D:\USERS\MSSQL\Data\Amd_Prev_Hmp_Data.MDF''' + ',' + char(13);
+	PRINT ' MOVE N''Amd_Prev_Hmp_Log'' TO N''D:\USERS\MSSQL\Data\Amd_Prev_Hmp_Log.LDF''' + char(13);
+	PRINT 'GO'  + char(13) ;
+	PRINT 'ALTER DATABASE Amd_Prev_Hmp' + char(13);
+	PRINT ' SET RECOVERY SIMPLE'+ char(13) ;
+	END
+

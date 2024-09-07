@@ -1,0 +1,9 @@
+-- No one is allowed modifying the query result until the end of transaction.
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ 
+begin transaction
+select *from teste WHERE COLL=30
+
+commit
+
+
+DELETE FROM teste WHERE COLL=30

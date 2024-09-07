@@ -1,0 +1,48 @@
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='PROD2_JOB02_UPDATE_STATISTICS', 
+@command=N'EXEC sp_updatestats;', 
+@credential_name='legalone-prod2', 
+@target_group_name='TG_PROD2_JOB02_UPDATE_STATISTICS',
+@step_name = 'Updating Statistics',
+@step_id = 3 
+GO
+
+/*
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='PROD2_JOB02_UPDATE_STATISTICS',
+@enabled=1,
+@schedule_interval_type='Weeks',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-07-23 05:00:00'
+*/
+
+
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+
+
+-- Starting a job manually
+--EXEC jobs.sp_start_job 'PROD2_JOB02_UPDATE_STATISTICS';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='Reindex_Robos_WSDatacloud_Prod', @force=1
+
+-- Canceling job execution with the specified job execution id
+--EXEC jobs.sp_stop_job 'CF1AFCD5-6D59-4E7F-9A05-DA1E7794A893';
+
+
+
+
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='PROD2_JOB02_UPDATE_STATISTICS' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc

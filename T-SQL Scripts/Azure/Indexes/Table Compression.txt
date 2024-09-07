@@ -1,0 +1,1 @@
+https://www.sqlshack.com/use-sql-server-data-compression-save-space/

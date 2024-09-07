@@ -1,0 +1,84 @@
+set ANSI_NULLS ON
+set QUOTED_IDENTIFIER ON
+go
+
+
+-- Usp_DbSpace  procedure.
+
+ALTER  procedure [dbo].[Usp_DbSpace] 
+as
+
+SET QUOTED_IDENTIFIER ON 
+SET ANSI_NULLS ON 
+SET ANSI_WARNINGS ON
+
+declare @dbname sysname
+declare @dbid int
+declare @dbsize int
+declare @maxid int
+declare @sqlstring varchar(1024)
+declare @bytesperpage  dec(15,0)
+declare @pagesperMB               dec(15,0)
+
+SET @MaxId = (SELECT MAX(dbid) FROM MASTER.dbo.sysdatabases)
+SET @dbid = 1 
+SET @dbsize = 0
+SET @bytesperpage = (select low from master.dbo.spt_values
+    where number = 1 and type = 'E')
+SET @pagesperMB = (SELECT 1048576 / @bytesperpage)
+
+
+
+CREATE TABLE #dbspacetmp   (
+            dbname varchar(128), 
+            dbpages dec(15,0), 
+            dbpagespermb dec(15,0), 
+            dbreserved dec(15,0), 
+            dbsize dec(15,0)
+                                                )
+WHILE @dbid <= @MaxId 
+BEGIN
+/*  We want summary data.
+**          Space used calculated in the following way
+**          @dbsize = Pages used
+**          @bytesperpage = d.low (where d = master.dbo.spt_values) is
+**          the # of bytes per page when d.type = 'E' and
+**          d.number = 1.
+**          Size = @dbsize * d.low / (1048576 (OR 1 MB))
+*/
+
+  SET @dbName = (SELECT name FROM MASTER.dbo.sysdatabases WHERE dbid = @dbid)
+  IF (@dbName IS NOT NULL) 
+    BEGIN
+            dbcc updateusage(@dbname) with no_infomsgs
+            SET @sqlstring = 'INSERT INTO #dbspacetmp 
+                        SELECT '''+ @dbname +'''           AS dbname,
+                        (select sum(convert(dec(15),size)) FROM ['+ @dbname +'].dbo.sysfiles) 
+                                                                     AS dbpages,
+                        (SELECT '+ str(@pagespermb,15,2) +')    		AS dbpagespermb,
+                        ((select sum(convert(dec(15),reserved)) 
+                        from [' + @dbname + '].dbo.sysindexes where indid in (0, 1, 255))/
+                        '+ str(@pagespermb,15,2) + ')                AS dbreserved,
+                        (select sum(convert(dec(15),size)) FROM ['+ @dbname +'].dbo.sysfiles)/
+                        (SELECT '+ str(@pagespermb,15,2) +')    		AS dbsize'
+                        EXEC (@sqlstring)
+            SET @dbid = @dbid + 1
+    END
+     ELSE
+        SET @dbid = @dbid + 1
+END
+
+
+INSERT INTO [DBAService].[dbo].[Utb_DbSpace]
+
+-- NOTE: Substitute your data collector server name above!!!
+
+SELECT            (SELECT @@SERVERNAME) AS servername,
+            dbname AS dbname, 
+            dbsize AS dbsize, 
+            dbreserved AS dbreserved, 
+            dbsize-dbreserved AS dbfree,
+            getdate() AS snapshotdate
+FROM #dbspacetmp
+
+DROP TABLE #dbspacetmp

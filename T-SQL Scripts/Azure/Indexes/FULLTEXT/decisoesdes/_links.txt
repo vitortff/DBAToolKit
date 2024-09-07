@@ -1,0 +1,2 @@
+https://stackoverflow.com/questions/2870677/full-text-index-requires-dropping-and-recreating-why
+https://www.c-sharpcorner.com/article/full-text-index-in-sql-server/

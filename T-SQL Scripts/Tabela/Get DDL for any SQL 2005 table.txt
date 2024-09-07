@@ -1,0 +1,468 @@
+-- USAGE: exec sp_GetDDL YourTableName
+-- or exec sp_GetDDL 'bob.example' 
+-- or exec sp_GetDDL '[schemaname].[tablename]' 
+--############################################################################# 
+-- copyright 2004-2009 by Lowell Izaguirre scripts*at*stormrage.com all rights reserved. 
+-- http://www.stormrage.com/Portals/0/SSC/sp_GetDDL2005_V304.txt
+-- V300 uses String concatination and sys.tables instead of a cursor
+-- V301 enhanced 07/31/2009 to include extended properties definitions
+-- V302 fixes an issue where the schema is created , ie 'bob', but no user named 'bob' owns the schema, so the table is not found
+-- V303 fixes an issue where all rules are appearing, instead of jsut the rule related to a column
+-- V304 testing whether vbCrLf is better than just CHAR(13), some formatting cleanup with GO statements
+-- also fixed an issue with the conversion from syscolumns to sys.columns, max-length is only field we need, not [precision]
+-- You can use this however you like...this script is not rocket science, but it took a bit of work to create. 
+-- the only thing that I ask 
+-- is that if you adapt my procedure or make it better, to simply send me a copy of it, 
+-- so I can learn from the things you've enhanced.The feedback you give will be what makes 
+-- it worthwhile to me, and will be fed back to the SQL community. 
+-- add this to your toolbox of helpful scripts. 
+--############################################################################# 
+--if you are going to put this in MASTER, and want it to be able to query 
+--each database's sys.indexes, you MUST mark it as a system procedure: 
+--EXECUTE sp_ms_marksystemobject 'sp_GetDDL' 
+--############################################################################# 
+CREATE PROCEDURE [dbo].[sp_GetDDL] 
+ @TBL VARCHAR(255) 
+AS 
+BEGIN 
+ SET NOCOUNT ON 
+ DECLARE @TBLNAME VARCHAR(200), 
+ @SCHEMANAME VARCHAR(255), 
+ @STRINGLEN INT, 
+ @TABLE_ID INT, 
+ @FINALSQL VARCHAR(max), 
+ @CONSTRAINTSQLS VARCHAR(max), 
+ @CHECKCONSTSQLS VARCHAR(max), 
+ @RULESCONSTSQLS VARCHAR(max), 
+ @FKSQLS VARCHAR(max), 
+ @TRIGGERSTATEMENT VARCHAR(max),
+ @EXTENDEDPROPERTIES VARCHAR(max), 
+ @INDEXSQLS VARCHAR(max),
+ @vbCrLf CHAR(2) 
+--############################################################################## 
+-- INITIALIZE 
+--############################################################################## 
+ --SET @TBL = '[DBO].[WHATEVER1]' 
+ --does the tablename contain a schema? 
+ SET @vbCrLf = CHAR(13) + CHAR(10) 
+ SELECT @SCHEMANAME = ISNULL(PARSENAME(@TBL,2),'dbo') , 
+ @TBLNAME = PARSENAME(@TBL,1) 
+ SELECT 
+ @TABLE_ID = [object_id] 
+ FROM sys.objects 
+ WHERE [type] = 'U' 
+ AND [name] <> 'dtproperties' 
+ AND [name] = @TBLNAME 
+ AND [schema_id] = schema_id(@SCHEMANAME) ; 
+ 
+--############################################################################## 
+-- Check If TableName is Valid 
+--############################################################################## 
+ IF ISNULL(@TABLE_ID,0) = 0 
+ BEGIN 
+ SET @FINALSQL = 'Table object [' + @SCHEMANAME + '].[' + UPPER(@TBLNAME) + '] does not exist in Database [' + db_name() + ']' 
+ SELECT @FINALSQL; 
+ RETURN 0 
+ END 
+--############################################################################## 
+-- Valid Table, Continue Processing 
+--############################################################################## 
+ SELECT @FINALSQL = 'CREATE TABLE [' + @SCHEMANAME + '].[' + UPPER(@TBLNAME) + '] ( ' 
+ SELECT @TABLE_ID = OBJECT_ID(@TBLNAME) 
+ SELECT 
+ @STRINGLEN = MAX(LEN(sys.columns.[name])) + 1 
+ FROM sys.objects 
+ INNER JOIN sys.columns 
+ ON sys.objects.[object_id] = sys.columns.[object_id] 
+ AND sys.objects.[object_id] = @TABLE_ID; 
+--############################################################################## 
+--Get the columns, their definitions and defaults. 
+--############################################################################## 
+ SELECT 
+ @FINALSQL = @FINALSQL 
+ + CASE 
+ WHEN sys.columns.[is_computed] = 1 
+ THEN @vbCrLf 
+ + '[' 
+ + UPPER(sys.columns.[name]) 
+ + '] ' 
+ + SPACE(@STRINGLEN - LEN(sys.columns.[name])) 
+ + 'AS ' + UPPER(sys.columns.[name]) 
+ ELSE @vbCrLf 
+ + '[' 
+ + UPPER(sys.columns.[name]) 
+ + '] ' 
+ + SPACE(@STRINGLEN - LEN(sys.columns.[name])) 
+ + UPPER(TYPE_NAME(sys.columns.[system_type_id])) 
+ + CASE 
+--IE NUMERIC(10,2) 
+ WHEN TYPE_NAME(sys.columns.[system_type_id]) IN ('decimal','numeric') 
+ THEN '(' 
+ + CONVERT(VARCHAR,sys.columns.[precision]) 
+ + ',' 
+ + CONVERT(VARCHAR,sys.columns.[scale]) 
+ + ') ' 
+ + SPACE(6 - LEN(CONVERT(VARCHAR,sys.columns.[precision]) 
+ + ',' 
+ + CONVERT(VARCHAR,sys.columns.[scale]))) 
+ + SPACE(7) 
+ + SPACE(16 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+--IE FLOAT(53) 
+ WHEN TYPE_NAME(sys.columns.[system_type_id]) IN ('float','real') 
+ THEN 
+ --addition: if 53, no need to specifically say (53), otherwise display it 
+ CASE 
+ WHEN sys.columns.[precision] = 53 
+ THEN SPACE(11 - LEN(CONVERT(VARCHAR,sys.columns.[precision]))) 
+ + SPACE(7) 
+ + SPACE(16 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+ ELSE '(' 
+ + CONVERT(VARCHAR,sys.columns.[precision]) 
+ + ') ' 
+ + SPACE(6 - LEN(CONVERT(VARCHAR,sys.columns.[precision]))) 
+ + SPACE(7) + SPACE(16 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+ END 
+--ie VARCHAR(40) 
+ WHEN TYPE_NAME(sys.columns.[system_type_id]) IN ('char','varchar') 
+ THEN CASE 
+ WHEN sys.columns.[max_length] = -1 
+ THEN '(max)' 
+ + SPACE(6 - LEN(CONVERT(VARCHAR,sys.columns.[max_length]))) 
+ + SPACE(7) + SPACE(16 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+ ELSE '(' 
+ + CONVERT(VARCHAR,sys.columns.[max_length]) 
+ + ') ' 
+ + SPACE(6 - LEN(CONVERT(VARCHAR,sys.columns.[max_length]))) 
+ + SPACE(7) + SPACE(16 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+ END 
+--ie NVARCHAR(40) 
+ WHEN TYPE_NAME(sys.columns.[system_type_id]) IN ('nchar','nvarchar') 
+ THEN CASE 
+ WHEN sys.columns.[max_length] = -1 
+ THEN '(max)' 
+ + SPACE(6 - LEN(CONVERT(VARCHAR,(sys.columns.[max_length]/2)))) 
+ + SPACE(7) 
+ + SPACE(16 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+ ELSE '(' 
+ + CONVERT(VARCHAR,(sys.columns.[max_length]/2)) 
+ + ') ' 
+ + SPACE(6 - LEN(CONVERT(VARCHAR,(sys.columns.[max_length]/2)))) 
+ + SPACE(7) 
+ + SPACE(16 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+ END 
+--ie datetime 
+ WHEN TYPE_NAME(sys.columns.[system_type_id]) IN ('datetime','money','text','image') 
+ THEN SPACE(18 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + ' ' 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+--IE INT 
+ ELSE SPACE(16 - LEN(TYPE_NAME(sys.columns.[system_type_id]))) 
+ + CASE 
+ WHEN COLUMNPROPERTY ( @TABLE_ID , sys.columns.[name] , 'IsIdentity' ) = 0 
+ THEN ' ' 
+ ELSE ' IDENTITY(' 
+ + CONVERT(VARCHAR,ISNULL(IDENT_SEED(@TBLNAME),1) ) 
+ + ',' 
+ + CONVERT(VARCHAR,ISNULL(IDENT_INCR(@TBLNAME),1) ) 
+ + ')' 
+ END 
+ + SPACE(2) 
+ + CASE 
+ WHEN sys.columns.[is_nullable] = 0 
+ THEN ' NOT NULL' 
+ ELSE ' NULL' 
+ END 
+ END 
+ + CASE 
+ WHEN sys.columns.[default_object_id] = 0 
+ THEN '' 
+ ELSE ' DEFAULT ' + ISNULL(def.[definition] ,'') 
+ --optional section in case NAMED default cosntraints are needed: 
+ --ELSE @vbCrLf + 'CONSTRAINT [' + def.name + '] DEFAULT ' + ISNULL(def.[definition] ,'') 
+ END --CASE cdefault 
+--############################################################################## 
+-- COLLATE STATEMENTS 
+-- personally i do not like collation statements, 
+-- but included here to make it easy on those who do 
+--############################################################################## 
+/* 
+ + CASE 
+ WHEN collation IS NULL 
+ THEN '' 
+ ELSE ' COLLATE ' + sys.columns.collation 
+ END 
+*/ 
+ END --iscomputed 
+ + ',' 
+ FROM sys.columns 
+ LEFT OUTER JOIN sys.default_constraints DEF 
+ on sys.columns.[default_object_id] = DEF.[object_id] 
+ Where sys.columns.[object_id]=@TABLE_ID 
+ ORDER BY sys.columns.[column_id] 
+--############################################################################## 
+--used for formatting the rest of the constraints: 
+--############################################################################## 
+ SELECT 
+ @STRINGLEN = MAX(LEN([name])) + 1 
+ FROM sys.objects 
+--############################################################################## 
+--PK/Unique Constraints and Indexes, using the 2005/08 INCLUDE syntax 
+--############################################################################## 
+DECLARE @Results TABLE ( 
+ [schema_id] int, 
+ [schema_name] varchar(255), 
+ [object_id] int, 
+ [object_name] varchar(255), 
+ [index_id] int, 
+ [index_name] varchar(255), 
+ [Rows] int, 
+ [SizeMB] decimal(19,3), 
+ [IndexDepth] int, 
+ [type] int, 
+ [type_desc] varchar(30), 
+ [fill_factor] int, 
+ [is_unique] int, 
+ [is_primary_key] int , 
+ [is_unique_constraint] int, 
+ [index_columns_key] varchar(max), 
+ [index_columns_include] varchar(max)) 
+INSERT INTO @Results 
+SELECT 
+sys.schemas.schema_id, sys.schemas.[name] AS schema_name, 
+sys.objects.[object_id], sys.objects.[name] AS object_name, 
+sys.indexes.index_id, ISNULL(sys.indexes.[name], '---') AS index_name, 
+partitions.Rows, partitions.SizeMB, IndexProperty(sys.objects.[object_id], sys.indexes.[name], 'IndexDepth') AS IndexDepth, 
+sys.indexes.type, sys.indexes.type_desc, sys.indexes.fill_factor, 
+sys.indexes.is_unique, sys.indexes.is_primary_key, sys.indexes.is_unique_constraint, 
+ISNULL(Index_Columns.index_columns_key, '---') AS index_columns_key, 
+ISNULL(Index_Columns.index_columns_include, '---') AS index_columns_include 
+FROM 
+sys.objects 
+JOIN sys.schemas ON sys.objects.schema_id=sys.schemas.schema_id 
+JOIN sys.indexes ON sys.objects.[object_id]=sys.indexes.[object_id] 
+JOIN ( 
+ SELECT 
+ [object_id], index_id, SUM(row_count) AS Rows, 
+ CONVERT(numeric(19,3), CONVERT(numeric(19,3), SUM(in_row_reserved_page_count+lob_reserved_page_count+row_overflow_reserved_page_count))/CONVERT(numeric(19,3), 128)) AS SizeMB 
+ FROM sys.dm_db_partition_stats 
+ GROUP BY [object_id], index_id 
+) AS partitions ON sys.indexes.[object_id]=partitions.[object_id] AND sys.indexes.index_id=partitions.index_id 
+CROSS APPLY ( 
+ SELECT 
+ LEFT(index_columns_key, LEN(index_columns_key)-1) AS index_columns_key, 
+ LEFT(index_columns_include, LEN(index_columns_include)-1) AS index_columns_include 
+ FROM 
+ ( 
+ SELECT 
+ ( 
+ SELECT sys.columns.[name] + ',' + ' ' 
+ FROM 
+ sys.index_columns 
+ JOIN sys.columns ON 
+ sys.index_columns.column_id=sys.columns.column_id 
+ AND sys.index_columns.[object_id]=sys.columns.[object_id] 
+ WHERE 
+ sys.index_columns.is_included_column=0 
+ AND sys.indexes.[object_id]=sys.index_columns.[object_id] AND sys.indexes.index_id=sys.index_columns.index_id 
+ ORDER BY key_ordinal 
+ FOR XML PATH('') 
+ ) AS index_columns_key, 
+ ( 
+ SELECT sys.columns.[name] + ',' + ' ' 
+ FROM 
+ sys.index_columns 
+ JOIN sys.columns ON 
+ sys.index_columns.column_id=sys.columns.column_id 
+ AND sys.index_columns.[object_id]=sys.columns.[object_id] 
+ WHERE 
+ sys.index_columns.is_included_column=1 
+ AND sys.indexes.[object_id]=sys.index_columns.[object_id] AND sys.indexes.index_id=sys.index_columns.index_id 
+ ORDER BY index_column_id 
+ FOR XML PATH('') 
+ ) AS index_columns_include 
+ ) AS Index_Columns 
+) AS Index_Columns 
+WHERE 
+sys.schemas.[name] LIKE CASE WHEN @SCHEMANAME='' THEN sys.schemas.[name] ELSE @SCHEMANAME END 
+AND sys.objects.[name] LIKE CASE WHEN @TBLNAME='' THEN sys.objects.[name] ELSE @TBLNAME END 
+ORDER BY sys.schemas.[name], sys.objects.[name], sys.indexes.[name] 
+--@Results table has both PK,s Uniques and indexes in thme...pull them out for adding to funal results: 
+SET @CONSTRAINTSQLS = '' 
+SET @INDEXSQLS = '' 
+ 
+--############################################################################## 
+--constriants 
+--############################################################################## 
+SELECT @CONSTRAINTSQLS = @CONSTRAINTSQLS + 
+CASE 
+ WHEN is_primary_key = 1 or is_unique = 1 
+ THEN @vbCrLf 
+ + 'CONSTRAINT [' + index_name + '] ' 
+ + SPACE(@STRINGLEN - LEN(index_name)) 
+ + CASE WHEN is_primary_key = 1 THEN ' PRIMARY KEY ' ELSE CASE WHEN is_unique = 1 THEN ' UNIQUE ' ELSE '' END END 
+ + type_desc + CASE WHEN type_desc='NONCLUSTERED' THEN '' ELSE ' ' END 
+ + ' (' + index_columns_key + ')' 
+ + CASE WHEN index_columns_include <> '---' THEN ' INCLUDE (' + index_columns_include + ')' ELSE '' END 
+ + CASE WHEN fill_factor <> 0 THEN ' WITH FILLFACTOR = ' + CONVERT(VARCHAR(30),fill_factor) ELSE '' END 
+ ELSE '' 
+END + ',' 
+from @RESULTS 
+where [type_desc] != 'HEAP' 
+ AND is_primary_key = 1 or is_unique = 1 
+order by is_primary_key desc,is_unique desc 
+--############################################################################## 
+--indexes 
+--############################################################################## 
+SELECT @INDEXSQLS = @INDEXSQLS + 
+CASE 
+ WHEN is_primary_key = 0 or is_unique = 0 
+ THEN @vbCrLf 
+ + 'CREATE INDEX [' + index_name + '] ' 
+ + SPACE(@STRINGLEN - LEN(index_name)) 
+ + ' ON [' + [object_name] + ']' 
+ + ' (' + index_columns_key + ')' 
+ + CASE WHEN index_columns_include <> '---' THEN ' INCLUDE (' + index_columns_include + ')' ELSE '' END 
+ + CASE WHEN fill_factor <> 0 THEN ' WITH FILLFACTOR = ' + CONVERT(VARCHAR(30),fill_factor) ELSE '' END 
+ 
+END 
+from @RESULTS 
+where [type_desc] != 'HEAP' 
+ AND is_primary_key = 0 AND is_unique = 0 
+order by is_primary_key desc,is_unique desc 
+IF @INDEXSQLS <> ''
+ SET @INDEXSQLS = @vbCrLf + 'GO' + @vbCrLf + @INDEXSQLS 
+--############################################################################## 
+--CHECK Constraints 
+--############################################################################## 
+ SET @CHECKCONSTSQLS = '' 
+ SELECT 
+ @CHECKCONSTSQLS = @CHECKCONSTSQLS 
+ + @vbCrLf 
+ + ISNULL('CONSTRAINT [' + sys.objects.[name] + '] ' 
+ + SPACE(@STRINGLEN - LEN(sys.objects.[name])) 
+ + ' CHECK ' + ISNULL(sys.check_constraints.definition,'') 
+ + ',','') 
+ FROM sys.objects 
+ INNER JOIN sys.check_constraints ON sys.objects.[object_id] = sys.check_constraints.[object_id] 
+ WHERE sys.objects.type = 'C' 
+ AND sys.objects.parent_object_id = @TABLE_ID 
+--############################################################################## 
+--FOREIGN KEYS 
+--############################################################################## 
+ SET @FKSQLS = '' ; 
+ SELECT 
+ @FKSQLS=@FKSQLS 
+ + @vbCrLf 
+ + 'CONSTRAINT [' + OBJECT_NAME(constid) +']' 
+ + SPACE(@STRINGLEN - LEN(OBJECT_NAME(constid) )) 
+ + ' FOREIGN KEY (' + COL_NAME(fkeyid,fkey) 
+ + ') REFERENCES ' + OBJECT_NAME(rkeyid) 
+ +'(' + COL_NAME(rkeyid,rkey) + '),' 
+ from sysforeignkeys 
+ WHERE fkeyid = @TABLE_ID 
+--############################################################################## 
+--RULES 
+--############################################################################## 
+SET @RULESCONSTSQLS = '' 
+SELECT 
+ @RULESCONSTSQLS = @RULESCONSTSQLS 
+ + ISNULL( 
+ @vbCrLf 
+ + 'if not exists(SELECT [name] FROM sys.objects WHERE TYPE=''R'' AND schema_id = ' + convert(varchar(30),sys.objects.schema_id) + ' AND [name] = ''[' + object_name(sys.columns.[rule_object_id]) + ']'')' + @vbCrLf 
+ + sys.sql_modules.definition + @vbCrLf + 'GO' + @vbCrLf 
+ + 'EXEC sp_binderule [' + sys.objects.[name] + '], ''[' + OBJECT_NAME(sys.columns.[object_id]) + '].[' + sys.columns.[name] + ']''' + @vbCrLf + 'GO' ,'') 
+from sys.columns 
+ inner join sys.objects 
+ on sys.objects.[object_id] = sys.columns.[object_id] 
+ inner join sys.sql_modules 
+ on sys.columns.[rule_object_id] = sys.sql_modules.[object_id] 
+WHERE sys.columns.[rule_object_id] <> 0 
+ and sys.columns.[object_id] = @TABLE_ID 
+--############################################################################## 
+--TRIGGERS 
+--############################################################################## 
+SET @TRIGGERSTATEMENT = '' 
+SELECT 
+ @TRIGGERSTATEMENT = @TRIGGERSTATEMENT + @vbCrLf + sys.sql_modules.[definition] + @vbCrLf + 'GO' 
+FROM sys.sql_modules 
+WHERE [object_id] IN(SELECT 
+ [object_id] 
+ FROM sys.objects 
+ WHERE type = 'TR' 
+ AND [parent_object_id] = @TABLE_ID) 
+IF @TRIGGERSTATEMENT <> ''
+ SET @TRIGGERSTATEMENT = @vbCrLf + 'GO' + @vbCrLf + @TRIGGERSTATEMENT 
+--############################################################################## 
+--NEW SECTION QUERY ALL EXTENDED PROPERTIES 
+--############################################################################## 
+SET @EXTENDEDPROPERTIES = ''
+SELECT @EXTENDEDPROPERTIES = 
+ @EXTENDEDPROPERTIES + @vbCrLf +
+ 'EXEC sys.sp_addextendedproperty 
+ @name = N''' + [name] + ''', @value = N''' + REPLACE(convert(varchar(max),[value]),'''','''''') + ''', 
+ @level0type = N''SCHEMA'', @level0name = [' + @SCHEMANAME + '], 
+ @level1type = N''TABLE'', @level1name = [' + @TBLNAME + '];'
+--SELECT objtype, objname, name, value
+FROM fn_listextendedproperty (NULL, 'schema', @SCHEMANAME, 'table', @TBLNAME, NULL, NULL); 
+IF @EXTENDEDPROPERTIES <> '' 
+ SET @EXTENDEDPROPERTIES = @vbCrLf + 'GO' + @vbCrLf + @EXTENDEDPROPERTIES
+--############################################################################## 
+--FINAL CLEANUP AND PRESENTATION 
+--############################################################################## 
+--at this point, there is a trailing comma, or it blank 
+ SELECT 
+ @FINALSQL = @FINALSQL 
+ + @CONSTRAINTSQLS 
+ + @CHECKCONSTSQLS 
+ + @FKSQLS 
+--note that this trims the trailing comma from the end of the statements 
+ SET @FINALSQL = SUBSTRING(@FINALSQL,1,LEN(@FINALSQL) -1) ; 
+ SET @FINALSQL = @FINALSQL + ')' + @vbCrLf ; 
+ 
+SELECT @FINALSQL 
+ + @INDEXSQLS 
+ + @RULESCONSTSQLS 
+ + @TRIGGERSTATEMENT 
+ + @EXTENDEDPROPERTIES
+ 
+END 
+

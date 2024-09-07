@@ -1,0 +1,17 @@
+CREATE VIEW vw_ple_current
+AS						 
+WITH TOPTEN AS (
+    SELECT *, ROW_NUMBER() 
+    over (
+        PARTITION BY servername, elastic_pool_name
+        order by [datetime] DESC
+    ) AS RowNo 
+    FROM Tbl_Hist_Performance_Counters
+	WHERE COUNTER_NAME = 'Page life expectancy'
+    and [OBJECT_NAME] like '%Buffer Manager%'
+) 
+SELECT * FROM TOPTEN WHERE RowNo <= 1 
+
+
+SELECT * FROM vw_ple_current
+ORDER BY cntr_value 

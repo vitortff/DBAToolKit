@@ -1,0 +1,26 @@
+select *
+from sys.dm_os_memory_cache_hash_tables
+where type in (
+'cachestore_objcp'
+, 'cachestore_sqlcp'
+, 'cacchestore_phdr'
+, 'cachestore_xproc'
+)
+
+select name, entries_count, single_pages_kb, multi_pages_kb
+from sys.dm_os_memory_cache_counters
+where [name] in (
+'object plans'
+, 'sql plans'
+, 'extended stored procedures'
+)
+
+select bucketid, count(*) as entries_in_bucket
+from sys.dm_exec_cached_plans
+group by bucketid
+order by 2 desc
+
+select cacheobjtype, objtype, COUNT (*)
+from sys.dm_exec_cached_plans
+group by cacheobjtype, objtype
+order by cacheobjtype, objtype

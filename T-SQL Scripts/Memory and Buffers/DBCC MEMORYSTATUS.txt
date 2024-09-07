@@ -1,0 +1,13 @@
+--provides a lot of useful information about SQL Server’s memory state but you’ll find 
+--that DMVs provide you far more fl exibility with the output so try and get used to finding 
+--the same information from DMVs whenever you can.
+
+-- sys.dm_os_memory_nodes
+-- sys.dm_os_memory_clerks
+-- sys.dm_os_memory_objects
+-- sys.dm_os_memory_cache_counters
+-- sys.dm_os_memory_pools
+
+DBCC MEMORYSTATUS
+
+

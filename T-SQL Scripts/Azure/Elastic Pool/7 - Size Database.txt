@@ -1,0 +1,14 @@
+
+
+WITH DatabaseName (start_time, database_name)
+AS
+(
+SELECT max(start_time) as start_time, database_name FROM sys.resource_stats
+GROUP BY database_name
+)
+
+SELECT a.database_name, a.storage_in_megabytes, a.allocated_storage_in_megabytes, a.allocated_storage_in_megabytes/a.storage_in_megabytes*100-100  FROM sys.resource_stats a, DatabaseName b
+WHERE a.start_time=b.start_time and a.database_name=b.database_name
+ORDER BY 3 DESC
+
+

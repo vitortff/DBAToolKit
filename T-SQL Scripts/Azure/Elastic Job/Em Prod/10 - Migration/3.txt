@@ -1,0 +1,47 @@
+--1
+DECLARE @NAME NVARCHAR(50)
+DECLARE @SQLString NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+SELECT name FROM Tbl_Migration_Databases where name like 'Info%' 
+or name like 'l1%' or name like 'next%' or name like 'nova%' 
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @NAME
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+
+--SET @SQLString= ''use ''+ @name + ''; CREATE USER [Nelson Junior Castro de Jesus] FOR LOGIN [x212561] WITH DEFAULT_SCHEMA=[dbo]''
+
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [legalone-migration] WITH (TYPE=RDBMS, LOCATION = ''legalone-migration.database.windows.net'',DATABASE_NAME = ''' + @NAME + ''' ,CREDENTIAL= [legalone-migration])'
+
+print @SQLString
+
+--PRINT @SQLString
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @NAME
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1

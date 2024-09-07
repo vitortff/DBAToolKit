@@ -1,0 +1,24 @@
+--2.1
+create table Tbl_sp_estimate_data_compression_savings (object_name sysname,
+schema_name sysname,
+index_id int,
+partition_number int,
+size_with_current_compression_setting bigint,
+size_with_requested_compression_setting bigint,
+sample_size_with_current_compression_setting bigint,
+sample_size_with_requested_compression_setting bigint)
+
+--2.2
+insert into Tbl_sp_estimate_data_compression_savings 
+EXEC sys.sp_estimate_data_compression_savings
+     'dbo', 'Gen_revisao', NULL, NULL, 'PAGE', 1;
+GO
+
+--2.3
+select db_name() as Banco, * into Tbl_sp_estimate_data_compression_savings_II from Tbl_sp_estimate_data_compression_savings
+
+SELECT *FROM Tbl_sp_estimate_data_compression_savings_II
+
+--2.5
+--drop table Tbl_sp_estimate_data_compression_savings
+--drop table Tbl_sp_estimate_data_compression_savings_II

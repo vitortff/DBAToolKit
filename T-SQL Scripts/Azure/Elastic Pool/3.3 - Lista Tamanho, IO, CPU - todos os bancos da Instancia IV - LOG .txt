@@ -1,0 +1,78 @@
+--1 Extracts the elastic pool names
+WITH Unique_Elastic_Pool (end_time, elastic_pool_name)
+AS
+(
+SELECT  max(end_time),elastic_pool_name FROM sys.elastic_pool_resource_stats
+group by elastic_pool_name
+)
+
+
+SELECT  b.end_time,b.elastic_pool_name,a.avg_storage_percent  INTO #elastic_pools FROM  sys.elastic_pool_resource_stats a, Unique_Elastic_Pool b
+where b.end_time=a.end_time and
+b.elastic_pool_name=a.elastic_pool_name
+
+
+
+
+--2
+;WITH DB_Storage_CTE (end_time, database_name)  
+AS  
+-- Define the CTE query.  
+(  
+SELECT  max(end_time) as end_time, database_name  FROM sys.resource_stats
+GROUP BY database_name 
+)  
+
+
+SELECT  a.database_name,a.storage_in_megabytes INTO #temp FROM sys.resource_stats a, DB_Storage_CTE b
+WHERE a.database_name=b.database_name and
+b.end_time=a.end_time and
+a.database_name in (
+SELECT   d.name
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id
+WHERE slo.elastic_pool_name in (SELECT  elastic_pool_name FROM #elastic_pools))		--insira o elastic pool
+
+
+--3 Mostrando o Consumo das bases pelo Elastic Pool informado
+
+DECLARE @s datetime;  
+DECLARE @e datetime;  
+SET @s= DateAdd(d,-1,GetUTCDate());  -- 14 dias
+SET @e= GETUTCDATE();  
+SELECT  a.database_name, AVG(a.avg_data_io_percent) AS Average_IO_Utilization, AVG(a.avg_cpu_percent) AS Average_CPU_Utilization,
+AVG(a.avg_log_write_percent) as avg_log_write_percent, b.storage_in_megabytes   
+INTO #DBs_AllMetrics FROM sys.resource_stats a join #temp b
+on a.database_name=b.database_name
+WHERE a.start_time BETWEEN @s AND @e  and
+a.database_name in
+(SELECT  database_name FROM #temp)
+
+GROUP BY a.database_name,b.storage_in_megabytes    
+order by 3 desc
+
+--4 DBs x Elastic pool
+SELECT   d.name as [database_name],   
+     slo.elastic_pool_name  
+ INTO #DBsXElasticPool      
+FROM sys.databases d   
+JOIN sys.database_service_objectives slo    
+ON d.database_id = slo.database_id;  
+
+SELECT  b.elastic_pool_name,a.database_name, REPLACE(LEFT(a.Average_IO_Utilization, 5),'.',',') AS avg_io, REPLACE(LEFT(a.Average_CPU_Utilization,5),'.',',') AS avg_cpu, REPLACE(LEFT(a.avg_log_write_percent,5),'.',',') AS avg_log,a.storage_in_megabytes FROM #DBs_AllMetrics a, #DBsXElasticPool b
+WHERE a.database_name=b.database_name
+order by 5 desc
+
+
+
+-- 5 Dropping das Tabelas Temporárias
+DROP TABLE #temp
+DROP TABLE #elastic_pools
+DROP TABLE #DBsXElasticPool 
+DROP TABLE #DBs_AllMetrics
+
+
+
+
+

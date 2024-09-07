@@ -1,0 +1,86 @@
+--0
+/*
+CREATE TABLE [dbo].[Xml_CompressionReport_legalone-maintenance](
+	[dbnomebase] [varchar](4000) NULL,
+	[dbnomeservidor] [varchar](4000) NULL,
+	[IsEnabled] [int] NULL
+)
+*/
+--Variáveis do relatório
+
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000) = 'legalone-maintenance.database.windows.net'
+DECLARE @servername VARCHAR(4000) = 'legalone-maintenance'
+
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+DECLARE @SQLString2 NVARCHAR(4000)
+DECLARE @SQLString3 NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+select name,@dbnomeservidor, @servername from [sys_databases_legalone-maintenance] WHERE name like 'info%' or 
+name like 'l1%' or name like 'novajus%' or name like 'nextlegal%'
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+--Parte editável para futuras consultas
+SET @SQLString2 = 'CREATE EXTERNAL TABLE Xml_CompressionReport(object_id int,xml_compression bit) WITH (DATA_SOURCE =[' + @servername + '], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''partitions'')'
+EXECUTE sp_executesql @SQLString2
+
+--2
+INSERT INTO [Xml_CompressionReport_legalone-maintenance]
+--SELECT @dbnomebase, count(*) Isnabled FROM Xml_CompressionReport where xml_compression = 1
+SELECT @dbnomebase, @dbnomeservidor,count(*) Isnabled FROM Xml_CompressionReport where xml_compression = 1
+
+
+--3
+DROP EXTERNAL TABLE Xml_CompressionReport
+
+SET @SQLString3 = 'DROP EXTERNAL DATA SOURCE [' + @servername + ']'
+EXECUTE sp_executesql @SQLString3
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @dbnomebase, @dbnomeservidor, @servername 
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+SELECT
+(SELECT count(dbnomebase) as Habilitado FROM [Xml_CompressionReport_legalone-maintenance] WHERE Isenabled = 1) as Habilitado, 
+(SELECT count(dbnomebase) as Habilitado FROM [Xml_CompressionReport_legalone-maintenance] WHERE Isenabled = 0) as Desabilitado
+
+SELECT *FROM [Xml_CompressionReport_legalone-maintenance]
+
+--DELETE FROM [Xml_CompressionReport_legalone-maintenance]

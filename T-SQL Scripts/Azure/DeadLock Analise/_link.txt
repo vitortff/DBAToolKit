@@ -1,0 +1,3 @@
+https://learn.microsoft.com/en-us/azure/azure-sql/database/analyze-prevent-deadlocks?view=azuresql&tabs=ring-buffer#collect-deadlock-graphs-in-azure-sql-database-with-extended-events
+
+https://techcommunity.microsoft.com/t5/azure-database-support-blog/lesson-learned-19-how-to-obtain-the-deadlocks-of-your-azure-sql/ba-p/368847

@@ -1,0 +1,47 @@
+DECLARE @TABLE_NAME NVARCHAR(200)
+DECLARE @SQLString NVARCHAR(4000)
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+SELECT name FROM sys.objects WHERE [type] = 'u' and
+name <> 'Gen_revisao' and
+(name not like '%bkp%' or name not like '%backup%')
+ORDER BY name
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @TABLE_NAME
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+
+SET @SQLString= 'DBCC DBREINDEX(''' +  @TABLE_NAME +''','''',100' + ');'
+
+EXECUTE sp_executesql @SQLString
+
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @TABLE_NAME
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+

@@ -1,0 +1,11 @@
+SELECT * 
+FROM (
+    SELECT servername, elastic_pool_name, [object_name], counter_name, cntr_value, DATEADD(minute, DATEDIFF(minute, 0, [Datetime]), 0) as [datetime]
+    FROM Tbl_Hist_Performance_Counters where object_name like '%Buffer Manager%'
+) AS SourceTable
+PIVOT (
+    max(cntr_value)  -- Agregação dos valores, neste caso, estou usando MAX como exemplo
+    FOR counter_name IN ([Lazy writes/sec], [Page life expectancy],[Memory Grants Pending])
+) AS PivotTable
+order by [datetime] desc
+

@@ -1,0 +1,2 @@
+https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+https://www.sqlservercentral.com/articles/azure-elastic-jobs

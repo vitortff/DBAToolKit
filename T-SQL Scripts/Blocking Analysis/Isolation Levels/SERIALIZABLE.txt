@@ -1,0 +1,21 @@
+--DML is not allowed in any part of the table until the end of transaction.
+
+session 1
+
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE 
+BEGIN TRANSACTION
+UPDATE teste 
+SET coll2=1000
+WHERE COLL=33
+
+session 2
+
+INSERT INTO teste VALUES (1000002,200009999,4131,51308,621035,1)
+
+
+--The result is:
+
+
+sessionid	waittype
+56		LCK_M_IX
+

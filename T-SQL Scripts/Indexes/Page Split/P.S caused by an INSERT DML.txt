@@ -1,0 +1,170 @@
+--PAGE SPLIT caused by an INSERT Statement
+
+CREATE TABLE T1 (C1 INT, C2 CHAR(985), C3 VARCHAR(10))
+CREATE CLUSTERED INDEX TESTE ON T1(C1)
+
+INSERT INTO t1 VALUES (100,'C1','')
+INSERT INTO t1 VALUES (200,'C2','')
+INSERT INTO t1 VALUES (300,'C2','')
+INSERT INTO t1 VALUES (400,'C2','')
+INSERT INTO t1 VALUES (500,'C2','')
+INSERT INTO t1 VALUES (600,'C2','')
+INSERT INTO t1 VALUES (700,'C2','')
+INSERT INTO t1 VALUES (800,'C2','')
+
+--	To figure out the number of leaf pages assigned to the t1 clustered index,
+--	we can use the DMV sys.dm_db_index_physical_stats or the statement DBCC SHOWCONTIG
+
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('AdventureWorks'), --Database Name
+OBJECT_ID('T1'), -- Table Name
+NULL,NULL,'SAMPLED')
+
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+0								1				1			100								8				1010
+*/
+
+-- OR
+
+DBCC SHOWCONTIG (T1)
+
+/*
+DBCC SHOWCONTIG scanning 'T1' table...
+Table: 'T1' (343672272); index ID: 1, database ID: 6
+TABLE level scan performed.
+- Pages Scanned................................: 1
+- Extents Scanned..............................: 1
+- Extent Switches..............................: 0
+- Avg. Pages per Extent........................: 1.0
+- Scan Density [Best Count:Actual Count].......: 100.00% [1:1]
+- Logical Scan Fragmentation ..................: 0.00%
+- Extent Scan Fragmentation ...................: 0.00%
+- Avg. Bytes Free per Page.....................: 0.0
+- Avg. Page Density (full).....................: 100.00%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+*/
+
+--Now, I'll go to insert a intermediate rows and we'll see what happened:
+
+insert into t1 values (110,'rafael','Mano')
+
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('AdventureWorks'), --Database Name
+OBJECT_ID('T1'), -- Table Name
+NULL,NULL,'SAMPLED')
+
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+50								2				2			56,3009636767976				9				1011,111
+*/
+DBCC SHOWCONTIG (T1)
+/*
+DBCC SHOWCONTIG scanning 'T1' table...
+Table: 'T1' (359672329); index ID: 1, database ID: 6
+TABLE level scan performed.
+- Pages Scanned................................: 2
+- Extents Scanned..............................: 2
+- Extent Switches..............................: 1
+- Avg. Pages per Extent........................: 1.0
+- Scan Density [Best Count:Actual Count].......: 50.00% [1:2] 
+- Logical Scan Fragmentation ..................: 50.00% - It's happened when there are free space in the data page. (It's called INTERNAL FRAGMENTATION)
+- Extent Scan Fragmentation ...................: 50.00%
+- Avg. Bytes Free per Page.....................: 3537.0
+- Avg. Page Density (full).....................: 56.30%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+*/
+
+--Now let's go to insert more rows in the table t1:
+
+INSERT INTO t1 VALUES(410, 'c2', '')
+INSERT INTO t1 VALUES(420, 'c2', '')
+INSERT INTO t1 VALUES(430, 'c2', '')
+INSERT INTO t1 VALUES(900, 'c2', '')
+INSERT INTO t1 VALUES(1000, 'c2', '')
+INSERT INTO t1 VALUES(1100, 'c2', '')
+INSERT INTO t1 VALUES(1200, 'c2', '')
+
+--
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('AdventureWorks'), --Database Name
+OBJECT_ID('T1'), -- Table Name
+NULL,NULL,'SAMPLED')
+
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+66,6666666666667				3				3			66,6996170002471				16				1010,625
+*/
+DBCC SHOWCONTIG (T1)
+/*
+DBCC SHOWCONTIG scanning 'T1' table...
+Table: 'T1' (343672272); index ID: 1, database ID: 6
+TABLE level scan performed.
+- Pages Scanned................................: 2
+- Extents Scanned......DBCC SHOWCONTIG scanning 'T1' table...
+Table: 'T1' (359672329); index ID: 1, database ID: 6
+TABLE level scan performed.
+- Pages Scanned................................: 3
+- Extents Scanned..............................: 2
+- Extent Switches..............................: 1
+- Avg. Pages per Extent........................: 1.5
+- Scan Density [Best Count:Actual Count].......: 50.00% [1:2]
+- Logical Scan Fragmentation ..................: 66.67% (There are empty space in the block page, it's called Internal Fragmentation)
+- Extent Scan Fragmentation ...................: 50.00%
+- Avg. Bytes Free per Page.....................: 2695.3
+- Avg. Page Density (full).....................: 66.70%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+*/
+INSERT INTO t1 VALUES(1000, 'c2', '')
+INSERT INTO t1 VALUES(1001, 'c2', '')
+INSERT INTO t1 VALUES(1002, 'c2', '')
+INSERT INTO t1 VALUES(1003, 'c2', '')
+INSERT INTO t1 VALUES(1004, 'c2', '')
+INSERT INTO t1 VALUES(1105, 'c2', '')
+INSERT INTO t1 VALUES(1206, 'c2', '')
+
+
+SELECT avg_fragmentation_in_percent,
+fragment_count,page_count,
+avg_page_space_used_in_percent,
+record_count,
+avg_record_size_in_bytes
+FROM sys.dm_db_index_physical_stats(
+DB_ID('AdventureWorks'), --Database Name
+OBJECT_ID('T1'), -- Table Name
+NULL,NULL,'SAMPLED')
+/*
+avg_fragmentation_in_percent	fragment_count	page_count	avg_page_space_used_in_percent	record_count	avg_record_size_in_bytes
+60								4				5			57,5339757845318				23				1010,782
+*/
+DBCC SHOWCONTIG (T1)
+/*
+DBCC SHOWCONTIG scanning 'T1' table...
+Table: 'T1' (359672329); index ID: 1, database ID: 6
+TABLE level scan performed.
+- Pages Scanned................................: 5
+- Extents Scanned..............................: 2
+- Extent Switches..............................: 1
+- Avg. Pages per Extent........................: 2.5
+- Scan Density [Best Count:Actual Count].......: 50.00% [1:2]
+- Logical Scan Fragmentation ..................: 60.00%
+- Extent Scan Fragmentation ...................: 50.00%
+- Avg. Bytes Free per Page.....................: 3437.2
+- Avg. Page Density (full).....................: 57.53%
+DBCC execution completed. If DBCC printed error messages, contact your system administrator.
+*/

@@ -1,0 +1,120 @@
+--1
+--EXEC jobs.sp_add_target_group 'TG_EASTUS2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria';
+--EXEC jobs.sp_delete_target_group 'shrinkdb-eastus2';
+--select * from jobs_internal.targets where target_group_name='TG_EASTUS2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria'
+
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='EASTUS2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria', 
+@command=N'
+DECLARE @name NVARCHAR(100)
+DECLARE @SQLString NVARCHAR(4000)
+DECLARE @TARGET_GROUP_NAME VARCHAR (4000) = ''TG_EASTUS2_JOB01_DBREINDEX_AVULSO_Alta_Carga_CPU_Diaria''
+
+DECLARE @STATEMENT01 VARCHAR(4000) = ''EXEC jobs.sp_delete_target_group_member @target_group_name = N'' 
+DECLARE @STATEMENT02 VARCHAR(4000) = ''''''''
+DECLARE @STATEMENT03 VARCHAR(4000) = ''''''''
+DECLARE @STATEMENT04 VARCHAR(4000) = '', @target_id =''
+DECLARE @STATEMENT05 VARCHAR(4000) = ''''''''
+DECLARE @STATEMENT06 VARCHAR(4000) = ''''''''
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+--2.1 Checking it
+
+select gm.target_id from [jobs].target_groups g left outer join [jobs].target_group_members gm on g.target_group_id = gm.target_group_id where g.target_group_name= @TARGET_GROUP_NAME + ''''
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @name
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+
+SET @SQLString= @STATEMENT01 + @STATEMENT02 + @TARGET_GROUP_NAME + @STATEMENT03 + @STATEMENT04 + @STATEMENT05 + @name +  @STATEMENT06
+
+ 
+EXECUTE sp_executesql @SQLString
+
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @name
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+', 
+@credential_name='TG_FirmBR_Prod', 
+@target_group_name='TG_FirmBR_Prod',
+@step_name = 'Deleting Target Databases',
+@step_id = 1
+GO
+
+
+/*
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='EASTUS2_JOB01_DBREINDEX AND SHRINK DATABASES',
+@enabled=1,
+@schedule_interval_type='Weeks',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-07-23 05:00:00'
+
+
+
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+
+
+-- Starting a job manually
+--EXEC jobs.sp_start_job 'EASTUS2_JOB01.1_DBREINDEX AND SHRINK DATABASES_DROP_TG_MEMBERS';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='EASTUS2_JOB01.1_DBREINDEX AND SHRINK DATABASES_DROP_TG_MEMBERS', @force=1
+
+-- Canceling job execution with the specified job execution id
+--EXEC jobs.sp_stop_job 'CF1AFCD5-6D59-4E7F-9A05-DA1E7794A893';
+
+
+
+
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='EASTUS2_JOB01.1_DBREINDEX AND SHRINK DATABASES_DROP_TG_MEMBERS' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc
+
+
+select gm.target_id, g.target_group_name, gm.membership_type, gm.target_type, gm.server_name, gm.database_name, gm.elastic_pool_name
+from [jobs].target_groups g
+left outer join [jobs].target_group_members gm
+on g.target_group_id = gm.target_group_id
+WHERE gm.server_name = 'FIRMBR-PROD'
+*/
+
+
+
+

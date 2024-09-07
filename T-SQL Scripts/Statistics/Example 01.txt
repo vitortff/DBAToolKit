@@ -1,0 +1,65 @@
+IF (SELECT  OBJECT_ID('dbo.teste')
+   ) IS NOT NULL 
+    DROP TABLE dbo.teste 
+GO
+
+create table teste (c1 int, c2 int, c3 varchar(10))
+GO
+
+create nonclustered index id_teste_01 on teste(c1) 
+GO
+
+insert into teste values (1,2,'A')
+insert into teste values (2,2,'A')
+insert into teste values (3,2,'A')
+insert into teste values (4,2,'A')
+insert into teste values (5,2,'A')
+insert into teste values (6,2,'A')
+insert into teste values (7,2,'A')
+insert into teste values (8,2,'A')
+insert into teste values (9,2,'A')
+insert into teste values (10,2,'A')
+insert into teste values (11,2,'A')
+insert into teste values (12,2,'A')
+GO
+
+
+insert into teste values (13,2,'A')
+GO 3000
+
+dbcc show_statistics ('teste',id_teste_01)
+GO
+
+update statistics teste;
+GO
+
+dbcc show_statistics ('teste',id_teste_01)
+GO
+
+select c3 from teste where c1=1
+GO
+
+select c3 from teste where c1=13
+GO
+
+
+-- Now with Store Procedure
+
+
+CREATE PROCEDURE SP_TESTE
+@C1 INT
+AS
+BEGIN
+select c3 from teste where c1=@C1
+END
+
+
+exec SP_TESTE 1 --Different Execution Plan
+GO
+
+exec SP_TESTE 13 
+GO
+
+exec SP_TESTE 13 WITH RECOMPILE --Different Execution Plan
+GO
+

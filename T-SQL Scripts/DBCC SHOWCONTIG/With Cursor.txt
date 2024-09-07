@@ -1,0 +1,21 @@
+--Observing the table Fragmentation
+
+
+DECLARE C CURSOR 
+	FOR
+		select name from sysobjects where xtype='u';
+	OPEN C
+	DECLARE @name varchar(30)
+	FETCH NEXT FROM C INTO @name
+
+	WHILE @@FETCH_STATUS=0
+
+	BEGIN
+	dbcc showcontig(@name)
+
+	
+	FETCH NEXT FROM C INTO @name
+END
+CLOSE C;
+DEALLOCATE C;
+

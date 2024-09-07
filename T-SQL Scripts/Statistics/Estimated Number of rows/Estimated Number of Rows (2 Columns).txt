@@ -1,0 +1,120 @@
+CARDINALITY ESTIMATION BY USING AN AND'ED PREDICATE
+
+SELECT * FROM sales.SalesOrderDetail
+where ProductID=870 and OrderQty= 1
+
+sp_helpindex 'sales.SalesOrderDetail'
+
+SELECT * FROM sys.stats WHERE OBJECT_NAME(object_id)='SalesOrderDetail';
+
+DBCC SHOW_STATISTICS('sales.SalesOrderDetail',IX_SalesOrderDetail_ProductID);
+
+--ProductID=870
+--EQ_ROWS=4688
+
+
+DBCC SHOW_STATISTICS('sales.SalesOrderDetail',OrderQty);
+
+--OrderQty= 1
+--EQ_ROWS=74954
+
+
+SELECT 4688.0/(SELECT COUNT(*) FROM sales.SalesOrderDetail) FROM sales.SalesOrderDetail
+--0.038642564521
+
+SELECT 74954.0/(SELECT COUNT(*) FROM sales.SalesOrderDetail) FROM sales.SalesOrderDetail
+--0.617835917472
+
+SELECT TOP 1 0.038642564521*0.617835917472*(SELECT COUNT(*) FROM sales.SalesOrderDetail) FROM sales.SalesOrderDetail
+
+--2896.414781105125984734211104
+
+
+--Obs.: Just see the value displayed of estimated number of rows from the filter operator.
+
+
+
+
+-----------------------------------------------------
+--Below we can see the same result by using an index.
+-----------------------------------------------------
+
+SELECT * into rafael FROM sales.SalesOrderDetail
+where ProductID=870 and OrderQty= 1
+
+SELECT * FROM sys.stats WHERE OBJECT_NAME(object_id)='rafael';
+
+create index rafaelIndex on rafael(ProductID,OrderQty)
+
+DBCC SHOW_STATISTICS('rafael',rafaelIndex);
+
+
+
+
+
+
+-------------------------------------------
+--Now we're gonna add the column unitprice.
+-------------------------------------------
+
+SELECT * into rafael FROM sales.SalesOrderDetail
+where ProductID=870 and OrderQty= 1 and unitprice=2.29
+
+
+SELECT * FROM sys.stats WHERE OBJECT_NAME(object_id)='rafael';
+
+
+
+DBCC SHOW_STATISTICS('sales.SalesOrderDetail',unitprice);
+
+select top 1 3191.0/(SELECT COUNT(*) FROM sales.SalesOrderDetail) FROM sales.SalesOrderDetail;
+
+
+select top 1 0.026302991336*0.038642564521*0.617835917472*(SELECT COUNT(*) FROM sales.SalesOrderDetail) FROM sales.SalesOrderDetail;
+
+
+SELECT * into rafael FROM sales.SalesOrderDetail
+where ProductID=870 and OrderQty= 1 and unitprice=2.29;
+
+--Filter operator
+--76.1843728928704652816524229
+
+
+
+--CARDINALITY ESTIMATION BY USING AN OR'ED PREDICATE
+
+
+SELECT * FROM sales.SalesOrderDetail
+where ProductID=870 or OrderQty= 1
+
+DBCC SHOW_STATISTICS('sales.SalesOrderDetail',IX_SalesOrderDetail_ProductID);
+--EQ_ROWS=4688
+
+DBCC SHOW_STATISTICS('sales.SalesOrderDetail',OrderQty);
+--EQ_ROWS=68711.29
+
+
+SELECT 4688.0/(SELECT COUNT(*) FROM sales.SalesOrderDetail) FROM sales.SalesOrderDetail
+--0.038642564521
+
+SELECT 68711.29/(SELECT COUNT(*) FROM sales.SalesOrderDetail) FROM sales.SalesOrderDetail
+--0.5663780838629
+
+--For AND's predicate
+
+SELECT TOP 1 0.038642564521*0.5663780838629*(SELECT COUNT(*) FROM sales.SalesOrderDetail) FROM sales.SalesOrderDetail
+
+--2655.1804571459658528559890753
+
+
+--ADDICIONAL STEP TO FIND OUT THE REAL VALUE FOR "OR'ed" PREDICATE.
+
+--For OR's Predicate
+
+select 4688.0+68711.29-2655.18
+
+--70744.11 - That is the result of Filter operator
+
+
+
+

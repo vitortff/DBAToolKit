@@ -1,0 +1,41 @@
+--Looking into the Plan Cache
+--The plan cache is built on top of the caching infrastructure provided by the SQL OS. This provides
+--objects called cache stores, which can be used to cache all kinds of objects. The plan cache contains
+--several different cache stores used for different types of objects.
+
+--To see the content into the plan cache, it is just execute this query:
+
+select name, entries_count, single_pages_kb, multi_pages_kb
+from sys.dm_os_memory_cache_counters
+where [name] in (
+'object plans'
+, 'sql plans'
+, 'extended stored procedures'
+)
+
+
+
+--To find performance issues(questões) caused by long lookup(pesquisa) times(longo tempo de pesquisa), you can look into the contents of the DMV
+--sys.dm_os_memory_cache_hash_tables, as shown in the following example. It is recommended
+--that no bucket should contain more than 20 objects; and buckets exceeding 100 objects should be addressed.
+
+select *from sys.dm_os_memory_cache_hash_tables
+where type in (
+'cachestore_objcp'
+, 'cachestore_sqlcp'
+, 'cacchestore_phdr'
+, 'cachestore_xproc'
+)
+
+--Use the following DMV to look for heavily used buckets:
+
+select bucketid, count(*) as entries_in_bucket
+from sys.dm_exec_cached_plans
+group by bucketid
+order by 2 desc
+
+--You can look up the specific plans in that bucket using this query:
+
+select *
+from sys.dm_exec_cached_plans
+where bucketid = 236

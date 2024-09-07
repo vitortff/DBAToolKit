@@ -1,0 +1,4 @@
+insert into Tbl_Hist_Pool_CPU_Consumption
+SELECT 'legalone-prod2' as [servername],ROW_NUMBER() OVER(ORDER BY avg(avg_cpu_percent) desc) AS Row#, elastic_pool_name, avg(avg_cpu_percent) as avg_cpu_percent,avg(avg_data_io_percent) as avg_data_io_percent,Getdate() as [DateTime] from elastic_pool_resource_stats_prod2
+where start_time >= DateAdd(d,-1,GetUTCDate())
+group by elastic_pool_name

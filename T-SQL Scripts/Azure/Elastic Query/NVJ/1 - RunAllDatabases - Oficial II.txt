@@ -1,0 +1,82 @@
+--Variáveis do relatório
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+DECLARE @SQLString2 NVARCHAR(4000)
+DECLARE @SQLString3 NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1 
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+--Parte editável para futuras consultas
+SET @SQLString2 = 'CREATE EXTERNAL TABLE Xml_CompressionReport(object_id int,xml_compression bit) WITH (DATA_SOURCE =[' + @servername + '], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''partitions'')'
+EXECUTE sp_executesql @SQLString2
+
+--2
+INSERT INTO Xml_CompressionReportGeral
+--SELECT @dbnomebase, count(*) Isnabled FROM Xml_CompressionReport where xml_compression = 1
+SELECT @appnome, @distribuicao, @dbnomebase, @dbnomeservidor,count(*) Isnabled FROM Xml_CompressionReport where xml_compression = 1
+
+
+--3
+DROP EXTERNAL TABLE Xml_CompressionReport
+
+SET @SQLString3 = 'DROP EXTERNAL DATA SOURCE [' + @servername + ']'
+EXECUTE sp_executesql @SQLString3
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--SELECT
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+SELECT * FROM Xml_CompressionReportGeral

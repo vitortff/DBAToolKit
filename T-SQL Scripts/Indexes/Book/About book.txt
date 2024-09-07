@@ -1,0 +1,50 @@
+SET STATISTICS IO ON 
+SELECT *FROM HumanResources.Employee WHERE Gender='F'
+AND SickLeaveHours=59
+AND MaritalStatus='M'
+
+SET STATISTICS IO OFF
+
+--Table 'Employee'. Scan count 1, logical reads 9
+
+CREATE INDEX IX_Employee_Test on HumanResources.Employee (Gender);
+
+-- Is the same result => Table 'Employee'. Scan count 1, logical reads 9
+
+
+CREATE INDEX IX_Employee_Test on HumanResources.Employee (SickLeaveHours,Gender,MaritalStatus) with (Drop_existing=on);
+
+SET STATISTICS IO ON 
+
+SELECT *FROM HumanResources.Employee WHERE Gender='F'
+AND SickLeaveHours=59
+AND MaritalStatus='M'
+
+SET STATISTICS IO OFF
+
+--Take a look => Table 'Employee'. Scan count 1, logical reads 6 
+
+
+CREATE INDEX IX_Employee_Test on HumanResources.Employee (Gender) with (Drop_existing=on);
+
+SET STATISTICS IO ON 
+
+SELECT *FROM HumanResources.Employee WITH (INDEX (IX_Employee_Test))
+WHERE Gender='F'
+AND SickLeaveHours=59
+AND MaritalStatus='M'
+
+SET STATISTICS IO OFF
+
+-- Table 'Employee'. Scan count 1, logical reads 170, physical reads 0,
+
+SET STATISTICS IO ON 
+
+SELECT *FROM HumanResources.Employee WITH (Forceseek)
+WHERE Gender='F'
+AND SickLeaveHours=59
+AND MaritalStatus='M'
+
+SET STATISTICS IO OFF
+
+--Table 'Employee'. Scan count 1, logical reads 170, physical reads 0,

@@ -1,0 +1,767 @@
+/****** Object:  StoredProcedure [dbo].[USP_AGN_CompromissoTarefa_Count_L1]    Script Date: 3/27/2024 5:35:20 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE PROCEDURE [dbo].[USP_AGN_CompromissoTarefa_Count_L1]
+AS
+
+--1 VARIÁVEIS
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+--Variáveis do relatório
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+DECLARE @DataSourceNumber varchar(10) = '10'
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+
+DECLARE @SQLString2_1 NVARCHAR(4000)
+DECLARE @SQLString2_2  NVARCHAR(4000)
+
+
+DECLARE @SQLString4  NVARCHAR(4000)
+
+
+--2 Estrutura de Controle - Nova Execução
+
+DECLARE @COUNT_EXTERNAL_TABLE VARCHAR(100) = (SELECT COUNT(*) FROM sys.objects where name = 'AGN_CompromissoTarefa')
+
+IF @COUNT_EXTERNAL_TABLE = 1
+
+BEGIN
+    DROP EXTERNAL TABLE AGN_CompromissoTarefa
+END
+
+
+DECLARE @COUNT_EXTERNAL_DATA_SOURCE VARCHAR(100) = (select COUNT(*) from sys.external_data_sources where name = 'legalone-prod-eastus2_10')
+
+IF @COUNT_EXTERNAL_DATA_SOURCE = 1
+BEGIN
+    DROP EXTERNAL DATA SOURCE [legalone-prod-eastus2_10]
+END
+
+
+
+
+--3
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '_' + @DataSourceNumber + '] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+-----------------------INICIO DA PARTE A SER EDITADA------------------------------------------
+--2
+SET @SQLString2_1 = '
+
+CREATE EXTERNAL TABLE [dbo].[AGN_CompromissoTarefa](
+	
+	[CompromissoOuTarefa] [smallint]
+)
+WITH (DATA_SOURCE =[' + @servername + '_' + @DataSourceNumber + '], SCHEMA_NAME = ''dbo'', OBJECT_NAME = ''AGN_CompromissoTarefa'')'
+
+EXECUTE sp_executesql @SQLString2_1
+
+
+--Criando a nova 
+
+SET @SQLString2_2= 'INSERT INTO AGN_CompromissoTarefa_Count_L1 SELECT ''' + @appnome + ''',''' + @dbnomebase + ''', Tipo = CASE CompromissoOuTarefa When 0 THEN ''compromisso'' Else ''tarefa'' End, count(1) as count, getdate () as datetime
+FROM AGN_CompromissoTarefa (nolock) 
+GROUP BY CompromissoOuTarefa'
+
+EXECUTE sp_executesql @SQLString2_2
+
+DROP EXTERNAL TABLE AGN_CompromissoTarefa
+
+
+----------------------------FIM DA PARTE A SER EDITADA------------------------------------
+
+
+SET @SQLString4 = 'DROP EXTERNAL DATA SOURCE [' + @servername + '_' + @DataSourceNumber + ']'
+EXECUTE sp_executesql @SQLString4
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--SELECT
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+
+
+--drop external data source [legalone-prod-eastus2_]
+--DROP EXTERNAL TABLE PRO_Processo
+
+GO
+
+/****** Object:  StoredProcedure [dbo].[USP_GEN_Andamento_Count_L1]    Script Date: 3/27/2024 5:35:20 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE PROCEDURE [dbo].[USP_GEN_Andamento_Count_L1]
+AS
+
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+--1 Variáveis
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+DECLARE @DataSourceNumber varchar(10) = '11'
+
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+
+DECLARE @SQLString2_1 NVARCHAR(4000)
+DECLARE @SQLString2_2  NVARCHAR(4000)
+
+
+DECLARE @SQLString4  NVARCHAR(4000)
+
+
+--2 Estrutura de Controle - Nova Execução
+
+DECLARE @COUNT_EXTERNAL_TABLE VARCHAR(100) = (SELECT COUNT(*) FROM sys.objects where name = 'GEN_Andamento')
+
+IF @COUNT_EXTERNAL_TABLE = 1
+
+BEGIN
+    DROP EXTERNAL TABLE GEN_Andamento
+END
+
+
+DECLARE @COUNT_EXTERNAL_DATA_SOURCE VARCHAR(100) = (select COUNT(*) from sys.external_data_sources where name = 'legalone-prod-eastus2_11')
+
+IF @COUNT_EXTERNAL_DATA_SOURCE = 1
+BEGIN
+    DROP EXTERNAL DATA SOURCE [legalone-prod-eastus2_11]
+END
+
+
+
+--3
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '_' + @DataSourceNumber + '] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+-----------------------INICIO DA PARTE A SER EDITADA------------------------------------------
+--2
+SET @SQLString2_1 = '
+
+CREATE EXTERNAL TABLE [dbo].[GEN_Andamento](
+	
+	[TipoOrigem] [int]
+)
+WITH (DATA_SOURCE =[' + @servername + '_' + @DataSourceNumber + '], SCHEMA_NAME = ''dbo'', OBJECT_NAME = ''GEN_Andamento'')'
+
+EXECUTE sp_executesql @SQLString2_1
+
+
+--Criando a nova 
+
+SET @SQLString2_2= 'INSERT INTO GEN_Andamento_Count_L1 SELECT ''' + @appnome + ''',''' + @dbnomebase + ''', Tipo = CASE TipoOrigem When 0 THEN ''robos'' Else ''diarios'' End, count(1) as Count, getdate () as datetime FROM GEN_Andamento (nolock) where tipoorigem = 0 or TipoOrigem = 1 group by TipoOrigem'
+
+EXECUTE sp_executesql @SQLString2_2
+
+DROP EXTERNAL TABLE GEN_Andamento
+
+
+----------------------------FIM DA PARTE A SER EDITADA------------------------------------
+
+
+SET @SQLString4 = 'DROP EXTERNAL DATA SOURCE [' + @servername + '_' + @DataSourceNumber + ']'
+EXECUTE sp_executesql @SQLString4
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--SELECT
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+
+
+--drop external data source [legalone-prod-eastus2_]
+--DROP EXTERNAL TABLE PRO_Processo
+
+GO
+
+/****** Object:  StoredProcedure [dbo].[USP_MON_Consulta_Count_L1]    Script Date: 3/27/2024 5:35:20 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE PROCEDURE [dbo].[USP_MON_Consulta_Count_L1]
+AS
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+--1
+--Variáveis do relatório
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+DECLARE @DataSourceNumber varchar(10) = '12'
+
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+
+DECLARE @SQLString2_1 NVARCHAR(4000)
+DECLARE @SQLString2_2  NVARCHAR(4000)
+
+
+DECLARE @SQLString4  NVARCHAR(4000)
+
+--2 Estrutura de Controle - Nova Execução
+
+DECLARE @COUNT_EXTERNAL_TABLE VARCHAR(100) = (SELECT COUNT(*) FROM sys.objects where name = 'Mon_Consulta')
+
+IF @COUNT_EXTERNAL_TABLE = 1
+
+BEGIN
+    DROP EXTERNAL TABLE Mon_Consulta
+END
+
+
+DECLARE @COUNT_EXTERNAL_DATA_SOURCE VARCHAR(100) = (select COUNT(*) from sys.external_data_sources where name = 'legalone-prod-eastus2_12')
+
+IF @COUNT_EXTERNAL_DATA_SOURCE = 1
+BEGIN
+    DROP EXTERNAL DATA SOURCE [legalone-prod-eastus2_12]
+END
+
+
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '_' + @DataSourceNumber + '] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+-----------------------INICIO DA PARTE A SER EDITADA------------------------------------------
+--2
+SET @SQLString2_1 = '
+
+CREATE EXTERNAL TABLE [dbo].[Mon_Consulta](
+	
+	[TipoOrigem] [int],
+	[id_PRO_Processo] [Int],
+	[IsAtivo] int	
+)
+WITH (DATA_SOURCE =[' + @servername + '_' + @DataSourceNumber + '], SCHEMA_NAME = ''dbo'', OBJECT_NAME = ''Mon_Consulta'')'
+
+EXECUTE sp_executesql @SQLString2_1
+
+
+--Criando a nova 
+
+SET @SQLString2_2= 'INSERT INTO MON_Consulta_Count_L1 SELECT ''' + @appnome + ''',''' + @dbnomebase + ''', Tipo = CASE TipoOrigem When 0 THEN ''robos'' Else ''diarios'' End, count(1) as ''Count'', getdate () as datetime FROM MON_Consulta (nolock) WHERE id_PRO_Processo IS NOT NULL AND Isativo = 1 GROUP BY TipoOrigem'
+
+EXECUTE sp_executesql @SQLString2_2
+
+DROP EXTERNAL TABLE MON_Consulta
+
+
+----------------------------FIM DA PARTE A SER EDITADA------------------------------------
+
+
+SET @SQLString4 = 'DROP EXTERNAL DATA SOURCE [' + @servername + '_' + @DataSourceNumber + ']'
+EXECUTE sp_executesql @SQLString4
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--SELECT
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+
+
+--drop external data source [legalone-prod-eastus2_]
+--DROP EXTERNAL TABLE PRO_Processo
+
+GO
+
+/****** Object:  StoredProcedure [dbo].[USP_QueryStore_L1]    Script Date: 3/27/2024 5:35:20 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[USP_QueryStore_L1]
+AS
+
+--Talvez seja necessário alterar o nome do Data Source.
+--O trecho de código a ser alterado é a parte 2
+
+--Variáveis do relatório
+DECLARE @appnome NVARCHAR(4000)
+DECLARE @distribuicao NVARCHAR(4000)
+DECLARE @dbnomebase NVARCHAR(4000)
+DECLARE @dbnomeservidor VARCHAR(4000)
+DECLARE @servername VARCHAR(4000)
+
+--Variáveis SQL Dinâmico
+DECLARE @SQLString NVARCHAR(4000)
+
+DECLARE @SQLString2_1 NVARCHAR(4000)
+DECLARE @SQLString2_2  NVARCHAR(4000)
+DECLARE @SQLString2_3  NVARCHAR(4000)
+DECLARE @SQLString2_4  NVARCHAR(4000)
+DECLARE @SQLString2_5  NVARCHAR(4000)
+DECLARE @SQLString2_10  NVARCHAR(4000)
+
+
+--Drop External Table
+
+DECLARE @SQLString_3_1  NVARCHAR(4000)
+DECLARE @SQLString_3_2  NVARCHAR(4000)
+DECLARE @SQLString_3_3  NVARCHAR(4000)
+DECLARE @SQLString_3_4  NVARCHAR(4000)
+DECLARE @SQLString_3_5  NVARCHAR(4000)
+
+
+DECLARE @SQLString4  NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+
+--Varendo a tabela de contas 
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_CorpBR WHERE isativo=1
+UNION ALL
+SELECT appnome, distribuicao, dbnomebase, dbnomeservidor,substring(dbnomeservidor,1, CHARINDEX('.',dbnomeservidor)-1) as servername FROM NVJ_Escritorio_FirmAR WHERE isativo=1
+
+
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername 
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [' + @servername + '_' + @appnome + '_QueryStore_L1] WITH (TYPE=RDBMS, LOCATION = ''' + @dbnomeservidor + ''' ,DATABASE_NAME = ''' + @dbnomebase + ''' ,CREDENTIAL= [' + @servername +'])'
+EXECUTE sp_executesql @SQLString
+
+
+-----------------------INICIO DA PARTE A SER EDITADA------------------------------------------
+--2
+--2
+SET @SQLString2_1 = 'CREATE EXTERNAL TABLE [dbo].[sys_query_store_plan](
+	[plan_id] [bigint],
+	[query_id] [bigint],
+	[plan_group_id] [bigint],
+	[engine_version] [nvarchar](32),
+	[compatibility_level] [smallint],
+	[query_plan_hash] [binary](8),
+	[query_plan] [nvarchar](max),
+	[is_online_index_plan] [bit],
+	[is_trivial_plan] [bit],
+	[is_parallel_plan] [bit],
+	[is_forced_plan] [bit],
+	[is_natively_compiled] [bit],
+	[force_failure_count] [bigint],
+	[last_force_failure_reason] [int],
+	[last_force_failure_reason_desc] [nvarchar](128),
+	[count_compiles] [bigint],
+	[initial_compile_start_time] [datetimeoffset](7),
+	[last_compile_start_time] [datetimeoffset](7),
+	[last_execution_time] [datetimeoffset](7),
+	[avg_compile_duration] [float],
+	[last_compile_duration] [bigint],
+	[plan_forcing_type] [int],
+	[plan_forcing_type_desc] [nvarchar](60)
+) 
+
+WITH (DATA_SOURCE =[' + @servername + '_' + @appnome + '_QueryStore_L1], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''query_store_plan'')'
+
+EXECUTE sp_executesql @SQLString2_1
+
+--3
+SET @SQLString2_2 = '
+CREATE EXTERNAL TABLE [dbo].[sys_query_store_query](
+	[query_id] [bigint],
+	[query_text_id] [bigint],
+	[context_settings_id] [bigint],
+	[object_id] [bigint],
+	[batch_sql_handle] [varbinary](44),
+	[query_hash] [binary](8),
+	[is_internal_query] [bit],
+	[query_parameterization_type] [tinyint],
+	[query_parameterization_type_desc] [nvarchar](60),
+	[initial_compile_start_time] [datetimeoffset](7),
+	[last_compile_start_time] [datetimeoffset](7),
+	[last_execution_time] [datetimeoffset](7),
+	[last_compile_batch_sql_handle] [varbinary](44),
+	[last_compile_batch_offset_start] [bigint],
+	[last_compile_batch_offset_end] [bigint],
+	[count_compiles] [bigint],
+	[avg_compile_duration] [float],
+	[last_compile_duration] [bigint],
+	[avg_bind_duration] [float],
+	[last_bind_duration] [bigint],
+	[avg_bind_cpu_time] [float],
+	[last_bind_cpu_time] [bigint],
+	[avg_optimize_duration] [float],
+	[last_optimize_duration] [bigint],
+	[avg_optimize_cpu_time] [float],
+	[last_optimize_cpu_time] [bigint],
+	[avg_compile_memory_kb] [float],
+	[last_compile_memory_kb] [bigint],
+	[max_compile_memory_kb] [bigint],
+	[is_clouddb_internal_query] [bit]
+) 
+
+WITH (DATA_SOURCE =[' + @servername + '_' + @appnome + '_QueryStore_L1], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''query_store_query'')'
+
+EXECUTE sp_executesql @SQLString2_2
+
+--4
+SET @SQLString2_3 = '
+CREATE EXTERNAL TABLE [dbo].[sys_query_store_query_text](
+	[query_text_id] [bigint],
+	[query_sql_text] [nvarchar](max),
+	[statement_sql_handle] [varbinary](44),
+	[is_part_of_encrypted_module] [bit],
+	[has_restricted_text] [bit]
+) 
+WITH (DATA_SOURCE =[' + @servername + '_' + @appnome + '_QueryStore_L1], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''query_store_query_text'')'
+
+EXECUTE sp_executesql @SQLString2_3
+
+--5
+SET @SQLString2_4 = '
+CREATE EXTERNAL TABLE [dbo].[sys_query_store_runtime_stats](
+	[runtime_stats_id] [bigint],
+	[plan_id] [bigint],
+	[runtime_stats_interval_id] [bigint],
+	[execution_type] [tinyint],
+	[execution_type_desc] [nvarchar](60),
+	[first_execution_time] [datetimeoffset](7),
+	[last_execution_time] [datetimeoffset](7),
+	[count_executions] [bigint],
+	[avg_duration] [float],
+	[last_duration] [bigint],
+	[min_duration] [bigint],
+	[max_duration] [bigint],
+	[stdev_duration] [float],
+	[avg_cpu_time] [float],
+	[last_cpu_time] [bigint],
+	[min_cpu_time] [bigint],
+	[max_cpu_time] [bigint],
+	[stdev_cpu_time] [float],
+	[avg_logical_io_reads] [float],
+	[last_logical_io_reads] [bigint],
+	[min_logical_io_reads] [bigint],
+	[max_logical_io_reads] [bigint],
+	[stdev_logical_io_reads] [float],
+	[avg_logical_io_writes] [float],
+	[last_logical_io_writes] [bigint],
+	[min_logical_io_writes] [bigint],
+	[max_logical_io_writes] [bigint],
+	[stdev_logical_io_writes] [float],
+	[avg_physical_io_reads] [float],
+	[last_physical_io_reads] [bigint],
+	[min_physical_io_reads] [bigint],
+	[max_physical_io_reads] [bigint],
+	[stdev_physical_io_reads] [float],
+	[avg_clr_time] [float],
+	[last_clr_time] [bigint],
+	[min_clr_time] [bigint],
+	[max_clr_time] [bigint],
+	[stdev_clr_time] [float],
+	[avg_dop] [float],
+	[last_dop] [bigint],
+	[min_dop] [bigint],
+	[max_dop] [bigint],
+	[stdev_dop] [float],
+	[avg_query_max_used_memory] [float],
+	[last_query_max_used_memory] [bigint],
+	[min_query_max_used_memory] [bigint],
+	[max_query_max_used_memory] [bigint],
+	[stdev_query_max_used_memory] [float],
+	[avg_rowcount] [float],
+	[last_rowcount] [bigint],
+	[min_rowcount] [bigint],
+	[max_rowcount] [bigint],
+	[stdev_rowcount] [float],
+	[avg_num_physical_io_reads] [float],
+	[last_num_physical_io_reads] [bigint],
+	[min_num_physical_io_reads] [bigint],
+	[max_num_physical_io_reads] [bigint],
+	[stdev_num_physical_io_reads] [float],
+	[avg_log_bytes_used] [float],
+	[last_log_bytes_used] [bigint],
+	[min_log_bytes_used] [bigint],
+	[max_log_bytes_used] [bigint],
+	[stdev_log_bytes_used] [float],
+	[avg_tempdb_space_used] [float],
+	[last_tempdb_space_used] [bigint],
+	[min_tempdb_space_used] [bigint],
+	[max_tempdb_space_used] [bigint],
+	[stdev_tempdb_space_used] [float]
+) 
+WITH (DATA_SOURCE =[' + @servername + '_' + @appnome + '_QueryStore_L1], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''query_store_runtime_stats'')'
+
+EXECUTE sp_executesql @SQLString2_4
+
+--6
+SET @SQLString2_5 = '
+CREATE EXTERNAL TABLE [dbo].[sys_query_store_runtime_stats_interval](
+	[runtime_stats_interval_id] [bigint],
+	[start_time] [datetimeoffset](7),
+	[end_time] [datetimeoffset](7),
+	[comment] [nvarchar](max)
+) 
+WITH (DATA_SOURCE =[' + @servername + '_' + @appnome + '_QueryStore_L1], SCHEMA_NAME = ''sys'', OBJECT_NAME = ''query_store_runtime_stats_interval'')'
+EXECUTE sp_executesql @SQLString2_5
+
+
+
+--Criando a nova 
+
+SET @SQLString2_10= 'WITH AggregatedCPU AS 
+    (SELECT
+        q.query_hash, 
+        SUM(count_executions * avg_cpu_time / 1000.0) AS total_cpu_ms, 
+        SUM(count_executions * avg_cpu_time / 1000.0)/ SUM(count_executions) AS avg_cpu_ms, 
+        MAX(rs.max_cpu_time / 1000.00) AS max_cpu_ms, 
+        MAX(max_logical_io_reads) max_logical_reads, 
+        COUNT(DISTINCT p.plan_id) AS number_of_distinct_plans, 
+        COUNT(DISTINCT p.query_id) AS number_of_distinct_query_ids, 
+        SUM(CASE WHEN rs.execution_type_desc=''Aborted'' THEN count_executions ELSE 0 END) AS aborted_execution_count, 
+        SUM(CASE WHEN rs.execution_type_desc=''Regular'' THEN count_executions ELSE 0 END) AS regular_execution_count, 
+        SUM(CASE WHEN rs.execution_type_desc=''Exception'' THEN count_executions ELSE 0 END) AS exception_execution_count, 
+        SUM(count_executions) AS total_executions, 
+        MIN(qt.query_sql_text) AS sampled_query_text
+    FROM sys_query_store_query_text AS qt
+    JOIN sys_query_store_query AS q ON qt.query_text_id=q.query_text_id
+    JOIN sys_query_store_plan AS p ON q.query_id=p.query_id
+    JOIN sys_query_store_runtime_stats AS rs ON rs.plan_id=p.plan_id
+    JOIN sys_query_store_runtime_stats_interval AS rsi ON rsi.runtime_stats_interval_id=rs.runtime_stats_interval_id
+    WHERE 
+            rs.execution_type_desc IN (''Regular'', ''Aborted'', ''Exception'') AND 
+        rsi.start_time>=DATEADD(HOUR, -24, GETUTCDATE())
+     GROUP BY q.query_hash), 
+OrderedCPU AS 
+    (SELECT *, 
+    ROW_NUMBER() OVER (ORDER BY total_cpu_ms DESC, query_hash ASC) AS RN
+    FROM AggregatedCPU)
+
+INSERT INTO QueryStore_l1
+SELECT ''' + @appnome + ''',''' + @dbnomebase + ''',RN as [Top],query_hash, total_cpu_ms, avg_cpu_ms,max_cpu_ms, max_logical_reads, number_of_distinct_plans,number_of_distinct_query_ids,aborted_execution_count, regular_execution_count, exception_execution_count,total_executions,sampled_query_text, Getdate () as datetime
+FROM OrderedCPU AS OD
+WHERE OD.RN<=10
+ORDER BY total_cpu_ms DESC
+'
+
+EXECUTE sp_executesql @SQLString2_10
+
+ 
+
+SET @SQLString_3_1= 'DROP EXTERNAL TABLE sys_query_store_plan'
+EXECUTE sp_executesql @SQLString_3_1
+
+SET @SQLString_3_2= 'DROP EXTERNAL TABLE sys_query_store_query'
+EXECUTE sp_executesql @SQLString_3_2
+
+SET @SQLString_3_3= 'DROP EXTERNAL TABLE sys_query_store_query_text'
+EXECUTE sp_executesql @SQLString_3_3
+
+SET @SQLString_3_4= 'DROP EXTERNAL TABLE sys_query_store_runtime_stats'
+EXECUTE sp_executesql @SQLString_3_4
+
+SET @SQLString_3_5= 'DROP EXTERNAL TABLE sys_query_store_runtime_stats_interval'
+EXECUTE sp_executesql @SQLString_3_5
+
+----------------------------FIM DA PARTE A SER EDITADA------------------------------------
+
+
+SET @SQLString4 = 'DROP EXTERNAL DATA SOURCE [' + @servername + '_' + @appnome + '_QueryStore_L1]'
+EXECUTE sp_executesql @SQLString4
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @appnome, @distribuicao, @dbnomebase, @dbnomeservidor, @servername
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--SELECT
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+--(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+
+
+--drop external data source [legalone-prod-eastus2_]
+--DROP EXTERNAL TABLE PRO_Processo
+
+
+
+GO
+
+

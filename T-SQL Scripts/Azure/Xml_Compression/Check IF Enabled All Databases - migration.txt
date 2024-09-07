@@ -1,0 +1,88 @@
+/*
+--0
+IF OBJECT_ID(N'Xml_CompressionReportGeral', N'U') IS NOT NULL  
+   DROP TABLE Xml_CompressionReportGeral;
+
+CREATE TABLE [dbo].[Xml_CompressionReportGeral](
+	[database_name] [varchar](4000) NOT NULL,
+	[Isenabled] [int] NULL
+)
+*/
+
+--1
+DECLARE @NAME NVARCHAR(50)
+DECLARE @SQLString NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+SELECT name FROM Tbl_Migration_Databases where 
+name like 'Info%' or name like 'l1%' or name like 'next%' or name like 'nova%' 
+--name = 'InfolexOne_AR_8110621'
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @NAME
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+
+--SET @SQLString= ''use ''+ @name + ''; CREATE USER [Nelson Junior Castro de Jesus] FOR LOGIN [x212561] WITH DEFAULT_SCHEMA=[dbo]''
+
+--1
+SET @SQLString= 'CREATE EXTERNAL DATA SOURCE [legalone-migration] WITH (TYPE=RDBMS, LOCATION = ''legalone-migration.database.windows.net'',DATABASE_NAME = ''' + @NAME + ''' ,CREDENTIAL= [legalone-migration])'
+
+EXECUTE sp_executesql @SQLString
+--2
+CREATE EXTERNAL TABLE Xml_CompressionReport(
+object_id int,
+xml_compression bit
+)
+
+WITH (DATA_SOURCE = [legalone-migration],  -- data source 
+      SCHEMA_NAME = 'sys',           -- external table schema
+      OBJECT_NAME = 'partitions'       -- name of table in external database
+     )
+
+--2
+INSERT INTO Xml_CompressionReportGeral
+--SELECT 'Databasenamexxxxxxxxxxxxxxxxx' as database_name, count(*) Isnabled into Xml_CompressionReportGeral FROM Xml_CompressionReport where xml_compression = 1
+--DROP TABLE TABLE Xml_CompressionReportGeral
+--DELETE from Xml_CompressionReportGeral
+SELECT @name, count(*) Isnabled FROM Xml_CompressionReport where xml_compression = 1
+
+--3
+DROP EXTERNAL TABLE Xml_CompressionReport
+DROP EXTERNAL DATA SOURCE [legalone-migration]
+
+--PRINT @SQLString
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @NAME
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+SELECT
+(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 1) as Habilitado, 
+(SELECT count(database_name) as Habilitado FROM Xml_CompressionReportGeral WHERE Isenabled = 0) as Desabilitado
+-- delete from Xml_CompressionReportGeral
+
+SELECT database_name FROM Xml_CompressionReportGeral WHERE Isenabled = 0

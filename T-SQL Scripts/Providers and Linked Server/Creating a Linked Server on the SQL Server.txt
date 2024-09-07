@@ -1,0 +1,8 @@
+EXEC sp_addlinkedserver
+@server = 'MYSERVER',
+@srvproduct = '' ,
+@provider = 'MSDASQL',
+@provstr = 'DRIVER=SQL Server;SERVER=MYSERVER;UID=sa;PWD=pass;'
+
+
+--Podemos habilitar o RPC via Management Studio na Opção Server Option

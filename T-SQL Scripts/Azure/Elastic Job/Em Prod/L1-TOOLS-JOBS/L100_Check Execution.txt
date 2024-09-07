@@ -1,0 +1,3 @@
+SELECT target_database_name,step_name,is_active,lifecycle,start_time,end_time,last_message  FROM jobs.job_executions
+where job_name like 'L1-TOOLS_JOB06%'
+

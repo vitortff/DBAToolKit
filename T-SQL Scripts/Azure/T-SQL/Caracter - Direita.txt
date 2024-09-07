@@ -1,0 +1,3 @@
+select left(QueryString + Userid, LEN(QueryString + Userid) - 3) as QueryString, right(QueryString + Userid,1) as Userid from Tb_L_Amaral
+where Userid like ' %'
+ORDER BY 2 DESC

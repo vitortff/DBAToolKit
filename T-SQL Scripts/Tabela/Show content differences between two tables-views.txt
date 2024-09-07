@@ -1,0 +1,766 @@
+CREATE procedure ACDIFF @db varchar(40), @obj_src varchar(40), @obj_dst varchar(40), @cmd varchar(10)= 'S'
+
+as
+
+-- This sql2000-program ACDIFF generates another sql-program in memory to show the content-difference between to similar tables/views (MSSQL2000)
+
+-- Gen.Usage: exec master.dbo.ACDIFF <dbname> , <source> , <dest> , <log-par> , <upd-par>
+
+-- <dbname> : Name of the database where the source and destination objects exist
+
+-- <source> : Name of the table or view containing the source data
+
+-- <dest> : Name of the destination table (can aut. be updated). Comparekey determined by 'not null' columns
+
+-- <cmds> : Default='S', S=ShowDifferences, D=Debug-ShowingGenProgramNoExecution,
+
+--???????????? L=WriteLogstoTable:ACD_LOG, U=UpdatingDestinationTable
+
+-- Eg.Usage : exec master.dbo.ACDIFF ACTOOL, Person, ACD_TEST, SULD
+
+-- Eg.Usage : exec master.dbo.ACDIFF CS89ON2, PS_NAMES, MDA_PS_NAMES, ULD
+
+-- Troubles : When errors with open cursors, try to execute this program again 
+
+----------------------------------------------------------------------------------------------------------------------
+
+-- Changedate????By????????Description (Initialy-created by: dj.miedema on 1-sep-2007 )
+
+-- ---------- ------------- --------------------------------------------------------------------------------------
+
+-- 8-10-2007????D.Miedema????Added upd-par-value U (UPD destination with differences)
+
+----------------------------------------------------------------------------------------------------------------------
+
+set @cmd=upper(@cmd)
+
+declare @tmst varchar(15)
+
+set @tmst=replace(replace(replace(CONVERT (varchar(20) ,getdate() , 120 ),' ',''),'-',''),':','')
+
+print 'Generating Difference program, Parameters: DB='+@db+', SRC='+@obj_src+', DST='+@obj_dst+', CMD='+@cmd
+
+print 'Showing modifications to be effectuated onto the destination object: '+@obj_dst
+
+
+
+set nocount on
+
+if (charindex('L',@cmd)>0) and not exists (select 'x' from sysobjects where name='ACD_LOG')
+
+begin 
+
+ create table ACD_LOG (TBNM varchar(60),TMST varchar(15),LNNB integer identity (1,1),LINE varchar(7000)) 
+
+end
+
+
+
+--Memory table variables
+
+declare @mtb1 table (LN int not null identity(1,1), LINE varchar(8000) null) 
+
+declare @mtb2 table (LN int not null identity(1,1), LINE varchar(8000) null)
+
+
+
+declare @tmp1 varchar(8000)
+
+set @tmp1=''
+
+declare @tmp2 varchar(8000)
+
+set @tmp2=''
+
+declare @tmp3 varchar(8000)
+
+set @tmp3=''
+
+
+
+declare @cols1 varchar(8000)
+
+set @cols1=''
+
+
+
+
+
+--create temporary table definitions without data
+
+select * into #cols from syscolumns where 1=2 
+
+select * into #tobjs from sysobjects where 1=2
+
+select * into #typs from systypes where 1=2
+
+--fill the temporary tables
+
+insert into #cols exec ('select * from '+@db+'.dbo.syscolumns where id=(select id from '+@db+'.dbo.sysobjects where name='''+@obj_dst+''') order by colid')
+
+insert into #tobjs exec ('select * from '+@db+'.dbo.sysobjects where name='''+@obj_dst+'''')
+
+insert into #typs exec ('select * from '+@db+'.dbo.systypes')
+
+
+
+declare @updstr varchar(8000) --Must hold the columns to update
+
+set @updstr=''
+
+
+
+declare @co1NAME varchar(50)
+
+declare @co1TYPE varchar(50)
+
+declare @co1PREC varchar(50)
+
+--select the columnnames and columntypes
+
+declare co1 cursor read_only for 
+
+select sc.name,st.name,sc.prec
+
+from #cols sc, #typs st
+
+where sc.id=(select so.id from #tobjs so where name=@obj_dst)
+
+and st.xtype=sc.xtype
+
+and st.xtype=st.xusertype
+
+and st.name<>'sysname'
+
+order by colid
+
+
+
+insert into @mtb1 select 'set CURSOR_CLOSE_ON_COMMIT off'
+
+insert into @mtb1 select 'set nocount on' 
+
+
+
+OPEN co1
+
+FETCH next FROM co1 into @co1NAME,@co1TYPE,@co1PREC
+
+WHILE (@@FETCH_STATUS=0) 
+
+BEGIN
+
+insert into @mtb1 select 'declare @c1'+@co1NAME+' '+case when charindex('varchar',@co1TYPE)=0 then 'varchar(30)' else @co1TYPE+'('+@co1PREC+')' end 
+
+insert into @mtb1 select 'declare @c2'+@co1NAME+' '+case when charindex('varchar',@co1TYPE)=0 then 'varchar(30)' else @co1TYPE+'('+@co1PREC+')' end 
+
+if (@cols1<>'') set @cols1=@cols1+','
+
+set @cols1=@cols1+@co1NAME
+
+if (@updstr<>'') set @updstr=@updstr+','
+
+set @updstr=@updstr+@co1NAME+'=@c1'+@co1NAME
+
+FETCH next FROM co1 into @co1NAME,@co1TYPE,@co1PREC
+
+END
+
+CLOSE co1
+
+
+
+declare @ck1NAME varchar(50)
+
+declare @keys1 varchar(500)
+
+set @keys1=''
+
+declare @keyeq varchar(500)
+
+set @keyeq=''
+
+declare @key1gt varchar(500)
+
+set @key1gt=''
+
+declare @key1gt2 varchar(500)
+
+set @key1gt2=''
+
+
+
+
+
+-- Kolommen die not null gedefinieerd zijn in de dest-table, worden genomen als sleutels 
+
+declare ck1 cursor read_only for 
+
+select name 
+
+from #cols
+
+where id=(select id from #tobjs where name=@obj_dst) and isnullable=0
+
+
+
+
+
+OPEN ck1
+
+FETCH next FROM ck1 into @ck1NAME
+
+WHILE (@@FETCH_STATUS=0) 
+
+BEGIN
+
+if (@keys1<>'') set @keys1=@keys1+','
+
+set @keys1=@keys1+@ck1NAME
+
+if (@keyeq<>'') set @keyeq=@keyeq+' and '
+
+set @keyeq=@keyeq+'@c1'+@ck1NAME+' = @c2'+@ck1NAME
+
+if (@key1gt<>'') set @key1gt=@key1gt+' and '
+
+set @key1gt=@key1gt+'@c1'+@ck1NAME+' > @c2'+@ck1NAME
+
+if (@key1gt2<>'') set @key1gt2=@key1gt2+'+''~''+'
+
+set @key1gt2=@key1gt2+'@c1'+@ck1NAME
+
+set @updstr=replace(@updstr,@ck1NAME+'=@c1'+@ck1NAME+',','')
+
+FETCH next FROM ck1 into @ck1NAME
+
+END
+
+CLOSE ck1
+
+DEALLOCATE ck1
+
+
+
+if @keys1='' 
+
+begin
+
+ RAISERROR('AC-Error-01. Target Database/Table not found or No not null columns found in target table: %s, so no key could be defined',16,1,@obj_dst);
+
+ return
+
+end
+
+
+
+
+
+insert into @mtb1 select 'Declare acd_c1 cursor read_only for select '+@cols1+' from '+@db+'.dbo.'+@obj_src+' order by '+@keys1
+
+insert into @mtb1 select 'Declare acd_c2 cursor '+case when charindex('U',@cmd)>0 then 'static' else '' end +' read_only for select '+@cols1+' from '+@db+'.dbo.'+@obj_dst+' order by '+@keys1
+
+insert into @mtb1 select 'Declare @status_c1 int'
+
+insert into @mtb1 select 'Declare @status_c2 int'
+
+insert into @mtb1 select 'Declare @keyval1 varchar(500)'
+
+insert into @mtb1 select 'Declare @keyval2 varchar(500)'
+
+--insert into @mtb1 select 'begin transaction' 
+
+insert into @mtb1 select 'declare @ERR int set @ERR=0' 
+
+insert into @mtb1 select 'declare @SRCNB int set @SRCNB=0' 
+
+insert into @mtb1 select 'declare @UPDNB int set @UPDNB=0' 
+
+insert into @mtb1 select 'declare @DELNB int set @DELNB=0' 
+
+insert into @mtb1 select 'declare @INSNB int set @INSNB=0' 
+
+insert into @mtb1 select 'declare @u1 int' --register wether an update is necessary
+
+
+
+insert into @mtb1 select 'OPEN acd_c1'
+
+insert into @mtb1 select 'FETCH next FROM acd_c1 into @c1'+replace(@cols1,',',',@c1')
+
+insert into @mtb1 select 'set @status_c1=@@FETCH_STATUS'
+
+insert into @mtb1 select 'OPEN acd_c2'
+
+insert into @mtb1 select 'FETCH next FROM acd_c2 into @c2'+replace(@cols1,',',',@c2')
+
+insert into @mtb1 select 'set @status_c2=@@FETCH_STATUS'
+
+insert into @mtb1 select 'WHILE ( @status_c1 = 0) or (@status_c2=0)'
+
+insert into @mtb1 select 'BEGIN' 
+
+insert into @mtb1 select ' set @keyval1='''+@keys1+'=(''+@c1'+replace(@keys1,',','+'',''+@c1')+'+'')'''
+
+insert into @mtb1 select ' set @keyval2='''+@keys1+'=(''+@c2'+replace(@keys1,',','+'',''+@c2')+'+'')'''
+
+--insert into @mtb1 select ' print ''Keyval1=''+@keyval1+'', Keyval2=''+@keyval2+'', StatC1=''+rtrim(@status_c1)+'', StatC2=''+rtrim(@status_c2)' --debug
+
+--insert into @mtb1 select ' if (@status_c2<>0) begin set @c2'+replace(@keys1,',','=''~'' set @c2')+'=''~'' end' --debug
+
+insert into @mtb1 select ' if ( @status_c1=0 and @status_c2=0 and '+@keyeq+') --if Keys are equal'
+
+insert into @mtb1 select ' begin'
+
+insert into @mtb1 select ' set @u1=0'
+
+OPEN co1
+
+FETCH next FROM co1 into @co1NAME,@co1TYPE,@co1PREC
+
+WHILE (@@FETCH_STATUS=0) 
+
+BEGIN
+
+insert into @mtb1 select ' if (isnull(@c1'+@co1NAME+',''~'') <> isnull(@c2'+@co1NAME+',''~''))' 
+
+insert into @mtb1 select ' begin'
+
+insert into @mtb1 select ' set @u1=1'
+
+set @tmp1='''UPD-ForKey:''+@keyval1+''-Upd-Field:('+@co1NAME+'), OLDVAL=''+ rtrim(isnull(@c2'+@co1NAME+',''<NULL>''))+'', NEWVAL=''+ rtrim(isnull(@c1'+@co1NAME+',''<NULL>''))'
+
+insert into @mtb1 select ' print '+@tmp1
+
+if charindex('L',@cmd)>0 insert into @mtb1 select ' insert into ACD_LOG (TBNM,TMST,LINE) values ('''+@obj_src+@obj_dst+''','+@tmst+','+@tmp1+')'
+
+insert into @mtb1 select ' end' 
+
+FETCH next FROM co1 into @co1NAME,@co1TYPE,@co1PREC
+
+END
+
+insert into @mtb1 select ' if @u1=1 ' 
+
+insert into @mtb1 select ' begin'
+
+set @tmp2='rtrim('+replace(@keys1,',',')+''~''+rtrim(')+')=rtrim(@c1'+replace(@keys1,',',')+''~''+rtrim(@c1')+')'
+
+if charindex('U',@cmd)>0 insert into @mtb1 select ' UPDATE '+@db+'.dbo.'+@obj_dst+' set '+@updstr+' WHERE '+@tmp2
+
+insert into @mtb1 select ' set @UPDNB=@UPDNB+1' 
+
+insert into @mtb1 select ' end' 
+
+insert into @mtb1 select ' FETCH next FROM acd_c1 into @c1'+replace(@cols1,',',',@c1')
+
+insert into @mtb1 select ' set @status_c1=@@FETCH_STATUS'
+
+insert into @mtb1 select ' FETCH next FROM acd_c2 into @c2'+replace(@cols1,',',',@c2')
+
+insert into @mtb1 select ' set @status_c2=@@FETCH_STATUS'
+
+insert into @mtb1 select ' end --endif keys are equal'
+
+insert into @mtb1 select ' else if ( (@status_c1<>0 and @status_c2=0) or (@status_c1=0 and @status_c2=0 and '+replace(@key1gt2,'@c1','@c2')+'))'">'+@key1gt2+'>'+replace(@key1gt2,'@c1','@c2')+'))' -- elseif key1 is greater'
+
+insert into @mtb1 select ' begin'
+
+insert into @mtb1 select ' set @DELNB=@DELNB+1' 
+
+--set @tmp1='''DEL-KEY1GT(''+'+replace(@key1gt2,'@c1','@c2')+'+'')]'''">''+'+@key1gt2+'+''>''+'+replace(@key1gt2,'@c1','@c2')+'+'')]''' 
+
+--insert into @mtb1 select ' print '+@tmp1 --debug
+
+set @tmp1='rtrim(IsNull(@c2'+replace(replace(@cols1,',','+rtrim(IsNull(@c2'),'+',',''''))+''~''+')+',''''))'
+
+set @tmp1='''DEL-ForKey:''+@keyval2+''-Oldvalues:(''+'+@tmp1
+
+insert into @mtb1 select ' print '+@tmp1
+
+if charindex('L',@cmd)>0 insert into @mtb1 select ' insert into ACD_LOG (TBNM,TMST,LINE) values ('''+@obj_src+@obj_dst+''','+@tmst+','+@tmp1+')'
+
+if charindex('U',@cmd)>0 
+
+begin 
+
+ set @tmp3='rtrim('+replace(@keys1,',',')+''~''+rtrim(')+')=rtrim(@c2'+replace(@keys1,',',')+''~''+rtrim(@c2')+')'
+
+ insert into @mtb1 select ' DELETE FROM '+@db+'.dbo.'+@obj_dst+' WHERE '+@tmp3
+
+ insert into @mtb1 select ' if (@@ROWCOUNT<>1) begin raiserror(''ACDIFF-Error: Unexpected nr of deletes for key:%s'',16,1,@keyval2) end'
+
+-- insert into @mtb1 select ' print ''DELETE FROM '+@db+'.dbo.'+@obj_dst+' WHERE '+replace(@tmp3,'''','''''')+''''
+
+end
+
+insert into @mtb1 select ' FETCH next FROM acd_c2 into @c2'+replace(@cols1,',',',@c2')+' set @status_c2=@@FETCH_STATUS'
+
+insert into @mtb1 select ' end'
+
+insert into @mtb1 select ' else '
+
+insert into @mtb1 select ' begin'
+
+insert into @mtb1 select ' set @INSNB=@INSNB+1' 
+
+--set @tmp1='''INS-KEY1LT(''+'+replace(@key1gt2,'@c1','@c2')+'+'')'''">''+'+@key1gt2+'+''>''+'+replace(@key1gt2,'@c1','@c2')+'+'')''' 
+
+--insert into @mtb1 select ' print '+@tmp1 --debug
+
+set @tmp1='rtrim(IsNull(@c1'+replace(replace(@cols1,',','+rtrim(IsNull(@c1'),'+',',''''))+''~''+')+',''''))'
+
+set @tmp1='''INS-ForKey:''+@keyval1+''-Newvalues:(''+'+@tmp1
+
+insert into @mtb1 select ' print '+@tmp1
+
+if charindex('L',@cmd)>0 insert into @mtb1 select ' insert into ACD_LOG (TBNM,TMST,LINE) values ('''+@obj_src+@obj_dst+''','+@tmst+','+@tmp1+')'
+
+if charindex('U',@cmd)>0 
+
+begin 
+
+ set @tmp3='@c1'+replace(@cols1,',',',@c1')
+
+ insert into @mtb1 select ' INSERT INTO '+@db+'.dbo.'+@obj_dst+' VALUES ('+@tmp3+')'
+
+-- insert into @mtb1 select ' print ''INSERT INTO '+@db+'.dbo.'+@obj_dst+' VALUES ('+@tmp3+')'
+
+end
+
+insert into @mtb1 select ' FETCH next FROM acd_c1 into @c1'+replace(@cols1,',',',@c1')+' set @status_c1=@@FETCH_STATUS'
+
+insert into @mtb1 select ' end'
+
+insert into @mtb1 select 'set @SRCNB=@SRCNB+1' 
+
+insert into @mtb1 select 'end --end-while'
+
+insert into @mtb1 select 'close acd_c1'
+
+insert into @mtb1 select 'close acd_c2'
+
+insert into @mtb1 select 'deallocate acd_c1'
+
+insert into @mtb1 select 'deallocate acd_c2'
+
+set @tmp1='''Total: Compares: ''+rtrim(@SRCNB)+'', Updates: ''+rtrim(@UPDNB)+'', Inserts: ''+rtrim(@INSNB)+'', Deletes: ''+rtrim(@DELNB)'
+
+set @tmp1=@tmp1+'+'', Command='+@cmd+'''+'+case when charindex('U',@cmd)>0 then ''', Updated Destination !!''' else '''''' end
+
+insert into @mtb1 select 'print '+@tmp1
+
+if charindex('L',@cmd)>0 insert into @mtb1 select 'insert into ACD_LOG (TBNM,TMST,LINE) values ('''+@obj_src+@obj_dst+''','+@tmst+','+@tmp1+')'
+
+--set @tmp1='ACDIFF-Error: Delete matches unexpected nr of records, possible key not unique. Transaction aborted !!'
+
+--insert into @mtb1 select 'if @ERR=0 commit else begin rollback print '''+@tmp1+''' end'
+
+--if charindex('L',@cmd)>0 insert into @mtb1 select 'if @ERR<>0 insert into ACD_LOG (TBNM,TMST,LINE) values ('''+@obj_src+@obj_dst+''','+@tmst+','''+@tmp1+''')'
+
+CLOSE co1
+
+DEALLOCATE co1
+
+
+
+declare @sqls1 varchar(8000)
+
+set @sqls1=''
+
+declare @sqls2 varchar(8000)
+
+set @sqls2=''
+
+declare @sqls3 varchar(8000)
+
+set @sqls3=''
+
+declare @sqls4 varchar(8000)
+
+set @sqls4=''
+
+declare @sqls5 varchar(8000)
+
+set @sqls5=''
+
+declare @sqls6 varchar(8000)
+
+set @sqls6=''
+
+declare @sqls7 varchar(8000)
+
+set @sqls7=''
+
+declare @sqls8 varchar(8000)
+
+set @sqls8=''
+
+declare @sqls9 varchar(8000)
+
+set @sqls9=''
+
+declare @sqls10 varchar(8000)
+
+set @sqls10=''
+
+declare @sqls11 varchar(8000)
+
+set @sqls11=''
+
+declare @sqls12 varchar(8000)
+
+set @sqls12=''
+
+declare @sqls13 varchar(8000)
+
+set @sqls13=''
+
+declare @sqls14 varchar(8000)
+
+set @sqls14=''
+
+declare @sqls15 varchar(8000)
+
+set @sqls15=''
+
+declare @sqls16 varchar(8000)
+
+set @sqls16=''
+
+declare @sqls17 varchar(8000)
+
+set @sqls17=''
+
+declare @sqls18 varchar(8000)
+
+set @sqls18=''
+
+declare @sqls19 varchar(8000)
+
+set @sqls19=''
+
+declare @sqls20 varchar(8000)
+
+set @sqls20=''
+
+declare @sqls21 varchar(8000)
+
+set @sqls21=''
+
+declare @sqls22 varchar(8000)
+
+set @sqls22=''
+
+declare @sqls23 varchar(8000)
+
+set @sqls23=''
+
+declare @sqls24 varchar(8000)
+
+set @sqls24=''
+
+declare @sqls25 varchar(8000)
+
+set @sqls25=''
+
+
+
+
+
+declare @line varchar(8000)
+
+declare ctbl cursor for select LINE from @mtb1 order by LN
+
+open ctbl
+
+fetch next from ctbl into @line
+
+while @@FETCH_STATUS=0
+
+begin
+
+ set @line=@line+char(13)+char(10)
+
+ if len(@sqls25)=0
+
+ begin if len(@sqls24)=0
+
+ begin if len(@sqls23)=0
+
+ begin if len(@sqls22)=0
+
+ begin if len(@sqls21)=0
+
+ begin if len(@sqls20)=0
+
+ begin if len(@sqls19)=0
+
+ begin if len(@sqls18)=0
+
+ begin if len(@sqls17)=0
+
+ begin if len(@sqls16)=0
+
+ begin if len(@sqls15)=0
+
+ begin if len(@sqls14)=0
+
+ begin if len(@sqls13)=0
+
+ begin if len(@sqls12)=0
+
+ begin if len(@sqls11)=0
+
+ begin if len(@sqls10)=0
+
+ begin if len(@sqls9)=0
+
+ begin if len(@sqls8)=0
+
+ begin if len(@sqls7)=0
+
+ begin if len(@sqls6)=0
+
+ begin if len(@sqls5)=0
+
+ begin if len(@sqls4)=0
+
+ begin if len(@sqls3)=0
+
+ begin if len(@sqls2)=0
+
+ begin if len(@sqls1) +len(@line)<8000 set @sqls1 =@sqls1+ @line else set @sqls2 =@sqls2 +@line
+
+ end else if len(@sqls2) +len(@line)<8000 set @sqls2 =@sqls2+ @line else set @sqls3 =@sqls3 +@line
+
+ end else if len(@sqls3) +len(@line)<8000 set @sqls3 =@sqls3+ @line else set @sqls4 =@sqls4 +@line
+
+ end else if len(@sqls4) +len(@line)<8000 set @sqls4 =@sqls4+ @line else set @sqls5 =@sqls5 +@line
+
+ end else if len(@sqls5) +len(@line)<8000 set @sqls5 =@sqls5+ @line else set @sqls6 =@sqls6 +@line
+
+ end else if len(@sqls6) +len(@line)<8000 set @sqls6 =@sqls6+ @line else set @sqls7 =@sqls7 +@line
+
+ end else if len(@sqls7) +len(@line)<8000 set @sqls7 =@sqls7+ @line else set @sqls8 =@sqls8 +@line
+
+ end else if len(@sqls8) +len(@line)<8000 set @sqls8 =@sqls8+ @line else set @sqls9 =@sqls9 +@line
+
+ end else if len(@sqls9) +len(@line)<8000 set @sqls9 =@sqls9+ @line else set @sqls10=@sqls10+@line
+
+ end else if len(@sqls10)+len(@line)<8000 set @sqls10=@sqls10+@line else set @sqls11=@sqls11+@line
+
+ end else if len(@sqls11)+len(@line)<8000 set @sqls11=@sqls11+@line else set @sqls12=@sqls12+@line
+
+ end else if len(@sqls12)+len(@line)<8000 set @sqls12=@sqls12+@line else set @sqls13=@sqls13+@line
+
+ end else if len(@sqls13)+len(@line)<8000 set @sqls13=@sqls13+@line else set @sqls14=@sqls14+@line
+
+ end else if len(@sqls14)+len(@line)<8000 set @sqls14=@sqls14+@line else set @sqls15=@sqls15+@line
+
+ end else if len(@sqls15)+len(@line)<8000 set @sqls15=@sqls15+@line else set @sqls16=@sqls16+@line
+
+ end else if len(@sqls16)+len(@line)<8000 set @sqls16=@sqls16+@line else set @sqls17=@sqls17+@line
+
+ end else if len(@sqls17)+len(@line)<8000 set @sqls17=@sqls17+@line else set @sqls18=@sqls18+@line
+
+ end else if len(@sqls18)+len(@line)<8000 set @sqls18=@sqls18+@line else set @sqls19=@sqls19+@line
+
+ end else if len(@sqls19)+len(@line)<8000 set @sqls19=@sqls19+@line else set @sqls20=@sqls20+@line
+
+ end else if len(@sqls20)+len(@line)<8000 set @sqls20=@sqls20+@line else set @sqls21=@sqls21+@line
+
+ end else if len(@sqls21)+len(@line)<8000 set @sqls21=@sqls21+@line else set @sqls22=@sqls22+@line
+
+ end else if len(@sqls22)+len(@line)<8000 set @sqls22=@sqls22+@line else set @sqls23=@sqls23+@line
+
+ end else if len(@sqls23)+len(@line)<8000 set @sqls23=@sqls23+@line else set @sqls24=@sqls24+@line
+
+ end else if len(@sqls24)+len(@line)<8000 set @sqls24=@sqls24+@line else set @sqls25=@sqls25+@line
+
+ end else if len(@sqls25)+len(@line)<8000 set @sqls25=@sqls25+@line else begin print 'Str25='+@sqls25+', Line='+@line raiserror( '!!!--> ACD-Error, generated program too large !!',16,1 ) return end
+
+ fetch next from ctbl into @line
+
+end
+
+close ctbl
+
+deallocate ctbl
+
+print char(13)+'SourceObj=('+@obj_src+' ), DestObj=('+@obj_dst+'), Using-KEYS:( ' +@keys1+' ), LenPrg='+rtrim(len(@sqls1)+len(@sqls2)+len(@sqls3)+len(@sqls4)+len(@sqls5)+len(@sqls6)+len(@sqls7)+len(@sqls8)+len(@sqls9)+len(@sqls10)+len(@sqls11)+len(@sqls12)+len(@sqls13)+len(@sqls14)+len(@sqls15)+len(@sqls16)+len(@sqls17)+len(@sqls18)+len(@sqls19)+len(@sqls20)+len(@sqls21)+len(@sqls22)+len(@sqls23)+len(@sqls24)+len(@sqls25))+'/'+rtrim(25*8000)
+
+if charindex('D',@cmd)>0 
+
+begin
+
+print 'Debug, Printing Generated Difference-program:'
+
+if len(@sqls1)>0 print @sqls1
+
+if len(@sqls2)>0 print @sqls2
+
+if len(@sqls3)>0 print @sqls3
+
+if len(@sqls4)>0 print @sqls4
+
+if len(@sqls5)>0 print @sqls5
+
+if len(@sqls6)>0 print @sqls6
+
+if len(@sqls7)>0 print @sqls7
+
+if len(@sqls8)>0 print @sqls8
+
+if len(@sqls9)>0 print @sqls9
+
+if len(@sqls10)>0 print @sqls10
+
+if len(@sqls11)>0 print @sqls11
+
+if len(@sqls12)>0 print @sqls12
+
+if len(@sqls13)>0 print @sqls13
+
+if len(@sqls14)>0 print @sqls14
+
+if len(@sqls15)>0 print @sqls15
+
+if len(@sqls16)>0 print @sqls16
+
+if len(@sqls17)>0 print @sqls17
+
+if len(@sqls18)>0 print @sqls18
+
+if len(@sqls19)>0 print @sqls19
+
+if len(@sqls20)>0 print @sqls20
+
+if len(@sqls21)>0 print @sqls21
+
+if len(@sqls22)>0 print @sqls22
+
+if len(@sqls23)>0 print @sqls23
+
+if len(@sqls24)>0 print @sqls24
+
+if len(@sqls25)>0 print @sqls25
+
+end
+
+
+
+if charindex('D',@cmd)>0 print '!!! Debug mode, does not execute the generated code !!!'
+
+else
+
+begin
+
+ print 'Executing generated Difference program...'
+
+ exec(@sqls1+@sqls2+@sqls3+@sqls4+@sqls5+@sqls6+@sqls7+@sqls8+@sqls9+@sqls10+@sqls11+@sqls12+@sqls13+@sqls14+@sqls15+@sqls16+@sqls17+@sqls18+@sqls19+@sqls20+@sqls21+@sqls22+@sqls23+@sqls24+@sqls25)
+
+end
+
+GO
+

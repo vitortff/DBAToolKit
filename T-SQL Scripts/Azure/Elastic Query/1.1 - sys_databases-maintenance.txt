@@ -1,0 +1,33 @@
+
+--1
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL [legalone-maintenance] -- credential name
+WITH IDENTITY = 'cloud', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+
+--2
+-- data source to remote Azure SQL Database server and database
+CREATE EXTERNAL DATA SOURCE [sys_databases_legalone-maintenance]
+WITH
+(
+    TYPE=RDBMS, -- data source type
+    LOCATION = 'legalone-maintenance.database.windows.net', -- Azure SQL Database server name
+    DATABASE_NAME = 'master', -- database name
+    CREDENTIAL= [legalone-maintenance] -- credential used to connect to server / database  
+)
+
+
+
+CREATE EXTERNAL TABLE [sys_databases_legalone-maintenance](
+name varchar(400))
+	
+	WITH (DATA_SOURCE = [sys_databases_legalone-maintenance],  -- data source 
+      SCHEMA_NAME = 'sys',           -- external table schema
+      OBJECT_NAME = 'databases'       -- name of table in external database
+     )
+GO
+
+
+select *from [sys_databases_legalone-maintenance]

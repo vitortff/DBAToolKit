@@ -1,0 +1,43 @@
+--https://blog.sqlauthority.com/2019/05/05/how-to-list-dirty-pages-from-memory-in-sql-server-interview-question-of-the-week-223/
+
+--Now let us reproduce the script which I have used in the previous blog post over here, which will list all the dirty pages from the memory. 
+--Dirty pages are the pages which contain the data which are yet not committed to the hard drive.
+
+SELECT
+database_name = d.name,
+OBJECT_NAME =
+CASE au.TYPE
+WHEN 1 THEN o1.name
+WHEN 2 THEN o2.name
+WHEN 3 THEN o1.name
+END,
+OBJECT_ID =
+CASE au.TYPE
+WHEN 1 THEN p1.OBJECT_ID
+WHEN 2 THEN p2.OBJECT_ID
+WHEN 3 THEN p1.OBJECT_ID
+END,
+index_id =
+CASE au.TYPE
+WHEN 1 THEN p1.index_id
+WHEN 2 THEN p2.index_id
+WHEN 3 THEN p1.index_id
+END,
+bd.FILE_ID,
+bd.page_id,
+bd.page_type,
+bd.page_level
+FROM sys.dm_os_buffer_descriptors bd
+INNER JOIN sys.databases d
+ON bd.database_id = d.database_id
+INNER JOIN sys.allocation_units au
+ON bd.allocation_unit_id = au.allocation_unit_id
+LEFT JOIN sys.partitions p1
+ON au.container_id = p1.hobt_id
+LEFT JOIN sys.partitions p2
+ON au.container_id = p2.partition_id
+LEFT JOIN sys.objects o1
+ON p1.OBJECT_ID = o1.OBJECT_ID
+LEFT JOIN sys.objects o2
+ON p2.OBJECT_ID = o2.OBJECT_ID
+WHERE is_modified = 1

@@ -1,0 +1,55 @@
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='PROD2_JOB02_UPDATE_STATISTICS', 
+@command=N'
+
+DECLARE @DATABASE_NAME NVARCHAR(200)
+DECLARE @SQLString NVARCHAR(4000)
+
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+SELECT DBNomeBase FROM NVJ_Escritorio_FirmBR WHERE DBNomeServidor = ''legalone-prod2.database.windows.net'' AND IsAtivo=1 
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @DATABASE_NAME
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+
+--1
+
+SET @SQLString= ''EXEC [jobs].sp_add_target_group_member @target_group_name = N''''TG_PROD2_JOB02_UPDATE_STATISTICS'''', @target_type = N''''SqlDatabase'''', @server_name = N''''legalone-prod2.database.windows.net'''', @database_name = N'''''' +  @DATABASE_NAME +'''''';''
+
+EXECUTE sp_executesql @SQLString
+--INSERT INTO temp Select @SQLString
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @DATABASE_NAME
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+', 
+@credential_name='TG_FirmBR_Prod', 
+@target_group_name='TG_FirmBR_Prod',
+@step_name = 'Adding Target Databases',
+@step_id = 2 
+GO

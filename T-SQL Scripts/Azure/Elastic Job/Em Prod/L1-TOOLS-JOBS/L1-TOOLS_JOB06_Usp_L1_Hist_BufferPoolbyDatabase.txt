@@ -1,0 +1,25 @@
+--3 CREATING A JOB
+EXEC jobs.sp_add_job @job_name='L1-TOOLS_JOB06_Usp_L1_Hist_BufferPoolbyDatabase', 
+@description='Total Pages by Database in the Buffer Pools'; 
+
+--3.1 ADD JOB STEP
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='L1-TOOLS_JOB06_Usp_L1_Hist_BufferPoolbyDatabase', 
+@command=N'
+Usp_L1_Hist_BufferPoolbyDatabase
+',
+@credential_name='l1-tools', 
+@target_group_name='TG_l1-tools-KpisDatabase',
+@step_name = 'Step01', 
+@step_id=1
+GO
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='L1-TOOLS_JOB06_Usp_L1_Hist_BufferPoolbyDatabase',
+@enabled=1,
+@schedule_interval_type='minutes',
+@schedule_interval_count=5,
+@schedule_start_time='2024-04-16 03:00:00'

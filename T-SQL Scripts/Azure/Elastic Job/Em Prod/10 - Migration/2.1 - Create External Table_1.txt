@@ -1,0 +1,10 @@
+CREATE EXTERNAL DATA SOURCE [legalone-migration-master] WITH (TYPE=RDBMS, LOCATION = 'legalone-migration.database.windows.net',DATABASE_NAME = 'master' ,CREDENTIAL= [legalone-migration])
+
+CREATE EXTERNAL TABLE Tbl_Migration_Databases (name varchar(100))
+WITH (DATA_SOURCE = [legalone-migration-master],  -- data source 
+      SCHEMA_NAME = 'sys',           -- external table schema
+      OBJECT_NAME = 'databases'       -- name of table in external database
+     )
+GO
+
+select name from Tbl_Migration_Databases

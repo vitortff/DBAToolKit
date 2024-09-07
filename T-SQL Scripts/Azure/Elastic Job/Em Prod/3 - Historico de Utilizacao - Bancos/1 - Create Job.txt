@@ -1,0 +1,114 @@
+/*
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+--https://learn.microsoft.com/pt-br/sql/relational-databases/system-stored-procedures/sp-add-jobstep-transact-sql?view=sql-server-ver16
+
+--1 Scoped Credential
+
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL ScopedCredentialName -- credential name
+WITH IDENTITY = 'cloud', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+SELECT * FROM sys.database_scoped_credentials
+
+
+
+--2 Create Target Group
+EXEC jobs.sp_add_target_group 'Local' 
+--select *from [jobs].[target_groups]
+
+--3 ADD GROUP MEMBER TO A TARGET GROUP
+EXEC jobs.sp_add_target_group_member 'Local', 
+@membership_type = 'include', 
+@target_type = 'SqlDatabase', 
+@server_name='legalone-dev-eastus2.database.windows.net', 
+@database_name = 'DB_Test_Elastic_Job'
+GO
+--select *from [jobs].[target_group_members]
+
+
+--4.1 Create data source to remote Azure SQL Database server and database
+
+CREATE EXTERNAL DATA SOURCE [legalone-prod2]
+WITH
+(
+    TYPE=RDBMS, -- data source type
+    LOCATION = 'legalone-prod2.database.windows.net', -- Azure SQL Database server name
+    DATABASE_NAME = 'master', -- database name
+    CREDENTIAL= mymastercred4  -- credential used to connect to server / database  
+)
+GO
+
+--4.2
+
+CREATE EXTERNAL DATA SOURCE [legalone-eastus2]
+WITH
+(
+    TYPE=RDBMS, -- data source type
+    LOCATION = 'legalone-prod-eastus2.database.windows.net', -- Azure SQL Database server name
+    DATABASE_NAME = 'master', -- database name
+    CREDENTIAL= mymastercred4  -- credential used to connect to server / database  
+)
+GO
+*/
+--6 
+-- CREATING A JOB
+EXEC jobs.sp_add_job @job_name='Hist_Databases_Metrics', 
+@description='Databases Metrics'; 
+
+
+-- ADD JOB STEP
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='Hist_Databases_Metrics', 
+@command=N'exec dbo.Usp_Insert_Tbl_Hist_Databases_Metrics_prod2', 
+@credential_name='myjobcred4', 
+@target_group_name='Local',
+@step_name = 'prod2', 
+@on_success_action = 3,
+@on_fail_action = 3
+GO
+
+-- ADD JOB STEP 
+-- eastus2
+
+EXEC jobs.sp_add_jobstep @job_name='Hist_Databases_Metrics', 
+@command=
+N'exec dbo.Usp_Insert_Tbl_Hist_Databases_Metrics_eastus2', 
+@credential_name='myjobcred4', 
+@target_group_name='Local',
+@step_name = 'eastus2' 
+GO
+
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='Hist_Databases_Metrics',
+@enabled=1,
+@schedule_interval_type='Days',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-05-05 00:00:00'
+
+
+-- Start Manually the job
+EXEC jobs.sp_start_job 'Hist_Databases_Metrics';  
+--EXEC jobs.sp_delete_job @job_name='Hist_Databases_Metrics', @force=1
+
+
+-- Check Execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+lifecycle,last_message FROM jobs.job_executions
+where job_name='Hist_Databases_Metrics'
+order by 3 desc
+
+--Table Result
+  select *from Tbl_Hist_Databases_Metrics
+  order by 5 desc
+
+  --delete from Tbl_Hist_Databases_Metrics
+
+
+
+  

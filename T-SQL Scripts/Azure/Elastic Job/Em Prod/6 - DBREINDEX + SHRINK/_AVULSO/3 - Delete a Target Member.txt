@@ -1,0 +1,52 @@
+DECLARE @name NVARCHAR(100)
+DECLARE @SQLString NVARCHAR(4000)
+DECLARE @TARGET_GROUP_NAME VARCHAR (100) = 'TG_Prod02_Reindex_and_Shrink_01'
+
+-- Cursor para percorrer os registros
+DECLARE cursor1 CURSOR FOR
+
+--2.1 Checking it
+
+select gm.target_id from [jobs].target_groups g left outer join [jobs].target_group_members gm on g.target_group_id = gm.target_group_id where g.target_group_name= @TARGET_GROUP_NAME
+
+--Abrindo Cursor
+OPEN cursor1
+ 
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @name
+ 
+-- Percorrendo linhas do cursor (enquanto houverem)
+--FETCHSTATUS
+--Essa função retorna o status do último cursor 
+--que a instrução FETCH emitiu em relação a qualquer cursor atualmente aberto pela conexão.
+
+
+WHILE @@FETCH_STATUS = 0 --Enquato a instrução FETCH for bem-sucedida.
+
+BEGIN
+ 
+-- Executando as rotinas desejadas manipulando o registro
+
+SET @SQLString= 'EXEC jobs.sp_delete_target_group_member @target_group_name = N''' + @TARGET_GROUP_NAME + ''',@target_id = ' + ''''+ @name + ''''
+
+EXECUTE sp_executesql @SQLString
+--PRINT @SQLString
+
+-- Lendo a próxima linha
+FETCH NEXT FROM cursor1 INTO @name
+
+END
+
+-- Fechando Cursor para leitura
+CLOSE cursor1
+ 
+-- Finalizado o cursor
+DEALLOCATE cursor1
+
+--check
+
+select gm.target_id, g.target_group_name, gm.membership_type, gm.target_type, gm.server_name, gm.database_name, gm.elastic_pool_name
+from [jobs].target_groups g
+left outer join [jobs].target_group_members gm
+on g.target_group_id = gm.target_group_id
+where g.target_group_name= @TARGET_GROUP_NAME

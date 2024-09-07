@@ -1,0 +1,66 @@
+DECLARE CursorName CURSOR READ_ONLY FOR
+
+select name from sys.databases
+where state_desc='restoring'
+
+
+OPEN CursorName 
+
+DECLARE @name as nvarchar(50)
+
+	FETCH NEXT FROM CursorName INTO @name
+
+		WHILE @@FETCH_STATUS = 0 
+
+		BEGIN 
+
+			--RESTORE DATABASE @name WITH RECOVERY;
+			PRINT 'RESTORE DATABASE ' +@NAME+' WITH RECOVERY;'
+			
+			FETCH NEXT FROM CursorName INTO @name
+
+		END 
+
+
+CLOSE CursorName 
+
+DEALLOCATE CursorName 
+
+
+-- Cursor dinamico
+
+DECLARE CursorName CURSOR READ_ONLY FOR
+
+SELECT NAME FROM SYS.objects
+WHERE TYPE='U' 
+AND NAME LIKE 'A%'
+ORDER BY NAME
+
+
+OPEN CursorName 
+
+DECLARE @exec as nvarchar(500)
+DECLARE @name as nvarchar(50)
+
+	FETCH NEXT FROM CursorName INTO @name
+
+		WHILE @@FETCH_STATUS = 0 
+
+		BEGIN 
+
+			--RESTORE DATABASE @name WITH RECOVERY;
+			set @exec=  'DBCC DBREINDEX (' +CHAR(0X27)+@NAME+CHAR(0X27)+','''',100);'
+
+			exec sp_executesql @exec
+			
+			FETCH NEXT FROM CursorName INTO @name
+
+		END 
+
+
+CLOSE CursorName 
+
+DEALLOCATE CursorName 
+
+
+

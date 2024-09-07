@@ -1,0 +1,56 @@
+-- Check Table Size
+
+select schema_name(tab.schema_id) + '.' + tab.name as [table],
+    cast(sum(spc.used_pages * 8)/1024.00 as numeric(36, 2)) as used_mb,
+    cast(sum(spc.total_pages * 8)/1024.00 as numeric(36, 2)) as allocated_mb
+from sys.tables tab
+    inner join sys.indexes ind 
+        on tab.object_id = ind.object_id
+    inner join sys.partitions part 
+        on ind.object_id = part.object_id and ind.index_id = part.index_id
+    inner join sys.allocation_units spc
+        on part.partition_id = spc.container_id
+group by schema_name(tab.schema_id) + '.' + tab.name
+order by sum(spc.used_pages) desc
+
+
+
+--Check Index Fragmentation
+
+/*
+sys.dm_db_index_physical_stats (
+    { database_id | NULL | 0 | DEFAULT }
+  , { object_id | NULL | 0 | DEFAULT }
+  , { index_id | NULL | 0 | -1 | DEFAULT }
+  , { partition_number | NULL | 0 | DEFAULT }
+  , { mode | NULL | DEFAULT } (sampled/detailed)
+)
+*/
+SELECT 
+T.name as 'Table',
+I.name as 'Index',
+ddips.avg_fragmentation_in_percent,
+ddips.fragment_count,
+ddips.page_count,
+ddips.avg_page_space_used_in_percent,
+ddips.record_count,
+ddips.avg_record_size_in_bytes,
+ddips.index_level,
+i.type_desc,
+i.is_unique,
+i.fill_factor,
+i.is_disabled
+FROM sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, 'sampled') AS DDIPS
+INNER JOIN sys.tables T on T.object_id = DDIPS.object_id
+INNER JOIN sys.schemas S on T.schema_id = S.schema_id
+INNER JOIN sys.indexes I ON I.object_id = DDIPS.object_id
+AND DDIPS.index_id = I.index_id
+WHERE DDIPS.database_id = DB_ID()
+and I.name is not null
+AND DDIPS.avg_fragmentation_in_percent > 0
+ORDER BY DDIPS.avg_fragmentation_in_percent desc
+
+
+
+
+

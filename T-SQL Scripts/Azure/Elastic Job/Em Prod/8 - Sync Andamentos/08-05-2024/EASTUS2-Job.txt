@@ -1,0 +1,69 @@
+--1 Scoped Credential
+
+-- credential maps to a login or contained user used to connect to remote database 
+CREATE DATABASE SCOPED CREDENTIAL [legalone-prod-eastus2] -- credential name
+WITH IDENTITY = 'cloud', -- login or contained user name
+SECRET = 'Y6t5r4e3w2q1@'; -- login or contained user password
+GO
+
+SELECT * FROM sys.database_scoped_credentials
+
+--2 Creating Target Group
+EXEC jobs.sp_add_target_group 'TG_EASTUS2-JOB02-Rebuild-Indices-Sync-Andamentos' 
+--select *from [jobs].[target_groups]
+
+
+-- Creating a Job
+EXEC jobs.sp_add_job @job_name='EASTUS2-JOB02-Rebuild-Indices-Sync-Andamentos', 
+@description='Indexes Rebuilding Sync Andamentos'; 
+
+-- Adding a Job Step
+-- prod2
+EXEC jobs.sp_add_jobstep @job_name='EASTUS2-JOB02-Rebuild-Indices-Sync-Andamentos', 
+@command=N'
+ALTER INDEX IX_MON_Consulta_Id_PRO_Processo ON MON_Consulta REBUILD;
+ALTER INDEX IX_GEN_ANDAMENTO__Checksum ON GEN_Andamento REBUILD;
+ALTER INDEX IX_GEN_ANDM_VINC_001 ON GEN_Andamento_Vinculo REBUILD;
+', 
+@credential_name='legalone-prod-eastus2', 
+@target_group_name='TG_EASTUS2-JOB02-Rebuild-Indices-Sync-Andamentos',
+@step_name = 'step01' 
+GO
+
+--Add Scheduler
+--https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-jobs-tsql-create-manage?view=azuresql
+
+EXEC jobs.sp_update_job
+@job_name='Reindex_Robos_WSDatacloud_Prod',
+@enabled=1,
+@schedule_interval_type='Weeks',
+--@schedule_interval_count=10,
+@schedule_start_time='2023-07-23 05:00:00'
+
+
+
+
+--Next Execution after the first attempt
+--select job_name, next_attempt_start_time from [jobs].[job_executions]
+
+
+-- Starting a job manually
+--EXEC jobs.sp_start_job 'EASTUS2-JOB02-Rebuild-Indices-Sync-Andamentos';  
+
+-- Deleting it
+--EXEC jobs.sp_delete_job @job_name='EASTUS2-JOB02-Rebuild-Indices-Sync-Andamentos', @force=1
+
+-- Canceling job execution with the specified job execution id
+EXEC jobs.sp_stop_job 'CF1AFCD5-6D59-4E7F-9A05-DA1E7794A893';
+
+
+
+
+-- Checking the execution
+SELECT job_name, DATEADD(hour, -3, start_time) as start_time, DATEADD(hour, -3, end_time) as end_time, 
+DATEDIFF(minute, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [Minutes],
+DATEDIFF(hour, DATEADD(hour, -3, start_time), DATEADD(hour, -3, end_time)) AS [hour],
+lifecycle,last_message, next_attempt_start_time FROM jobs.job_executions
+where job_name='EASTUS2-JOB02-Rebuild-Indices-Sync-Andamentos' 
+-- and cast(DATEADD(hour, -3, start_time) as date) = '2023-06-30'
+order by 3 desc

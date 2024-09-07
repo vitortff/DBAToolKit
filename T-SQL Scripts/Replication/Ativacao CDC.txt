@@ -1,0 +1,68 @@
+--Liga do CDC no Database
+EXECUTE sys.sp_cdc_enable_db;
+GO
+
+--Liga o CDC nos objetos
+--Empregado
+EXECUTE sys.sp_cdc_enable_table
+  @source_schema = N'dbo'
+  , @source_name = N'empregado'
+  , @role_name = NULL
+GO
+
+--Dependente
+EXECUTE sys.sp_cdc_enable_table
+  @source_schema = N'dbo'
+  , @source_name = N'dependente'
+  , @role_name = NULL
+GO
+
+--emprg_dpdte
+EXECUTE sys.sp_cdc_enable_table
+  @source_schema = N'dbo'
+  , @source_name = N'emprg_dpdte'
+  , @role_name = NULL
+GO
+
+
+--incid_dependencia
+EXECUTE sys.sp_cdc_enable_table
+  @source_schema = N'dbo'
+  , @source_name = N'incid_dependencia'
+  , @role_name = NULL
+GO
+
+
+--HIST_CADASTRO_FSS
+EXECUTE sys.sp_cdc_enable_table
+  @source_schema = N'dbo'
+  , @source_name = N'HIST_CADASTRO_FSS'
+  , @role_name = NULL
+GO
+
+
+--Repres_Uniao_Fss
+EXECUTE sys.sp_cdc_enable_table
+  @source_schema = N'dbo'
+  , @source_name = N'Repres_Uniao_Fss'
+  , @role_name = NULL
+GO
+
+
+
+--Disabilitando CDC
+--EXECUTE sys.sp_cdc_disable_db;
+--GO
+
+
+
+
+select *from cdc.dbo_empregado_CT;
+select *from cdc.dbo_dependente_CT;
+select *from cdc.dbo_emprg_dpdte_CT;
+select *from cdc.dbo_incid_dependencia_CT;
+select *from cdc.dbo_HIST_CADASTRO_FSS_CT;
+select *from cdc.dbo_Repres_Uniao_Fss_CT;
+
+
+

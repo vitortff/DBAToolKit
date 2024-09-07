@@ -1,0 +1,11 @@
+DBCC SHOWCONTIG('tb_itl');
+DBCC SHOWCONTIG('tb_quoc_s');
+DBCC SHOWCONTIG('tb_ficha');
+DBCC SHOWCONTIG('tb_consultas_usuario');
+DBCC SHOWCONTIG('tb_ipmod');
+DBCC SHOWCONTIG('tb_sctb');
+DBCC SHOWCONTIG('TB_IPCON');
+DBCC SHOWCONTIG('tb_sopro');
+DBCC SHOWCONTIG('tb_cpro');
+
+

@@ -1,0 +1,33 @@
+--FORCING PARAMETERIZATION
+--IT IS USED WHEN A SPECIFIC ENVIRONMENT IS SUFFERING FROM LARGE AMOUNTS COMPILES AND RECOMPILES BECAUSE OF AD HOC QUERIES.
+--TECHNICALLY MEANS THAT ALL QUERIES WILL BE PARAMETERIZED.
+
+--FIRST AT ALL, YOU HAVE TO CHANGE THE DATABASE OPTION "PARAMETERIZATION" IN ORDER TO FORCE TO USE OF THIS CONFIGURATION:
+
+ALTER DATABASE "DATABASENAME" SET PARAMETERIZATION FORCED
+
+--EXAMPLE
+
+DBCC FREEPROCCACHE
+
+SELECT  b.creation_time,b.last_execution_time,a.usecounts,a.size_in_bytes,
+a.cacheobjtype,a.objtype,t.text FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t, sys.dm_exec_query_stats b
+WHERE a.plan_handle=b.plan_handle 
+ORDER BY 1 DESC
+
+SELECT  soh.SalesOrderNumber
+       ,soh.OrderDate
+       ,sod.OrderQty
+       ,sod.LineTotal
+FROM    Sales.SalesOrderHeader AS soh
+        JOIN Sales.SalesOrderDetail AS sod
+        ON soh.SalesOrderID = sod.SalesOrderID
+WHERE   soh.CustomerID = 678
+        AND sod.productid = 776
+
+
+
+
+
+
+  

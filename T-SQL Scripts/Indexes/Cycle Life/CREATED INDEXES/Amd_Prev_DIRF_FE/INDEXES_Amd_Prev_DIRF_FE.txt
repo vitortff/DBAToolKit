@@ -1,0 +1,116 @@
+--Index SPBIDXDVD002 for SELECT operation
+
+--QUERY
+SELECT SPBTBLDVDVLRDURANCALCULO.DVDVALVARNUMERICA FROM SPBTBLDVDVLRDURANCALCULO WITH (NOLOCK) WHERE SPBTBLDVDVLRDURANCALCULO.DVDCPFRECEBEDOR =  3738.9600000000  AND DVDDATPAGAMENTO BETWEEN  CONVERT (DateTime, '01/02/2013', 103)  AND  CONVERT (DateTime, '28/02/2013', 103)  AND SPBTBLDVDVLRDURANCALCULO.DPVCODVARIAVEL IN ( 58.0000000000 , 64.0000000000 ) AND  3738.9600000000  > 0 AND SPBTBLDVDVLRDURANCALCULO.NUM_MATR_PARTF <>  25041 
+
+
+USE [Amd_Prev_DIRF_FE]
+GO
+
+/****** Object:  Index [SPBIDXDVD002]    Script Date: 09/06/2013 09:28:15 ******/
+CREATE NONCLUSTERED INDEX [SPBIDXDVD002] ON [dbo].[SPBTBLDVDVLRDURANCALCULO] 
+(
+	[DVDCPFRECEBEDOR] ASC,
+	[DVDDATPAGAMENTO] ASC,
+	[DPVCODVARIAVEL] ASC
+)
+INCLUDE ( [DVDVALVARNUMERICA]) WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+GO
+
+
+-- Index SPBIDXDVD003 for DELETE operation
+
+--QUERY
+DELETE SPBTBLDVDVLRDURANCALCULO WHERE NUM_MATR_PARTF =1002 AND NUM_SQNCL_BFPART =12 AND DVDDATPAGAMENTO ={ts '2013-08-20 00:00:00.000'} AND DVDIDTLANCFOLHA ='N';
+
+
+
+USE [Amd_Prev_DIRF_FE]
+GO
+
+/****** Object:  Index [SPBIDXDVD003]    Script Date: 09/06/2013 09:25:40 ******/
+CREATE NONCLUSTERED INDEX [SPBIDXDVD003] ON [dbo].[SPBTBLDVDVLRDURANCALCULO] 
+(
+	[NUM_MATR_PARTF] ASC,
+	[NUM_SQNCL_BFPART] ASC,
+	[DVDDATPAGAMENTO] ASC,
+	[DVDIDTLANCFOLHA] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+GO
+
+
+
+--Index Report
+
+DECLARE
+@DATABASE_NAME SYSNAME,
+@TYPE_DESC NVARCHAR(120)
+SET @DATABASE_NAME='Amd_Prev_FOPAG_122012'
+SET @TYPE_DESC='NONCLUSTERED'
+
+SELECT OBJECT_NAME(a.object_id) as [object_name],b.name,e.used_pages*8/1024 "used_pages(mb)",
+e.total_pages*8/1024 "total_pages(mb)", a.user_seeks,a.user_scans,a.user_lookups,a.user_updates,
+a.last_user_seek,a.last_user_scan,a.last_user_lookup,a.last_user_update
+FROM 
+sys.dm_db_index_usage_stats a inner join sys.indexes b
+on a.object_id=b.object_id and a.index_id=b.index_id
+inner join sys.partitions d 
+on d.object_id=b.object_id and b.index_id = d.index_id
+inner join sys.allocation_units e
+on d.hobt_id = e.container_id
+WHERE 
+b.is_hypothetical=0 and
+OBJECT_NAME(a.object_id) not in ('sysallocunits','sysowners','null') and
+--OBJECT_NAME(a.object_id)='empregado' and
+DB_NAME(a.database_id)=@DATABASE_NAME and
+b.type_desc=@TYPE_DESC and
+b.name in ('SPBIDXDVD002','SPBIDXDVD003')
+ORDER BY 5 DESC
+GO
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
+--PLAN GUIDE
+
+DECLARE @stmt nvarchar(max)
+DECLARE @params nvarchar(max)
+EXEC sp_get_query_template N'DELETE FROM SPBTBLDVDVLRDURANCALCULO WHERE DPVCODVARIAVEL =1 AND DVDCPFRECEBEDOR =14583550804 AND ( NUM_IDNTF_RPTANT =null OR NUM_IDNTF_RPTANT IS NULL ) AND NUM_SQNCL_BFPART =11 AND DVDDATPAGAMENTO ={ts ''2012-12-20 00:00:00.000''} AND DVDDATREFERENCIA ={ts ''2012-12-31 00:00:00.000''} AND NUM_VRBFSS =59000 AND DVDIDTLANCFOLHA =''N''',
+			      
+@stmt OUTPUT, 
+@params OUTPUT
+EXEC sp_create_plan_guide N'TemplateGuide2', 
+@stmt, 
+N'TEMPLATE', 
+NULL, 
+@params, 
+N'OPTION(PARAMETERIZATION FORCED)'
+
+
+--dropping the plan guide
+
+EXEC sp_control_plan_guide N'DROP', N'TemplateGuide1';
+
+EXEC sp_control_plan_guide N'DISABLE ALL';
+
+
+
+--Have a look into plan guide whether it is working correctly
+
+SELECT 
+/*	b.creation_time,b.last_execution_time,
+	Minutos_em_Cache= Convert(VarChar(20), 
+	DATEDIFF(MI, b.creation_time, getdate())) + ' Minutos',
+	Resultado_em_Horas = Convert(VarChar(10), DATEDIFF(MI, 
+	b.creation_time, getdate()) / 60) + ':' + Right(Replicate('0', 2) + Convert(VarChar(10), 
+	DATEDIFF(MI, b.creation_time, getdate()) % 60), 2)*/
+	a.usecounts,a.size_in_bytes,a.cacheobjtype,
+	a.objtype,t.text FROM sys.dm_exec_cached_plans a cross apply sys.dm_exec_sql_text(a.plan_handle) t, 
+	sys.dm_exec_query_stats b 
+WHERE 	a.plan_handle=b.plan_handle AND 
+a.objtype='prepared' and
+T.text like '%DELETE FROM SPBTBLDVDVLRDURANCALCULO WHERE DPVCODVARIAVEL%'
+
+ORDER BY 5 
+
+

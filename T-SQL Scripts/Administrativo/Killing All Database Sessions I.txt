@@ -1,0 +1,33 @@
+set ANSI_NULLS ON
+set QUOTED_IDENTIFIER ON
+go
+
+--Desc: Objective procedure to kill process for a given database
+--usage:
+--exec Usp_killprocess "mydatabasename"
+ALTER procedure [dbo].[Usp_killprocess] @dbname varchar(128) as
+set nocount on
+set quoted_identifier off
+declare @kill_id int
+declare @query varchar(320)
+declare killprocess_cursor cursor for 
+select a.spid from master.dbo.sysprocesses a join master.dbo.sysdatabases b 
+on a.dbid=b.dbid where b.name=@dbname
+open killprocess_cursor
+fetch next from killprocess_cursor into @kill_id
+while(@@fetch_status =0)
+begin
+set @query = 'kill ' + convert(varchar,@kill_id)
+exec (@query)
+fetch next from killprocess_cursor into @kill_id
+end
+close killprocess_cursor
+deallocate killprocess_cursor
+
+
+-- efetuado a chamada
+--EXEC DBAService..Usp_KillProcess 'Amd_Prev_Hmp';
+--EXEC DBAService..Usp_KillProcess 'Amd_Hmp_GerRel';
+--EXEC DBAService..Usp_KillProcess 'DrLock_Hmp';
+
+
