@@ -1,14 +1,150 @@
--- verifica uso de índices
--- first select DB, then execute the task below
-select object_name(dmi.object_id) as tbl_name, i.name as idx_name, dmi.* 
-from sys.dm_db_index_usage_stats dmi join 
-sys.indexes i on 
-dmi.index_id = i.index_id and 
-dmi.object_id = i.object_id
-where database_id = DB_ID() 
---AND object_name(dmi.object_id) IN('estoque')
-order by user_updates DESC
-GO
+--Verifica a utilização de cada índice em um banco de dados
+WITH IndexUsage AS (
+    SELECT 
+        OBJECT_NAME(i.object_id) AS TableName,
+        i.name AS IndexName,
+        i.type_desc AS IndexType,
+        u.user_seeks,
+        u.user_scans,
+        u.user_lookups,
+        u.system_seeks,
+        u.system_scans,
+        u.system_lookups,
+        u.last_user_seek,
+        u.last_user_scan,
+        u.last_user_lookup
+    FROM 
+        sys.indexes i
+    LEFT JOIN 
+        sys.dm_db_index_usage_stats u
+    ON 
+        i.object_id = u.object_id AND i.index_id = u.index_id
+    WHERE 
+        i.is_disabled = 0 -- Índices habilitados
+        AND i.is_hypothetical = 0 -- Exclui índices "hipotéticos" usados para tuning
+        AND i.is_primary_key = 0 -- Exclui índices de chave primária
+        AND i.is_unique = 0 -- Exclui índices únicos
+)
+SELECT 
+    TableName,
+    IndexName,
+    IndexType,
+    ISNULL(user_seeks, 0) AS UserSeeks,
+    ISNULL(user_scans, 0) AS UserScans,
+    ISNULL(user_lookups, 0) AS UserLookups,
+    ISNULL(system_seeks, 0) AS SystemSeeks,
+    ISNULL(system_scans, 0) AS SystemScans,
+    ISNULL(system_lookups, 0) AS SystemLookups,
+    last_user_seek,
+    last_user_scan,
+    last_user_lookup
+FROM 
+    IndexUsage
+WHERE 
+    ISNULL(user_seeks, 0) = 0
+    AND ISNULL(user_scans, 0) = 0
+    AND ISNULL(user_lookups, 0) = 0
+ORDER BY 
+    TableName, IndexName;
+
+
+
+--Verifica índices duplicados e utilização de cada um
+WITH IndexColumns AS (
+    SELECT 
+        OBJECT_NAME(i.object_id) AS TableName,
+        i.name AS IndexName,
+        c.name AS ColumnName,
+        ic.index_id,
+        ic.object_id
+    FROM 
+        sys.indexes i
+    INNER JOIN 
+        sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+    INNER JOIN 
+        sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+    WHERE 
+        i.is_primary_key = 0 -- Ignorar índices de chave primária
+        AND i.is_unique = 0 -- Ignorar índices únicos
+        AND i.type IN (1, 2) -- Apenas clustered e nonclustered
+),
+IndexDefinitions AS (
+    SELECT 
+        TableName,
+        IndexName,
+        index_id,
+        object_id,
+        STRING_AGG(ColumnName, ',') WITHIN GROUP (ORDER BY ColumnName) AS ColumnList
+    FROM 
+        IndexColumns
+    GROUP BY 
+        TableName, IndexName, index_id, object_id
+),
+DuplicateIndexes AS (
+    SELECT 
+        t1.TableName,
+        t1.IndexName AS DuplicateIndex,
+        t2.IndexName AS OriginalIndex,
+        t1.ColumnList,
+        t1.index_id AS DuplicateIndexId,
+        t2.index_id AS OriginalIndexId,
+        t1.object_id AS TableObjectId
+    FROM 
+        IndexDefinitions t1
+    INNER JOIN 
+        IndexDefinitions t2 
+        ON t1.TableName = t2.TableName 
+        AND t1.ColumnList = t2.ColumnList
+        AND t1.IndexName <> t2.IndexName
+),
+IndexUsage AS (
+    SELECT 
+        OBJECT_NAME(u.object_id) AS TableName,
+        i.name AS IndexName,
+        ISNULL(u.user_seeks, 0) AS UserSeeks,
+        ISNULL(u.user_scans, 0) AS UserScans,
+        ISNULL(u.user_lookups, 0) AS UserLookups,
+        ISNULL(u.system_seeks, 0) AS SystemSeeks,
+        ISNULL(u.system_scans, 0) AS SystemScans,
+        ISNULL(u.system_lookups, 0) AS SystemLookups,
+        ISNULL(u.user_seeks, 0) + ISNULL(u.user_scans, 0) + ISNULL(u.user_lookups, 0) AS TotalUserOperations,
+        ISNULL(u.system_seeks, 0) + ISNULL(u.system_scans, 0) + ISNULL(u.system_lookups, 0) AS TotalSystemOperations,
+        u.last_user_seek,
+        u.last_user_scan,
+        u.last_user_lookup
+    FROM 
+        sys.indexes i
+    LEFT JOIN 
+        sys.dm_db_index_usage_stats u 
+        ON i.object_id = u.object_id AND i.index_id = u.index_id
+    WHERE 
+        i.is_primary_key = 0 -- Ignorar índices de chave primária
+        AND i.is_unique = 0 -- Ignorar índices únicos
+)
+SELECT DISTINCT
+    di.TableName,
+    di.DuplicateIndex,
+    di.OriginalIndex,
+    di.ColumnList,
+    iu1.TotalUserOperations AS DuplicateIndexUsage,
+    iu1.last_user_seek AS DuplicateLastUserSeek,
+    iu1.last_user_scan AS DuplicateLastUserScan,
+    iu1.last_user_lookup AS DuplicateLastUserLookup,
+    iu2.TotalUserOperations AS OriginalIndexUsage,
+    iu2.last_user_seek AS OriginalLastUserSeek,
+    iu2.last_user_scan AS OriginalLastUserScan,
+    iu2.last_user_lookup AS OriginalLastUserLookup
+FROM 
+    DuplicateIndexes di
+LEFT JOIN 
+    IndexUsage iu1 
+    ON di.TableObjectId = OBJECT_ID(iu1.TableName) AND di.DuplicateIndex = iu1.IndexName
+LEFT JOIN 
+    IndexUsage iu2 
+    ON di.TableObjectId = OBJECT_ID(iu2.TableName) AND di.OriginalIndex = iu2.IndexName
+ORDER BY 
+    di.TableName, di.ColumnList;
+
 
 --Verifica uso de indices criados pelo DTA
 SELECT 
@@ -36,9 +172,6 @@ AND
 ORDER by dmi.last_user_seek ASC
 
 
-sp_helpindex tellog
-
-
 -- verifica desfragmentação 
 SELECT 
 'ALTER INDEX ['+name+'] ON ['+OBJECT_NAME(A.object_id)+'] REBUILD PARTITION = ALL WITH ( FILLFACTOR = 80, 
@@ -62,22 +195,8 @@ WHERE A.index_id <> 0
 ORDER BY 4 DESC;
 
 -- verifica partição
-
 SELECT *
 FROM sys.dm_db_index_physical_stats (DB_ID(),OBJECT_ID(N'HSHPES'), NULL , NULL, NULL);
-
-
---desfragmentando a pk (dbcc indexdefrag)
-alter index IOCRGUA_PK on OCRGUA reorganize;
-
---desfragmentando a pk particionada
-alter index ITELLOG_PK on TELLOG reorganize partition = 5
-
---reindexação on-line
-alter index INCTA on NCT rebuild with (online=on, sort_in_tempdb=on);
-
---Rebuild only partition 
---ALTER INDEX IOCR_PK ON OCR REBUILD Partition = 2
 
 
 --identifica indice
@@ -97,7 +216,6 @@ sp_updatestats -- all objects in sys.indexes
 sp_autostats [ocr] -- to view information
 
 -- view no index usage
-
 SELECT TOP 10 *
 FROM sys.dm_db_missing_index_group_stats
 --WHERE group_handle in (38066)
