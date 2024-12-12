@@ -4,21 +4,28 @@ WITH IndexUsage AS (
         OBJECT_NAME(i.object_id) AS TableName,
         i.name AS IndexName,
         i.type_desc AS IndexType,
+        o.create_date AS IndexCreationDate, -- Adicionando a data de criação do índice
         u.user_seeks,
         u.user_scans,
         u.user_lookups,
+        u.user_updates,
         u.system_seeks,
         u.system_scans,
         u.system_lookups,
         u.last_user_seek,
         u.last_user_scan,
-        u.last_user_lookup
+        u.last_user_lookup,
+        u.last_user_update
     FROM 
         sys.indexes i
     LEFT JOIN 
         sys.dm_db_index_usage_stats u
     ON 
         i.object_id = u.object_id AND i.index_id = u.index_id
+    INNER JOIN 
+        sys.objects o
+    ON 
+        i.object_id = o.object_id
     WHERE 
         i.is_disabled = 0 -- Índices habilitados
         AND i.is_hypothetical = 0 -- Exclui índices "hipotéticos" usados para tuning
@@ -29,15 +36,18 @@ SELECT
     TableName,
     IndexName,
     IndexType,
+    IndexCreationDate, -- Exibindo a data de criação do índice
     ISNULL(user_seeks, 0) AS UserSeeks,
     ISNULL(user_scans, 0) AS UserScans,
     ISNULL(user_lookups, 0) AS UserLookups,
+    ISNULL(user_updates, 0) AS UserUpdates,		
     ISNULL(system_seeks, 0) AS SystemSeeks,
     ISNULL(system_scans, 0) AS SystemScans,
     ISNULL(system_lookups, 0) AS SystemLookups,
     last_user_seek,
     last_user_scan,
-    last_user_lookup
+    last_user_lookup,
+    last_user_update
 FROM 
     IndexUsage
 WHERE 
@@ -45,7 +55,8 @@ WHERE
     AND ISNULL(user_scans, 0) = 0
     AND ISNULL(user_lookups, 0) = 0
 ORDER BY 
-    TableName, IndexName;
+    UserUpdates DESC;
+
 
 
 
