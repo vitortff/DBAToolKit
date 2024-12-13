@@ -1,6 +1,7 @@
---Verifica a utilização de cada índice em um banco de dados
+--Lista os índices NÃO UTILIZADOS em um banco de dados
 WITH IndexUsage AS (
     SELECT 
+        SCHEMA_NAME(o.schema_id) AS SchemaName, -- Nome do schema
         OBJECT_NAME(i.object_id) AS TableName,
         i.name AS IndexName,
         i.type_desc AS IndexType,
@@ -33,6 +34,7 @@ WITH IndexUsage AS (
         AND i.is_unique = 0 -- Exclui índices únicos
 )
 SELECT 
+    SchemaName,
     TableName,
     IndexName,
     IndexType,
@@ -47,7 +49,8 @@ SELECT
     last_user_seek,
     last_user_scan,
     last_user_lookup,
-    last_user_update
+    last_user_update,
+    'ALTER INDEX [' + IndexName + '] ON [' + SchemaName + '].[' + TableName + '] DISABLE;' AS DisableIndexScript -- Script para desabilitar o índice com schema
 FROM 
     IndexUsage
 WHERE 
@@ -56,6 +59,7 @@ WHERE
     AND ISNULL(user_lookups, 0) = 0
 ORDER BY 
     UserUpdates DESC;
+
 
 
 
