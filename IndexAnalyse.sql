@@ -1,3 +1,19 @@
+-- verifica desfragmentação 
+SELECT 
+'ALTER INDEX ['+name+'] ON ['+OBJECT_NAME(A.object_id)+'] REBUILD PARTITION = ALL WITH ( FILLFACTOR = 80, 
+PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, 
+ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON, ONLINE = ON, 
+SORT_IN_TEMPDB = ON )', avg_fragmentation_in_percent
+--TOP 10 OBJECT_NAME(A.object_id) AS [TableName],
+--a.index_id, name, avg_fragmentation_in_percent
+FROM sys.dm_db_index_physical_stats (DB_ID(),NULL, NULL, NULL, NULL) AS a
+JOIN sys.indexes AS b ON a.object_id = b.object_id AND a.index_id =
+b.index_id 
+WHERE A.index_id <> 0
+ORDER BY avg_fragmentation_in_percent DESC;
+
+
+
 --Lista os índices NÃO UTILIZADOS em um banco de dados
 WITH IndexUsage AS (
     SELECT 
@@ -192,20 +208,6 @@ AND
 --	name LIKE '_dta%'
 ORDER by dmi.last_user_seek ASC
 
-
--- verifica desfragmentação 
-SELECT 
-'ALTER INDEX ['+name+'] ON ['+OBJECT_NAME(A.object_id)+'] REBUILD PARTITION = ALL WITH ( FILLFACTOR = 80, 
-PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, 
-ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON, ONLINE = ON, 
-SORT_IN_TEMPDB = ON )', avg_fragmentation_in_percent
---TOP 10 OBJECT_NAME(A.object_id) AS [TableName],
---a.index_id, name, avg_fragmentation_in_percent
-FROM sys.dm_db_index_physical_stats (DB_ID(),NULL, NULL, NULL, NULL) AS a
-JOIN sys.indexes AS b ON a.object_id = b.object_id AND a.index_id =
-b.index_id 
-WHERE A.index_id <> 0
-ORDER BY avg_fragmentation_in_percent DESC;
 
 SELECT OBJECT_NAME(A.object_id) AS [TableName],
 a.index_id, name, avg_fragmentation_in_percent
