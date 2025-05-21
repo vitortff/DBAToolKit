@@ -36,6 +36,12 @@ INNER JOIN
 	sys.dm_exec_requests ER 
 ON
 	EC.session_id = ER.session_id
+---------------------- SQL Server 2019
+CROSS APPLY 
+	sys.fn_PageResCracker (ER.page_resource) AS r  
+CROSS APPLY 
+	sys.dm_db_page_info(r.db_id, r.file_id, r.page_id, 'DETAILED') AS page_info
+----------------------
 WHERE
 EC.session_id <> @@SPID --and  
 ORDER BY
