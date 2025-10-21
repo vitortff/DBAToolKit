@@ -14,7 +14,7 @@ ORDER BY avg_fragmentation_in_percent DESC;
 
 
 
---Lista os índices NÃO UTILIZADOS em um banco de dados
+---Lista os índices NÃO UTILIZADOS em um banco de dados
 WITH IndexUsage AS (
     SELECT 
         SCHEMA_NAME(o.schema_id) AS SchemaName, -- Nome do schema
