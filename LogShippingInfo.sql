@@ -6,28 +6,26 @@ DECLARE @HighRPOWarning INT = 15
 
 ;WITH LastRestores AS
 (
-SELECT
-    [d].[name] [Database],
-    bmf.physical_device_name [LastFileRestored],
-    CONVERT(DATETIME,
-        STUFF(STUFF(STUFF(SUBSTRING(physical_device_name,LEN([physical_device_name])-17,14),13,0,':'),11,0,':'),9,0,' ') 
-    ) LastFileRestoredCreatedTime,
-    r.restore_date [DateRestored],        
-    RowNum = ROW_NUMBER() OVER (PARTITION BY d.Name ORDER BY r.[restore_date] DESC)
-FROM master.sys.databases d
-    INNER JOIN msdb.dbo.[restorehistory] r ON r.[destination_database_name] = d.Name
-    INNER JOIN msdb..backupset bs ON [r].[backup_set_id] = [bs].[backup_set_id]
-    INNER JOIN msdb..backupmediafamily bmf ON [bs].[media_set_id] = [bmf].[media_set_id] 
+    SELECT
+        d.name AS [Database],
+        bmf.physical_device_name AS [LastFileRestored],
+        r.restore_date AS [LastRestoreDate],
+        ROW_NUMBER() OVER (PARTITION BY d.name ORDER BY r.restore_date DESC) AS RowNum
+    FROM master.sys.databases d
+    INNER JOIN msdb.dbo.restorehistory r ON r.destination_database_name = d.name
+    INNER JOIN msdb.dbo.backupset bs ON r.backup_set_id = bs.backup_set_id
+    INNER JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
 )
 SELECT 
-     CASE WHEN DATEDIFF(MINUTE,LastFileRestoredCreatedTime,GETDATE()) > @HighRPOWarning THEN 'RPO High Warning!'
-        WHEN DATEDIFF(MINUTE,LastFileRestoredCreatedTime,GETDATE()) > @MediumRPOWarning THEN 'RPO Medium Warning!'
-        WHEN DATEDIFF(MINUTE,LastFileRestoredCreatedTime,GETDATE()) > @LowRPOWarning THEN 'RPO Low Warning!'
+    CASE 
+        WHEN DATEDIFF(MINUTE, LastRestoreDate, GETDATE()) > @HighRPOWarning THEN 'RPO High Warning!'
+        WHEN DATEDIFF(MINUTE, LastRestoreDate, GETDATE()) > @MediumRPOWarning THEN 'RPO Medium Warning!'
+        WHEN DATEDIFF(MINUTE, LastRestoreDate, GETDATE()) > @LowRPOWarning THEN 'RPO Low Warning!'
         ELSE 'RPO Good'
-     END [Status],
+    END AS [Status],
     [Database],
     [LastFileRestored],
-    [LastFileRestoredCreatedTime],
-    [DateRestored]
-FROM [LastRestores]
-WHERE [RowNum] = 1
+    [LastRestoreDate] AS [LastLogRestoredAt],
+    DATEDIFF(MINUTE, LastRestoreDate, GETDATE()) AS [RPO (Minutes)]
+FROM LastRestores
+WHERE RowNum = 1;
